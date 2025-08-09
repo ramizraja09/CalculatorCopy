@@ -12,6 +12,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/
 import { Button } from '@/components/ui/button';
 import MortgageCalculator from '@/components/calculators/mortgage-calculator';
 import LoanCalculator from '@/components/calculators/loan-calculator';
+import CarLoanCalculator from '@/components/calculators/car-loan-calculator';
 
 type CalculatorClientPageProps = {
   calculator: Omit<Calculator, 'icon'>;
@@ -20,6 +21,7 @@ type CalculatorClientPageProps = {
 const calculatorComponents: { [key: string]: React.ComponentType } = {
   'mortgage-calculator': MortgageCalculator,
   'loan-calculator': LoanCalculator,
+  'car-loan-calculator': CarLoanCalculator,
   // Other calculators will be added here
 };
 
