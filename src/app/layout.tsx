@@ -4,8 +4,8 @@ import { Toaster } from "@/components/ui/toaster";
 import Header from '@/components/layout/header';
 
 export const metadata: Metadata = {
-  title: 'CalcHub - Your Go-To Calculator Toolkit',
-  description: 'A comprehensive collection of calculators for finance, health, lifestyle, and more.',
+  title: 'Top 100 Calculators - Free Online Calculators',
+  description: 'The 100 most-used online calculators for finance, health, math, and more. Clean, fast, and accessible.',
 };
 
 export default function RootLayout({
