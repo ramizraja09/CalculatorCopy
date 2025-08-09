@@ -5,7 +5,6 @@ import { useState, useMemo, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { calculators } from '@/lib/calculators';
 import CalculatorCard from '@/components/calculator-card';
-import SuggestionTool from '@/components/suggestion-tool';
 import { useFavorites } from '@/hooks/use-favorites';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
@@ -42,7 +41,7 @@ export default function Home() {
             <Skeleton className="h-12 w-1/2 mx-auto" />
             <Skeleton className="h-6 w-3/4 mx-auto" />
         </div>
-        <Skeleton className="h-96 w-full max-w-4xl mx-auto" />
+        
          <div className="space-y-4">
             <div className="flex flex-col md:flex-row gap-4 items-center">
                 <Skeleton className="h-10 w-full" />
@@ -66,10 +65,6 @@ export default function Home() {
         <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto">
           Your central hub for calculations. Fast, accurate, and easy-to-use tools for everyday needs.
         </p>
-      </div>
-
-      <div className="max-w-4xl mx-auto">
-        <SuggestionTool />
       </div>
 
       <div className="space-y-4">
