@@ -28,6 +28,29 @@ import SunAngleCalculator from '@/components/calculators/sun-angle-calculator';
 import TravelTimeCalculator from '@/components/calculators/travel-time-calculator';
 import DistanceCalculator from '@/components/calculators/distance-calculator';
 import CostOfLivingCalculator from '@/components/calculators/cost-of-living-calculator';
+import RetirementSavingsCalculator from '@/components/calculators/retirement-savings-calculator';
+import InflationCalculator from '@/components/calculators/inflation-calculator';
+import IncomeTaxCalculator from '@/components/calculators/income-tax-calculator';
+import SalaryCalculator from '@/components/calculators/salary-calculator';
+import SalesTaxCalculator from '@/components/calculators/sales-tax-calculator';
+import CreditCardPayoffCalculator from '@/components/calculators/credit-card-payoff-calculator';
+import DebtSnowballCalculator from '@/components/calculators/debt-snowball-calculator';
+import RefinanceCalculator from '@/components/calculators/refinance-calculator';
+import AprApyCalculator from '@/components/calculators/apr-apy-calculator';
+import RoiCalculator from '@/components/calculators/roi-calculator';
+import TvmCalculator from '@/components/calculators/tvm-calculator';
+import SavingsGoalCalculator from '@/components/calculators/savings-goal-calculator';
+import InvestmentCalculator from '@/components/calculators/investment-calculator';
+import Four01kCalculator from '@/components/calculators/401k-calculator';
+import BudgetCalculator from '@/components/calculators/budget-calculator';
+import LeaseCalculator from '@/components/calculators/lease-calculator';
+import CurrencyConverter from '@/components/calculators/currency-converter';
+import PaycheckCalculator from '@/components/calculators/paycheck-calculator';
+import NetWorthCalculator from '@/components/calculators/net-worth-calculator';
+import EmergencyFundCalculator from '@/components/calculators/emergency-fund-calculator';
+import CollegeSavingsCalculator from '@/components/calculators/college-savings-calculator';
+import HomeAffordabilityCalculator from '@/components/calculators/home-affordability-calculator';
+import DiscountCalculator from '@/components/calculators/discount-calculator';
 
 type CalculatorClientPageProps = {
   calculator: Omit<Calculator, 'icon'>;
@@ -51,7 +74,29 @@ const calculatorComponents: { [key: string]: React.ComponentType<any> } = {
   'travel-time-calculator': TravelTimeCalculator,
   'distance-calculator': DistanceCalculator,
   'cost-of-living-calculator': CostOfLivingCalculator,
-  // Other calculators will be added here
+  'retirement-savings-calculator': RetirementSavingsCalculator,
+  'inflation-calculator': InflationCalculator,
+  'income-tax-calculator': IncomeTaxCalculator,
+  'salary-calculator': SalaryCalculator,
+  'sales-tax-calculator': SalesTaxCalculator,
+  'credit-card-payoff-calculator': CreditCardPayoffCalculator,
+  'debt-snowball-calculator': DebtSnowballCalculator,
+  'refinance-calculator': RefinanceCalculator,
+  'apr-apy-calculator': AprApyCalculator,
+  'roi-calculator': RoiCalculator,
+  'tvm-calculator': TvmCalculator,
+  'savings-goal-calculator': SavingsGoalCalculator,
+  'investment-calculator': InvestmentCalculator,
+  '401k-calculator': Four01kCalculator,
+  'budget-calculator': BudgetCalculator,
+  'lease-calculator': LeaseCalculator,
+  'currency-converter': CurrencyConverter,
+  'paycheck-calculator': PaycheckCalculator,
+  'net-worth-calculator': NetWorthCalculator,
+  'emergency-fund-calculator': EmergencyFundCalculator,
+  'college-savings-calculator': CollegeSavingsCalculator,
+  'home-affordability-calculator': HomeAffordabilityCalculator,
+  'discount-calculator': DiscountCalculator,
 };
 
 const PageSkeleton = ({ calculator }: { calculator: Omit<Calculator, 'icon'> }) => (
