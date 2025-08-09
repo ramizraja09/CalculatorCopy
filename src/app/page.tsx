@@ -11,15 +11,10 @@ import { Switch } from '@/components/ui/switch';
 import { Search } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
-export default function Home() {
+function HomePageContent() {
   const [searchTerm, setSearchTerm] = useState('');
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
   const { favorites, toggleFavorite, isLoaded } = useFavorites();
-  const [isClient, setIsClient] = useState(false);
-
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
 
   const filteredCalculators = useMemo(() => {
     return calculators.filter(calculator => {
@@ -27,39 +22,17 @@ export default function Home() {
                             calculator.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
                             calculator.description.toLowerCase().includes(searchTerm.toLowerCase());
       
-      if (isClient && showFavoritesOnly) {
+      if (showFavoritesOnly) {
           return matchesSearch && favorites.includes(calculator.slug);
       }
 
       return matchesSearch;
     });
-  }, [searchTerm, showFavoritesOnly, favorites, isClient]);
+  }, [searchTerm, showFavoritesOnly, favorites]);
 
-  const PageSkeleton = () => (
-    <div className="container max-w-screen-2xl mx-auto p-4 md:p-8 space-y-8">
-        <div className="text-center space-y-4">
-            <Skeleton className="h-12 w-1/2 mx-auto" />
-            <Skeleton className="h-6 w-3/4 mx-auto" />
-        </div>
-        
-         <div className="space-y-4">
-            <div className="flex flex-col md:flex-row gap-4 items-center">
-                <Skeleton className="h-10 w-full" />
-                <Skeleton className="h-10 w-48" />
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                {[...Array(8)].map((_, i) => <Skeleton key={i} className="h-64 w-full" />)}
-            </div>
-        </div>
-    </div>
-  );
-
-  if (!isClient) {
-    return <PageSkeleton />;
-  }
 
   return (
-    <div className="container max-w-screen-2xl mx-auto p-4 md:p-8 space-y-8">
+     <div className="container max-w-screen-2xl mx-auto p-4 md:p-8 space-y-8">
       <div className="text-center space-y-4">
         <h1 className="text-4xl md:text-6xl font-bold font-headline text-foreground">top100calculators</h1>
         <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto">
@@ -111,5 +84,39 @@ export default function Home() {
         )}
       </div>
     </div>
+  )
+}
+
+
+export default function Home() {
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  const PageSkeleton = () => (
+    <div className="container max-w-screen-2xl mx-auto p-4 md:p-8 space-y-8">
+        <div className="text-center space-y-4">
+            <Skeleton className="h-12 w-1/2 mx-auto" />
+            <Skeleton className="h-6 w-3/4 mx-auto" />
+        </div>
+        
+         <div className="space-y-4">
+            <div className="flex flex-col md:flex-row gap-4 items-center">
+                <Skeleton className="h-10 w-full" />
+                <Skeleton className="h-10 w-48" />
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {[...Array(8)].map((_, i) => <Skeleton key={i} className="h-64 w-full" />)}
+            </div>
+        </div>
+    </div>
   );
+
+  if (!isClient) {
+    return <PageSkeleton />;
+  }
+
+  return <HomePageContent />;
 }
