@@ -100,6 +100,20 @@ import TimeDurationCalculator from '@/components/calculators/time-duration-calcu
 import CountdownTimer from '@/components/calculators/countdown-timer';
 import StopwatchCalculator from '@/components/calculators/stopwatch-calculator';
 import TimeCardCalculator from '@/components/calculators/time-card-calculator';
+import CssUnitConverter from '@/components/calculators/css-unit-converter';
+import ColorConverter from '@/components/calculators/color-converter';
+import AspectRatioCalculator from '@/components/calculators/aspect-ratio-calculator';
+import TimestampConverter from '@/components/calculators/timestamp-converter';
+import Base64Encoder from '@/components/calculators/base64-encoder';
+import DataTransferTimeCalculator from '@/components/calculators/data-transfer-time-calculator';
+import CronJobGenerator from '@/components/calculators/cron-job-generator';
+import SalaryNegotiationCalculator from '@/components/calculators/salary-negotiation-calculator';
+import JobOfferComparisonCalculator from '@/components/calculators/job-offer-comparison-calculator';
+import FreelanceRateCalculator from '@/components/calculators/freelance-rate-calculator';
+import WallpaperCalculator from '@/components/calculators/wallpaper-calculator';
+import DilutionCalculator from '@/components/calculators/dilution-calculator';
+import OhmsLawCalculator from '@/components/calculators/ohms-law-calculator';
+
 type CalculatorClientPageProps = {
   calculator: Omit<Calculator, 'icon'>;
 };
@@ -195,6 +209,19 @@ const calculatorComponents: { [key: string]: React.ComponentType<any> } = {
   'countdown-timer': CountdownTimer,
   'stopwatch-calculator': StopwatchCalculator,
   'time-card-calculator': TimeCardCalculator,
+  'css-unit-converter': CssUnitConverter,
+  'color-converter': ColorConverter,
+  'aspect-ratio-calculator': AspectRatioCalculator,
+  'timestamp-converter': TimestampConverter,
+  'base64-encoder': Base64Encoder,
+  'data-transfer-time-calculator': DataTransferTimeCalculator,
+  'cron-job-generator': CronJobGenerator,
+  'salary-negotiation-calculator': SalaryNegotiationCalculator,
+  'job-offer-comparison-calculator': JobOfferComparisonCalculator,
+  'freelance-rate-calculator': FreelanceRateCalculator,
+  'wallpaper-calculator': WallpaperCalculator,
+  'dilution-calculator': DilutionCalculator,
+  'ohms-law-calculator': OhmsLawCalculator,
 };
 
 const PageSkeleton = ({ calculator }: { calculator: Omit<Calculator, 'icon'> }) => (

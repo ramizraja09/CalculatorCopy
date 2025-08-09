@@ -1,5 +1,5 @@
 import type { ComponentType } from 'react';
-import { PiggyBank, Car, Utensils, HeartPulse, Percent, Home, BrainCircuit, GraduationCap, TrendingUp, Footprints, Scale, Calculator, Calendar, Repeat, Atom, FlaskConical, Beaker, Ruler, Clock, Landmark, FileText, Wallet, Receipt, CreditCard, Recycle, Banknote, CandlestickChart, Briefcase, DraftingCompass, Cigarette, Droplets, Sun, Shirt, Building, Shovel, Box, Weight, Map, BookOpen, Beer, Dna, Leaf, Zap, Sigma, Coins, Award, Baby, UserCheck, Plane, ShoppingCart } from 'lucide-react';
+import { PiggyBank, Car, Utensils, HeartPulse, Percent, Home, BrainCircuit, GraduationCap, TrendingUp, Footprints, Scale, Calculator, Calendar, Repeat, Atom, FlaskConical, Beaker, Ruler, Clock, Landmark, FileText, Wallet, Receipt, CreditCard, Recycle, Banknote, CandlestickChart, Briefcase, DraftingCompass, Cigarette, Droplets, Sun, Shirt, Building, Shovel, Box, Weight, Map, BookOpen, Beer, Dna, Leaf, Zap, Sigma, Coins, Award, Baby, UserCheck, Plane, ShoppingCart, TestTube2, Ratio, Code, Timer, Binary, Server, BriefcaseMedical, Handshake, Target, SlidersHorizontal, Settings, PaintRoller, Cable, CircuitBoard, Wallpaper } from 'lucide-react';
 
 export type Calculator = {
   name: string;
@@ -503,77 +503,6 @@ export const calculators: Calculator[] = [
     category: 'Math',
     icon: Repeat,
   },
-  // Conversions (10)
-  {
-    name: 'Unit Converter',
-    slug: 'unit-converter',
-    description: 'Convert between various units of measurement for length, mass, temperature, and more.',
-    category: 'Conversions',
-    icon: Repeat,
-  },
-  {
-    name: 'Cooking Conversion Calculator',
-    slug: 'cooking-conversion-calculator',
-    description: 'Convert cooking units like cups, tablespoons, and ounces.',
-    category: 'Conversions',
-    icon: Utensils,
-  },
-  {
-    name: 'Temperature Converter',
-    slug: 'temperature-converter',
-    description: 'Convert temperatures between Celsius, Fahrenheit, and Kelvin.',
-    category: 'Conversions',
-    icon: FlaskConical,
-  },
-  {
-    name: 'Length Converter',
-    slug: 'length-converter',
-    description: 'Convert between different units of length (e.g., meters, feet, miles).',
-    category: 'Conversions',
-    icon: Ruler,
-  },
-  {
-    name: 'Weight/Mass Converter',
-    slug: 'weight-mass-converter',
-    description: 'Convert between different units of weight (e.g., kilograms, pounds, ounces).',
-    category: 'Conversions',
-    icon: Weight,
-  },
-  {
-    name: 'Time Zone Converter',
-    slug: 'time-zone-converter',
-    description: 'Convert time between different time zones around the world.',
-    category: 'Conversions',
-    icon: Clock,
-  },
-  {
-    name: 'Data Storage Converter',
-    slug: 'data-storage-converter',
-    description: 'Convert between different units of digital data (e.g., bits, bytes, KB, GB).',
-    category: 'Conversions',
-    icon: Box,
-  },
-  {
-    name: 'Speed Converter',
-    slug: 'speed-converter',
-    description: 'Convert between different units of speed (e.g., mph, km/h, knots).',
-    category: 'Conversions',
-    icon: Footprints,
-  },
-  {
-    name: 'Fuel Economy Converter',
-    slug: 'fuel-economy-converter',
-    description: 'Convert fuel efficiency units (e.g., MPG, L/100km).',
-    category: 'Conversions',
-    icon: Car,
-  },
-  {
-    name: 'Clothing Size Converter',
-    slug: 'clothing-size-converter',
-    description: 'Convert international clothing sizes for men, women, and children.',
-    category: 'Conversions',
-    icon: Shirt,
-  },
   // Time & Date (10)
   {
     name: 'Age Calculator',
@@ -645,7 +574,7 @@ export const calculators: Calculator[] = [
     category: 'Time & Date',
     icon: Briefcase,
   },
-  // Everyday Utilities (10)
+  // Everyday Utilities (10 -> 8)
   {
     name: 'Tip Calculator',
     slug: 'tip-calculator',
@@ -666,27 +595,6 @@ export const calculators: Calculator[] = [
     description: 'Calculate your Grade Point Average based on grades and credit hours.',
     category: 'Everyday Utilities',
     icon: GraduationCap,
-  },
-  {
-    name: 'Concrete Calculator',
-    slug: 'concrete-calculator',
-    description: 'Estimate the amount of concrete you need for a slab, footing, or post.',
-    category: 'Everyday Utilities',
-    icon: Shovel,
-  },
-  {
-    name: 'Paint Calculator',
-    slug: 'paint-calculator',
-    description: 'Estimate how much paint you need to cover a certain area.',
-    category: 'Everyday Utilities',
-    icon: Building,
-  },
-  {
-    name: 'Plant Spacing Calculator',
-    slug: 'plant-spacing-calculator',
-    description: 'Calculate how many plants you can fit in a given garden area.',
-    category: 'Everyday Utilities',
-    icon: Leaf,
   },
   {
     name: 'Sun Angle Calculator',
@@ -715,6 +623,122 @@ export const calculators: Calculator[] = [
     description: 'Compare the cost of living between two cities.',
     category: 'Everyday Utilities',
     icon: Building,
+  },
+  {
+    name: 'Dilution Calculator',
+    slug: 'dilution-calculator',
+    description: 'Calculate how to dilute a concentrated solution to a desired final volume or concentration.',
+    category: 'Everyday Utilities',
+    icon: TestTube2,
+  },
+  // Home & Garden (4)
+   {
+    name: 'Concrete Calculator',
+    slug: 'concrete-calculator',
+    description: 'Estimate the amount of concrete you need for a slab, footing, or post.',
+    category: 'Home & Garden',
+    icon: Shovel,
+  },
+  {
+    name: 'Paint Calculator',
+    slug: 'paint-calculator',
+    description: 'Estimate how much paint you need to cover a certain area.',
+    category: 'Home & Garden',
+    icon: PaintRoller,
+  },
+  {
+    name: 'Plant Spacing Calculator',
+    slug: 'plant-spacing-calculator',
+    description: 'Calculate how many plants you can fit in a given garden area.',
+    category: 'Home & Garden',
+    icon: Leaf,
+  },
+  {
+    name: 'Wallpaper Calculator',
+    slug: 'wallpaper-calculator',
+    description: 'Determine how many rolls of wallpaper are needed for a room.',
+    category: 'Home & Garden',
+    icon: Wallpaper,
+  },
+  // Electronics (2)
+  {
+    name: 'Ohm\'s Law Calculator',
+    slug: 'ohms-law-calculator',
+    description: 'Calculate Voltage, Current, Resistance, or Power using Ohm\'s Law.',
+    category: 'Electronics',
+    icon: CircuitBoard,
+  },
+  {
+    name: 'Data Transfer Time Calculator',
+    slug: 'data-transfer-time-calculator',
+    description: 'Estimate how long it will take to transfer a file over a specific network speed.',
+    category: 'Electronics',
+    icon: Server,
+  },
+  // Developer (5)
+  {
+    name: 'CSS Unit Converter',
+    slug: 'css-unit-converter',
+    description: 'Convert between px, em, rem, %, and viewport units for responsive web design.',
+    category: 'Developer',
+    icon: Code,
+  },
+  {
+    name: 'Color Converter',
+    slug: 'color-converter',
+    description: 'Convert color codes between HEX, RGB, and HSL formats.',
+    category: 'Developer',
+    icon: SlidersHorizontal,
+  },
+  {
+    name: 'Aspect Ratio Calculator',
+    slug: 'aspect-ratio-calculator',
+    description: 'Calculate dimensions for images or videos to maintain a specific aspect ratio.',
+    category: 'Developer',
+    icon: Ratio,
+  },
+  {
+    name: 'Timestamp Converter',
+    slug: 'timestamp-converter',
+    description: 'Convert Unix timestamps to human-readable dates and back.',
+    category: 'Developer',
+    icon: Timer,
+  },
+  {
+    name: 'Base64 Encoder/Decoder',
+    slug: 'base64-encoder',
+    description: 'Encode files or text into Base64 strings and decode them back.',
+    category: 'Developer',
+    icon: Binary,
+  },
+  {
+    name: 'Cron Job Generator',
+    slug: 'cron-job-generator',
+    description: 'Create complex cron job schedules with a user-friendly interface.',
+    category: 'Developer',
+    icon: Settings,
+  },
+  // Career (3)
+  {
+    name: 'Salary Negotiation Calculator',
+    slug: 'salary-negotiation-calculator',
+    description: 'Determine a target salary range based on current pay and market rates.',
+    category: 'Career',
+    icon: Handshake,
+  },
+  {
+    name: 'Job Offer Comparison Calculator',
+    slug: 'job-offer-comparison-calculator',
+    description: 'Compare two job offers side-by-side, including benefits and other factors.',
+    category: 'Career',
+    icon: BriefcaseMedical,
+  },
+  {
+    name: 'Freelance Rate Calculator',
+    slug: 'freelance-rate-calculator',
+    description: 'Determine an hourly or project rate based on your desired salary and expenses.',
+    category: 'Career',
+    icon: Target,
   },
 ];
 
