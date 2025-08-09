@@ -96,15 +96,7 @@ function HomePageContent() {
   )
 }
 
-
-export default function Home() {
-  const [isClient, setIsClient] = useState(false);
-
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
-
-  const PageSkeleton = () => (
+const PageSkeleton = () => (
     <div className="container max-w-screen-2xl mx-auto p-4 md:p-8 space-y-8">
         <div className="text-center space-y-4">
             <Skeleton className="h-12 w-1/2 mx-auto" />
@@ -123,9 +115,12 @@ export default function Home() {
     </div>
   );
 
-  if (!isClient) {
-    return <PageSkeleton />;
-  }
+export default function Home() {
+  const [isClient, setIsClient] = useState(false);
 
-  return <HomePageContent />;
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  return isClient ? <HomePageContent /> : <PageSkeleton />;
 }

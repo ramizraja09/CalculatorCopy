@@ -131,7 +131,6 @@ function CalculatorsPage() {
   )
 }
 
-// This is the component that will be rendered by Next.js
 export default function CalculatorsPageWrapper() {
     const [isClient, setIsClient] = useState(false);
     useEffect(() => {
