@@ -18,7 +18,7 @@ type CalculatorClientPageProps = {
   calculator: Omit<Calculator, 'icon'>;
 };
 
-const calculatorComponents: { [key: string]: React.ComponentType } = {
+const calculatorComponents: { [key: string]: React.ComponentType<any> } = {
   'mortgage-calculator': MortgageCalculator,
   'loan-calculator': LoanCalculator,
   'car-loan-calculator': CarLoanCalculator,
