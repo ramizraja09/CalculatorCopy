@@ -13,7 +13,7 @@ export default function Header() {
         </Link>
         <nav className="hidden md:flex items-center space-x-4 lg:space-x-6 text-sm">
             <Button variant="link" asChild className="text-muted-foreground hover:text-primary px-0">
-                <Link href="/calculators">All</Link>
+                <Link href="/calculators">All Calculators</Link>
             </Button>
             {calculatorCategories.map((category) => (
                <Button variant="link" asChild key={category} className="text-muted-foreground hover:text-primary px-0">
