@@ -1,6 +1,7 @@
 
 
 
+
 "use client";
 
 import { useState, useEffect, Suspense } from 'react';
@@ -72,7 +73,26 @@ import WilksScoreCalculator from '@/components/calculators/wilks-score-calculato
 import ApftCalculator from '@/components/calculators/apft-calculator';
 import BsaCalculator from '@/components/calculators/bsa-calculator';
 import ChildHeightPredictor from '@/components/calculators/child-height-predictor';
-
+import BasicCalculator from '@/components/calculators/basic-calculator';
+import PercentageCalculator from '@/components/calculators/percentage-calculator';
+import FractionCalculator from '@/components/calculators/fraction-calculator';
+import ScientificCalculator from '@/components/calculators/scientific-calculator';
+import RandomNumberGenerator from '@/components/calculators/random-number-generator';
+import StandardDeviationCalculator from '@/components/calculators/standard-deviation-calculator';
+import AreaCalculator from '@/components/calculators/area-calculator';
+import VolumeCalculator from '@/components/calculators/volume-calculator';
+import PrimeNumberCalculator from '@/components/calculators/prime-number-calculator';
+import GcdCalculator from '@/components/calculators/gcd-calculator';
+import LcmCalculator from '@/components/calculators/lcm-calculator';
+import LogarithmCalculator from '@/components/calculators/logarithm-calculator';
+import PythagoreanTheoremCalculator from '@/components/calculators/pythagorean-theorem-calculator';
+import QuadraticEquationSolver from '@/components/calculators/quadratic-equation-solver';
+import FactorialCalculator from '@/components/calculators/factorial-calculator';
+import MatrixCalculator from '@/components/calculators/matrix-calculator';
+import MeanMedianModeCalculator from '@/components/calculators/mean-median-mode-calculator';
+import NumberSequenceCalculator from '@/components/calculators/number-sequence-calculator';
+import RootCalculator from '@/components/calculators/root-calculator';
+import CombinationsPermutationsCalculator from '@/components/calculators/combinations-permutations-calculator';
 type CalculatorClientPageProps = {
   calculator: Omit<Calculator, 'icon'>;
 };
@@ -138,6 +158,26 @@ const calculatorComponents: { [key: string]: React.ComponentType<any> } = {
   'apft-calculator': ApftCalculator,
   'bsa-calculator': BsaCalculator,
   'child-height-predictor': ChildHeightPredictor,
+  'basic-calculator': BasicCalculator,
+  'percentage-calculator': PercentageCalculator,
+  'fraction-calculator': FractionCalculator,
+  'scientific-calculator': ScientificCalculator,
+  'random-number-generator': RandomNumberGenerator,
+  'standard-deviation-calculator': StandardDeviationCalculator,
+  'area-calculator': AreaCalculator,
+  'volume-calculator': VolumeCalculator,
+  'prime-number-calculator': PrimeNumberCalculator,
+  'gcd-calculator': GcdCalculator,
+  'lcm-calculator': LcmCalculator,
+  'logarithm-calculator': LogarithmCalculator,
+  'pythagorean-theorem-calculator': PythagoreanTheoremCalculator,
+  'quadratic-equation-solver': QuadraticEquationSolver,
+  'factorial-calculator': FactorialCalculator,
+  'matrix-calculator': MatrixCalculator,
+  'mean-median-mode-calculator': MeanMedianModeCalculator,
+  'number-sequence-calculator': NumberSequenceCalculator,
+  'root-calculator': RootCalculator,
+  'combinations-permutations-calculator': CombinationsPermutationsCalculator,
 };
 
 const PageSkeleton = ({ calculator }: { calculator: Omit<Calculator, 'icon'> }) => (
