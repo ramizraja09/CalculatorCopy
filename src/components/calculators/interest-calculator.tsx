@@ -14,7 +14,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 
 const formSchema = z.object({
   principal: z.number().min(0.01, 'Principal must be positive'),
-  rate: z.number().min(0.01, 'Interest rate must be positive'),
+  rate: z.number().min(0, 'Interest rate cannot be negative'),
   term: z.number().int().min(1, 'Term must be at least 1'),
   termUnit: z.enum(['years', 'months']),
   interestType: z.enum(['simple', 'compound']),

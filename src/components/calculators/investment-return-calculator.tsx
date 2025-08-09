@@ -50,8 +50,8 @@ export default function InvestmentReturnCalculator() {
       roi,
       cagr: isFinite(cagr) ? cagr : 0,
       chartData: [
-        { name: 'Initial Investment', value: initialInvestment },
-        { name: 'Final Value', value: finalValue },
+        { name: 'Initial', value: initialInvestment },
+        { name: 'Return', value: totalReturn > 0 ? totalReturn : 0 },
       ],
       error: null,
     });
@@ -122,12 +122,14 @@ export default function InvestmentReturnCalculator() {
                         <h4 className="font-semibold mb-4 text-center">Investment Growth</h4>
                         <div className="h-60">
                           <ResponsiveContainer width="100%" height="100%">
-                            <BarChart data={results.chartData} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
+                            <BarChart data={[{ name: 'Value', initial: results.chartData[0].value, final: results.chartData[0].value + results.chartData[1].value }]} layout="vertical" margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
                               <CartesianGrid strokeDasharray="3 3" />
-                              <XAxis dataKey="name" />
-                              <YAxis tickFormatter={(value) => formatCurrency(value)} />
+                              <XAxis type="number" tickFormatter={(value) => formatCurrency(value)}/>
+                              <YAxis type="category" dataKey="name" hide />
                               <Tooltip formatter={(value: number) => formatCurrency(value)} />
-                              <Bar dataKey="value" fill="hsl(var(--primary))" />
+                              <Legend />
+                              <Bar dataKey="initial" stackId="a" fill="hsl(var(--primary))" name="Initial Investment" />
+                              <Bar dataKey="final" stackId="a" fill="hsl(var(--chart-2))" name="Final Value" />
                             </BarChart>
                           </ResponsiveContainer>
                         </div>

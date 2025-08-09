@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import type { Calculator } from '@/lib/calculators';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
 import FavoriteButton from '@/components/favorite-button';
@@ -33,43 +33,54 @@ const calculatorComponents: { [key: string]: React.ComponentType<any> } = {
   // Other calculators will be added here
 };
 
+const PageSkeleton = ({ calculator }: { calculator: Omit<Calculator, 'icon'> }) => (
+    <div className="container max-w-4xl mx-auto p-4 md:p-8 space-y-6">
+        <Link href="/" className="flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors">
+            <ArrowLeft className="h-4 w-4" />
+            Back to all calculators
+        </Link>
+        <Card>
+            <CardHeader>
+                <div className="flex justify-between items-start">
+                    <div>
+                      <div className="flex items-center gap-2 mb-2">
+                          <Badge variant="secondary">{calculator.category}</Badge>
+                      </div>
+                      <CardTitle className="font-headline text-3xl md:text-4xl">{calculator.name}</CardTitle>
+                      <CardDescription className="mt-2 text-lg">{calculator.description}</CardDescription>
+                    </div>
+                     <div className="flex items-center gap-2">
+                        <FavoriteButton slug={calculator.slug} />
+                        <Button variant="outline" size="icon" aria-label="Share">
+                            <Share2 className="h-5 w-5" />
+                        </Button>
+                    </div>
+                </div>
+            </CardHeader>
+            <CardContent>
+                <div className="mt-6 border rounded-lg p-4 md:p-6">
+                    <div className="flex items-center justify-center h-60 bg-muted/50 rounded-lg border border-dashed">
+                        <p className="text-sm text-muted-foreground">Loading Calculator...</p>
+                    </div>
+                </div>
+            </CardContent>
+            <CardFooter className="text-xs text-muted-foreground justify-end">
+              <p>Loading...</p>
+            </CardFooter>
+        </Card>
+    </div>
+);
 
-export default function CalculatorClientPage({ calculator }: CalculatorClientPageProps) {
+
+function CalculatorPageContent({ calculator }: CalculatorClientPageProps) {
   const [lastUpdated, setLastUpdated] = useState('');
-  const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
-    // This now runs only on the client, after hydration
-    setIsClient(true);
     setLastUpdated(new Date().toISOString().split('T')[0]);
   }, []);
-
-  if (!isClient) {
-     return (
-        <div className="container max-w-4xl mx-auto p-4 md:p-8 space-y-6">
-            <Link href="/" className="flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors">
-                <ArrowLeft className="h-4 w-4" />
-                Back to all calculators
-            </Link>
-            <Card>
-                <CardHeader>
-                    {/* Skeleton for header */}
-                </CardHeader>
-                <CardContent>
-                    <div className="mt-6 border rounded-lg p-4 md:p-6">
-                        <div className="flex items-center justify-center h-60 bg-muted/50 rounded-lg border border-dashed">
-                            <p className="text-sm text-muted-foreground">Loading Calculator...</p>
-                        </div>
-                    </div>
-                </CardContent>
-            </Card>
-        </div>
-    );
-  }
-
+  
   const CalculatorComponent = calculatorComponents[calculator.slug];
   
-
   return (
     <div className="container max-w-4xl mx-auto p-4 md:p-8 space-y-6">
         <Link href="/" className="flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors">
@@ -201,4 +212,13 @@ export default function CalculatorClientPage({ calculator }: CalculatorClientPag
         </Card>
     </div>
   );
+}
+
+export default function CalculatorClientPage({ calculator }: CalculatorClientPageProps) {
+  const [isClient, setIsClient] = useState(false);
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  return isClient ? <CalculatorPageContent calculator={calculator} /> : <PageSkeleton calculator={calculator} />;
 }

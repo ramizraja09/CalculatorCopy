@@ -17,7 +17,7 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Responsi
 const formSchema = z.object({
   initialPrincipal: z.number().min(0, 'Initial principal must be non-negative'),
   monthlyContribution: z.number().min(0, 'Monthly contribution must be non-negative'),
-  interestRate: z.number().min(0.01, 'Interest rate must be positive'),
+  interestRate: z.number().min(0, 'Interest rate must be non-negative'),
   years: z.number().int().min(1, 'Must invest for at least 1 year'),
   compoundFrequency: z.enum(['annually', 'semiannually', 'quarterly', 'monthly']),
 });
@@ -50,51 +50,41 @@ export default function CompoundInterestCalculator() {
     };
     const n = compoundMap[compoundFrequency];
     const schedule = [];
-    let futureValue = initialPrincipal;
-    let totalInterest = 0;
-    let totalContributions = initialPrincipal;
-    
-    // Calculate future value of the initial principal
-    const principalFutureValue = initialPrincipal * Math.pow(1 + annualRate / n, n * years);
-    
-    // Calculate future value of the series of contributions
-    const monthlyRate = annualRate / 12;
-    let contributionFutureValue = 0;
     let balance = initialPrincipal;
+    let totalContributions = initialPrincipal;
+    let totalInterest = 0;
+    
+    schedule.push({
+      year: 0,
+      endBalance: initialPrincipal,
+      totalContributions: initialPrincipal,
+      totalInterest: 0,
+    });
     
     for (let year = 1; year <= years; year++) {
-      let yearEndBalance = balance;
+      let yearStartBalance = balance;
       for (let month = 1; month <= 12; month++) {
-        // Add contribution at the beginning of the month
-        yearEndBalance += monthlyContribution;
-        if (month === 1 && year > 1) { // Add yearly contribution at start of new year
-             totalContributions += monthlyContribution * 12;
-        } else if (year === 1) {
-             totalContributions += monthlyContribution;
-        }
+        yearStartBalance += monthlyContribution;
       }
-
-      const interestForYear = (yearEndBalance) * Math.pow(1 + annualRate / n, n) - yearEndBalance;
-      yearEndBalance += interestForYear;
-      balance = yearEndBalance;
-
-      const totalInterestForYear = balance - totalContributions;
+      
+      const interestForYear = yearStartBalance * (Math.pow(1 + annualRate / n, n) - 1);
+      balance = yearStartBalance + interestForYear;
+      
+      totalContributions += monthlyContribution * 12;
+      const currentTotalInterest = balance - totalContributions;
 
       schedule.push({
         year,
         endBalance: balance,
         totalContributions,
-        totalInterest: totalInterestForYear > 0 ? totalInterestForYear : 0,
+        totalInterest: currentTotalInterest > 0 ? currentTotalInterest : 0,
       });
     }
 
-    futureValue = balance;
-    totalInterest = futureValue - (initialPrincipal + monthlyContribution * years * 12);
-
     setResults({
-      finalBalance: futureValue,
-      totalContributions: initialPrincipal + monthlyContribution * years * 12,
-      totalInterest,
+      finalBalance: balance,
+      totalContributions,
+      totalInterest: balance - totalContributions,
       schedule,
       error: null,
     });
@@ -178,14 +168,14 @@ export default function CompoundInterestCalculator() {
                         <h4 className="font-semibold mb-4">Investment Growth Over Time</h4>
                         <div className="h-60">
                           <ResponsiveContainer width="100%" height="100%">
-                            <LineChart data={[{year: 0, endBalance: results.totalContributions - results.totalInterest},...results.schedule]} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
+                            <LineChart data={results.schedule} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
                               <CartesianGrid strokeDasharray="3 3" />
                               <XAxis dataKey="year" />
                               <YAxis tickFormatter={(value) => formatCurrency(value)} />
-                              <Tooltip formatter={(value: number) => formatCurrency(value)} />
+                              <Tooltip formatter={(value: number, name: string) => (name === "Total Contributions" || name === "Total Balance") ? formatCurrency(value) : value } />
                               <Legend />
-                              <Line type="monotone" dataKey="endBalance" name="Total Balance" stroke="#8884d8" />
-                              <Line type="monotone" dataKey="totalContributions" name="Total Contributions" stroke="#82ca9d" />
+                              <Line type="monotone" dataKey="endBalance" name="Total Balance" stroke="hsl(var(--primary))" />
+                              <Line type="monotone" dataKey="totalContributions" name="Total Contributions" stroke="hsl(var(--secondary-foreground))" />
                             </LineChart>
                           </ResponsiveContainer>
                         </div>
@@ -206,7 +196,7 @@ export default function CompoundInterestCalculator() {
                                       </TableRow>
                                   </TableHeader>
                                   <TableBody>
-                                      {results.schedule.map((row: any) => (
+                                      {results.schedule.slice(1).map((row: any) => (
                                           <TableRow key={row.year}>
                                               <TableCell>{row.year}</TableCell>
                                               <TableCell className="text-right">{formatCurrency(row.totalContributions)}</TableCell>
