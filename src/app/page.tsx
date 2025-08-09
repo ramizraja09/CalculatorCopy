@@ -16,10 +16,10 @@ export default function Home() {
   const [searchTerm, setSearchTerm] = useState('');
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
   const { favorites, toggleFavorite, isLoaded } = useFavorites();
-  const [isClient, setIsClient] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
-    setIsClient(true);
+    setIsMounted(true);
   }, []);
 
   const filteredCalculators = useMemo(() => {
@@ -35,7 +35,7 @@ export default function Home() {
   }, [searchTerm, showFavoritesOnly, favorites]);
 
   const PageSkeleton = () => (
-    <div className="container max-w-screen-2xl mx-auto p-4 md:p-8 space-y-8 animate-pulse">
+    <div className="container max-w-screen-2xl mx-auto p-4 md:p-8 space-y-8">
         <div className="text-center space-y-4">
             <Skeleton className="h-12 w-1/2 mx-auto" />
             <Skeleton className="h-6 w-3/4 mx-auto" />
@@ -53,7 +53,7 @@ export default function Home() {
     </div>
   );
 
-  if (!isLoaded || !isClient) {
+  if (!isLoaded || !isMounted) {
     return <PageSkeleton />;
   }
 
