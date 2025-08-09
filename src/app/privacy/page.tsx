@@ -1,6 +1,16 @@
+
+"use client";
+
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useState, useEffect } from 'react';
 
 export default function PrivacyPage() {
+  const [lastUpdated, setLastUpdated] = useState('');
+
+  useEffect(() => {
+    setLastUpdated(new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }));
+  }, []);
+
   return (
     <div className="container max-w-4xl mx-auto p-4 md:p-8">
       <Card>
@@ -8,7 +18,7 @@ export default function PrivacyPage() {
           <CardTitle className="font-headline text-3xl md:text-4xl">Privacy Policy</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4 text-muted-foreground">
-          <p><strong>Last Updated:</strong> {new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+          {lastUpdated && <p><strong>Last Updated:</strong> {lastUpdated}</p>}
 
           <p>
             Your privacy is important to us. It is top100calculators' policy to respect your privacy regarding any information we may collect from you across our website.

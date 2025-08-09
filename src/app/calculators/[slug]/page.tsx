@@ -1,3 +1,6 @@
+
+"use client";
+
 import { calculators } from '@/lib/calculators';
 import { notFound } from 'next/navigation';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
@@ -7,6 +10,7 @@ import Link from 'next/link';
 import { ArrowLeft, Share2 } from 'lucide-react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Button } from '@/components/ui/button';
+import { useState, useEffect } from 'react';
 
 type CalculatorPageProps = {
   params: {
@@ -14,12 +18,14 @@ type CalculatorPageProps = {
   };
 };
 
+// This is still here for metadata generation at build time.
 export async function generateStaticParams() {
   return calculators.map((calculator) => ({
     slug: calculator.slug,
   }));
 }
 
+// This is still here for metadata generation at build time.
 export async function generateMetadata({ params }: CalculatorPageProps) {
   const calculator = calculators.find((c) => c.slug === params.slug);
   if (!calculator) {
@@ -33,8 +39,14 @@ export async function generateMetadata({ params }: CalculatorPageProps) {
   };
 }
 
+
 export default function CalculatorPage({ params }: CalculatorPageProps) {
   const calculator = calculators.find((c) => c.slug === params.slug);
+  const [lastUpdated, setLastUpdated] = useState('');
+
+  useEffect(() => {
+    setLastUpdated(new Date().toISOString().split('T')[0]);
+  }, []);
 
   if (!calculator) {
     notFound();
@@ -128,7 +140,7 @@ export default function CalculatorPage({ params }: CalculatorPageProps) {
 
             </CardContent>
             <CardFooter className="text-xs text-muted-foreground justify-end">
-              <p>Last Updated: {new Date().toISOString().split('T')[0]} | Formula v1.0</p>
+              {lastUpdated && <p>Last Updated: {lastUpdated} | Formula v1.0</p>}
             </CardFooter>
         </Card>
     </div>
