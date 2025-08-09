@@ -1,29 +1,81 @@
 
 "use client";
 
-import { Card } from '@/components/ui/card';
+import { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
 
 export default function ScientificCalculator() {
+  const [expression, setExpression] = useState('');
+  const [result, setResult] = useState('');
+
+  const handleButtonClick = (value: string) => {
+    if (value === '=') {
+      try {
+        // Replace ^ with ** for exponentiation
+        const evalExpression = expression.replace(/\^/g, '**').replace(/π/g, 'Math.PI').replace(/e/g, 'Math.E');
+        // Using a function constructor for safer evaluation than direct eval()
+        const calculatedResult = new Function('return ' + evalExpression)();
+        setResult(String(calculatedResult));
+      } catch (error) {
+        setResult('Error');
+      }
+    } else if (value === 'C') {
+      setExpression('');
+      setResult('');
+    } else if (value === 'DEL') {
+        setExpression((prev) => prev.slice(0, -1));
+    } else if (value === 'sqrt') {
+        setExpression((prev) => prev + 'Math.sqrt(');
+    } else if (value === 'sin' || value === 'cos' || value === 'tan' || value === 'log' || value === 'ln') {
+        setExpression((prev) => prev + `Math.${value}(`);
+    } else {
+      setExpression((prev) => prev + value);
+    }
+  };
+
+  const buttons = [
+    '(', ')', 'sin', 'cos', 'tan',
+    '7', '8', '9', '/', 'C',
+    '4', '5', '6', '*', 'DEL',
+    '1', '2', '3', '-', 'sqrt',
+    '0', '.', '=', '+', '^',
+    'π', 'e', 'log', 'ln',
+  ];
+
   return (
-    <div className="grid md:grid-cols-2 gap-8">
-      {/* Inputs */}
-      <div className="space-y-4">
-        <h3 className="text-xl font-semibold">Inputs</h3>
-        <Card className="p-4">
-            <div className="flex items-center justify-center h-40 bg-muted/50 rounded-lg border border-dashed">
-                <p className="text-sm text-muted-foreground">A full scientific calculator is a complex component. This feature is coming soon.</p>
+    <Card className="max-w-md mx-auto">
+      <CardContent className="p-4">
+        <div className="bg-muted p-2 rounded-md mb-4 text-right space-y-1">
+            <Input
+                type="text"
+                readOnly
+                value={expression}
+                placeholder="Enter expression"
+                className="text-right text-lg bg-transparent border-0"
+                aria-label="Calculator expression"
+            />
+            <div className="text-2xl font-bold font-mono h-8" aria-live="polite">
+                {result}
             </div>
-        </Card>
-      </div>
-      {/* Results */}
-      <div className="space-y-4">
-        <h3 className="text-xl font-semibold">Results</h3>
-        <Card className="p-4">
-            <div className="flex items-center justify-center h-40 bg-muted/50 rounded-lg border border-dashed">
-            <p className="text-sm text-muted-foreground">Results display coming soon</p>
-            </div>
-        </Card>
-      </div>
-    </div>
+        </div>
+        <div className="grid grid-cols-5 gap-2">
+          {buttons.map((btn) => (
+            <Button
+              key={btn}
+              variant={
+                ['=', 'C', 'DEL'].includes(btn) ? 'destructive' :
+                ['/', '*', '-', '+', '^'].includes(btn) ? 'secondary' : 'outline'
+              }
+              className="text-lg h-14"
+              onClick={() => handleButtonClick(btn)}
+            >
+              {btn === 'sqrt' ? '√' : btn}
+            </Button>
+          ))}
+        </div>
+      </CardContent>
+    </Card>
   );
 }
