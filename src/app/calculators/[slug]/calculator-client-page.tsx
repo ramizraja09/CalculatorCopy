@@ -12,7 +12,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/
 import { Button } from '@/components/ui/button';
 
 type CalculatorClientPageProps = {
-  calculator: Calculator;
+  calculator: Omit<Calculator, 'icon'>;
 };
 
 export default function CalculatorClientPage({ calculator }: CalculatorClientPageProps) {
