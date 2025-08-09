@@ -13,6 +13,7 @@ import { Button } from '@/components/ui/button';
 import MortgageCalculator from '@/components/calculators/mortgage-calculator';
 import LoanCalculator from '@/components/calculators/loan-calculator';
 import CarLoanCalculator from '@/components/calculators/car-loan-calculator';
+import AmortizationCalculator from '@/components/calculators/amortization-calculator';
 
 type CalculatorClientPageProps = {
   calculator: Omit<Calculator, 'icon'>;
@@ -22,6 +23,7 @@ const calculatorComponents: { [key: string]: React.ComponentType<any> } = {
   'mortgage-calculator': MortgageCalculator,
   'loan-calculator': LoanCalculator,
   'car-loan-calculator': CarLoanCalculator,
+  'amortization-calculator': AmortizationCalculator,
   // Other calculators will be added here
 };
 
