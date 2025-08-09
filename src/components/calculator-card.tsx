@@ -38,7 +38,7 @@ export default function CalculatorCard({ calculator, isFavorite, onToggleFavorit
                 }}
                 aria-label={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
             >
-                <Star className={cn('h-5 w-5 transition-all', isFavorite ? 'fill-accent text-accent' : 'text-muted-foreground hover:text-accent')} />
+                <Star className={cn('h-5 w-5 transition-all', isFavorite ? 'fill-accent text-accent' : 'text-muted-foreground/50 hover:text-accent hover:fill-accent')} />
             </Button>
         </CardHeader>
         <CardContent className="flex-grow flex flex-col">

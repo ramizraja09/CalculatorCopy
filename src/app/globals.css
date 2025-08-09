@@ -13,24 +13,24 @@
     --popover: 0 0% 100%;
     --popover-foreground: 240 0% 10%;
 
-    --primary: 211 82% 47%; /* primary #1E88E5 */
+    --primary: 180 29% 50%; /* slate blue #5F9EA0 */
     --primary-foreground: 0 0% 98%;
 
     --secondary: 220 13% 91%; /* subtle UI #F2F4F7 */
     --secondary-foreground: 240 0% 10%;
 
-    --muted: 220 13% 91%;
+    --muted: 0 0% 83%; /* light gray #D3D3D3 */
     --muted-foreground: 240 4% 45%;
 
-    --accent: 220 13% 91%;
-    --accent-foreground: 240 0% 10%;
+    --accent: 16 100% 66%; /* coral #FF7F50 */
+    --accent-foreground: 0 0% 10%;
 
     --destructive: 354 70% 54%; /* error #D72638 */
     --destructive-foreground: 0 0% 98%;
 
     --border: 240 6% 90%;
     --input: 240 6% 90%;
-    --ring: 211 82% 47%;
+    --ring: 180 29% 50%;
     
     --radius: 0.5rem;
     --chart-1: 12 76% 61%;
@@ -50,7 +50,7 @@
     --popover: 240 10% 3.9%;
     --popover-foreground: 0 0% 98%;
 
-    --primary: 211 82% 57%;
+    --primary: 180 29% 60%;
     --primary-foreground: 0 0% 98%;
 
     --secondary: 240 4% 15%;
@@ -59,7 +59,7 @@
     --muted: 240 4% 15%;
     --muted-foreground: 0 0% 63.9%;
 
-    --accent: 240 4% 15%;
+    --accent: 16 100% 76%;
     --accent-foreground: 0 0% 98%;
 
     --destructive: 354 70% 54%;
@@ -67,7 +67,7 @@
 
     --border: 240 4% 15%;
     --input: 240 4% 15%;
-    --ring: 211 82% 57%;
+    --ring: 180 29% 60%;
     --chart-1: 220 70% 50%;
     --chart-2: 160 60% 45%;
     --chart-3: 30 80% 55%;
@@ -81,6 +81,6 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-muted text-foreground;
   }
 }

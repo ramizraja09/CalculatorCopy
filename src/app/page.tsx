@@ -54,7 +54,7 @@ export default function Home() {
   return (
     <div className="container max-w-screen-2xl mx-auto p-4 md:p-8 space-y-8">
       <div className="text-center space-y-4">
-        <h1 className="text-4xl md:text-6xl font-bold font-headline text-primary">top100calculators</h1>
+        <h1 className="text-4xl md:text-6xl font-bold font-headline text-foreground">top100calculators</h1>
         <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto">
           Your central hub for calculations. Fast, accurate, and easy-to-use tools for everyday needs.
         </p>

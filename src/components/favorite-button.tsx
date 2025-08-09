@@ -27,7 +27,7 @@ export default function FavoriteButton({ slug }: FavoriteButtonProps) {
       onClick={() => toggleFavorite(slug)}
       aria-label={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
     >
-      <Star className={cn('h-6 w-6 transition-all', isFavorite ? 'fill-accent text-accent' : 'text-muted-foreground hover:text-accent')} />
+      <Star className={cn('h-6 w-6 transition-all', isFavorite ? 'fill-accent text-accent' : 'text-muted-foreground/50 hover:text-accent hover:fill-accent')} />
     </Button>
   );
 }
