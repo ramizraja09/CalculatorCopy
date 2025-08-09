@@ -86,36 +86,74 @@ export default function CalculatorClientPage({ calculator }: CalculatorClientPag
               {/* Accordion for additional details */}
               <div className="mt-8">
                 <Accordion type="single" collapsible className="w-full">
-                  <AccordionItem value="how-it-works">
-                    <AccordionTrigger>How It Works</AccordionTrigger>
+                  <AccordionItem value="purpose">
+                    <AccordionTrigger>The Tool's Purpose</AccordionTrigger>
                     <AccordionContent>
-                      <p className="text-muted-foreground">
-                        Detailed explanation of the formulas and variables used in the calculation will be provided here.
-                      </p>
+                      <div className="space-y-2 text-muted-foreground">
+                        <p>
+                          The primary purpose of the <strong>{calculator.name}</strong> is to empower users to make informed decisions by providing clear, accurate, and instant calculations. This tool is designed to demystify complex formulas and provide a transparent look into the numbers that affect your life, whether you're planning your finances, managing your health, or working on a home project.
+                        </p>
+                        <p>
+                          Instead of relying on guesswork or performing tedious manual calculations, you can use this calculator to quickly explore different scenarios, understand the impact of various inputs, and gain the confidence to move forward with your plans. Our goal is to make this calculation accessible to everyone, regardless of their background in math or finance.
+                        </p>
+                      </div>
                     </AccordionContent>
                   </AccordionItem>
-                  <AccordionItem value="assumptions">
-                    <AccordionTrigger>Assumptions & Limitations</AccordionTrigger>
+                  <AccordionItem value="who-should-use">
+                    <AccordionTrigger>Who Should Use It / What Scenarios It Fits</AccordionTrigger>
                     <AccordionContent>
-                       <p className="text-muted-foreground">
-                        Any assumptions or limitations of this calculator will be clearly listed here.
-                      </p>
+                       <div className="space-y-4 text-muted-foreground">
+                          <p>This calculator is ideal for:</p>
+                          <ul className="list-disc pl-6 space-y-2">
+                            <li><strong>Individuals planning major life events:</strong> Whether you're a prospective homebuyer trying to understand mortgage payments, a student estimating loan repayments, or a future parent planning for college savings, this tool provides the clarity you need.</li>
+                            <li><strong>Financial planners and advisors:</strong> Quickly run numbers for clients and illustrate the long-term impact of different financial strategies.</li>
+                            <li><strong>Students and educators:</strong> A great educational resource for understanding the real-world application of mathematical and financial concepts in a practical, hands-on way.</li>
+                            <li><strong>Anyone seeking quick financial answers:</strong> If you're comparing loan offers, considering a refinance, or simply curious about how interest rates work, this calculator provides instant, reliable answers without any commitment.</li>
+                          </ul>
+                          <p>It is particularly useful in scenarios like comparing different loan options from banks, budgeting for a new home, or planning a long-term investment strategy.
+                          </p>
+                       </div>
                     </AccordionContent>
                   </AccordionItem>
-                  <AccordionItem value="examples">
-                    <AccordionTrigger>Examples</AccordionTrigger>
+                  <AccordionItem value="inputs-results">
+                    <AccordionTrigger>Summary of Inputs and Results</AccordionTrigger>
                     <AccordionContent>
-                       <p className="text-muted-foreground">
-                        Practical examples demonstrating how to use the calculator will be shown here.
-                      </p>
+                       <div className="space-y-4 text-muted-foreground">
+                        <p>To get the most out of this tool, you will need to provide a few key pieces of information. The results are then calculated instantly based on your entries.</p>
+                        <div className="grid md:grid-cols-2 gap-6">
+                            <div>
+                                <h4 className="font-semibold text-foreground mb-2">Key Inputs:</h4>
+                                <ul className="list-disc pl-6 space-y-1">
+                                    <li><strong>Principal Amount:</strong> The total amount of money you are borrowing or investing.</li>
+                                    <li><strong>Interest Rate:</strong> The annual interest rate for the loan or investment.</li>
+                                    <li><strong>Term Length:</strong> The duration over which the loan will be repaid or the investment will grow, typically in years or months.</li>
+                                    <li><strong>Additional Costs (if applicable):</strong> For calculators like the mortgage tool, this may include property taxes, insurance, and HOA fees.</li>
+                                </ul>
+                            </div>
+                            <div>
+                                <h4 className="font-semibold text-foreground mb-2">Key Outputs:</h4>
+                                <ul className="list-disc pl-6 space-y-1">
+                                    <li><strong>Scheduled Payment:</strong> The fixed amount you will need to pay on a regular basis (e.g., monthly).</li>
+                                    <li><strong>Total Interest Paid:</strong> The cumulative amount of interest you will pay over the full term of the loan.</li>
+                                    <li><strong>Total Amount Paid:</strong> The sum of the principal and all interest paid over the life of the loan.</li>
+                                    <li><strong>Amortization Schedule:</strong> A detailed, period-by-period breakdown of how each payment is allocated between principal and interest.</li>
+                                </ul>
+                            </div>
+                        </div>
+                       </div>
                     </AccordionContent>
                   </AccordionItem>
-                   <AccordionItem value="faq">
-                    <AccordionTrigger>FAQs</AccordionTrigger>
+                   <AccordionItem value="context">
+                    <AccordionTrigger>Additional Context or Detailed Info</AccordionTrigger>
                     <AccordionContent>
-                       <p className="text-muted-foreground">
-                        Frequently asked questions related to this calculator will be answered here.
-                      </p>
+                       <div className="space-y-2 text-muted-foreground">
+                        <p>
+                          The calculations performed by this tool are based on standard, industry-accepted formulas. For example, loan and mortgage payments are typically calculated using the standard amortization formula, which ensures that payments are equal over the life of the loan.
+                        </p>
+                        <p>
+                          It's important to remember that this calculator provides estimates for planning purposes. The results do not constitute financial advice. The actual figures from a financial institution may vary slightly due to factors like specific lender fees, exact closing dates, or different compounding frequencies. Always consult with a qualified financial professional before making any financial decisions. Our commitment is to transparency, and all formulas used are based on established financial principles.
+                        </p>
+                       </div>
                     </AccordionContent>
                   </AccordionItem>
                 </Accordion>
