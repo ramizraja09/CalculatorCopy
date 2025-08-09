@@ -14,16 +14,19 @@ import { Skeleton } from '@/components/ui/skeleton';
 
 export default function CalculatorsPage() {
   const searchParams = useSearchParams();
-  const initialCategory = searchParams.get('category');
   
-  const [searchTerm, setSearchTerm] = useState(initialCategory || '');
+  const [searchTerm, setSearchTerm] = useState('');
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
   const { favorites, toggleFavorite, isLoaded } = useFavorites();
   const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
     setIsClient(true);
-  }, []);
+    const initialCategory = searchParams.get('category');
+    if (initialCategory) {
+      setSearchTerm(initialCategory);
+    }
+  }, [searchParams]);
 
   const filteredCalculators = useMemo(() => {
     return calculators.filter(calculator => {
