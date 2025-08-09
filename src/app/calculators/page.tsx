@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useMemo, useEffect, Suspense } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Input } from '@/components/ui/input';
 import { calculators } from '@/lib/calculators';
@@ -123,17 +123,11 @@ const PageSkeleton = () => (
 );
 
 
-function CalculatorsPage() {
+export default function CalculatorsPage() {
   const [isClient, setIsClient] = useState(false);
   useEffect(() => {
       setIsClient(true);
   }, []);
 
-  return (
-    <Suspense fallback={<PageSkeleton />}>
-      {isClient ? <CalculatorsPageContent /> : <PageSkeleton />}
-    </Suspense>
-  )
+  return isClient ? <CalculatorsPageContent /> : <PageSkeleton />;
 }
-
-export default CalculatorsPage;
