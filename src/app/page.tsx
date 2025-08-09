@@ -16,10 +16,10 @@ export default function Home() {
   const [searchTerm, setSearchTerm] = useState('');
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
   const { favorites, toggleFavorite, isLoaded } = useFavorites();
-  const [isMounted, setIsMounted] = useState(false);
+  const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
-    setIsMounted(true);
+    setIsClient(true);
   }, []);
 
   const filteredCalculators = useMemo(() => {
@@ -28,11 +28,13 @@ export default function Home() {
                             calculator.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
                             calculator.description.toLowerCase().includes(searchTerm.toLowerCase());
       
-      const matchesFavorites = !showFavoritesOnly || favorites.includes(calculator.slug);
+      if (isClient && showFavoritesOnly) {
+          return matchesSearch && favorites.includes(calculator.slug);
+      }
 
-      return matchesSearch && matchesFavorites;
+      return matchesSearch;
     });
-  }, [searchTerm, showFavoritesOnly, favorites]);
+  }, [searchTerm, showFavoritesOnly, favorites, isClient]);
 
   const PageSkeleton = () => (
     <div className="container max-w-screen-2xl mx-auto p-4 md:p-8 space-y-8">
@@ -53,7 +55,7 @@ export default function Home() {
     </div>
   );
 
-  if (!isLoaded || !isMounted) {
+  if (!isClient) {
     return <PageSkeleton />;
   }
 
@@ -89,6 +91,7 @@ export default function Home() {
                     checked={showFavoritesOnly}
                     onCheckedChange={setShowFavoritesOnly}
                     aria-label="Show favorites only"
+                    disabled={!isLoaded}
                 />
                 <Label htmlFor="favorites-only">Show Favorites</Label>
             </div>

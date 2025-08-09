@@ -1,3 +1,4 @@
+
 "use client";
 
 import { Star } from "lucide-react";
@@ -5,6 +6,7 @@ import { useFavorites } from "@/hooks/use-favorites";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Skeleton } from "./ui/skeleton";
+import { useEffect, useState } from "react";
 
 type FavoriteButtonProps = {
   slug: string;
@@ -12,8 +14,13 @@ type FavoriteButtonProps = {
 
 export default function FavoriteButton({ slug }: FavoriteButtonProps) {
   const { favorites, toggleFavorite, isLoaded } = useFavorites();
+  const [isClient, setIsClient] = useState(false);
 
-  if (!isLoaded) {
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  if (!isLoaded || !isClient) {
     return <Skeleton className="h-10 w-10 rounded-full" />;
   }
 
