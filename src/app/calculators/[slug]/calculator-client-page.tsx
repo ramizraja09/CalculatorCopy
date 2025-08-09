@@ -11,6 +11,7 @@ import { ArrowLeft, Share2 } from 'lucide-react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Button } from '@/components/ui/button';
 import MortgageCalculator from '@/components/calculators/mortgage-calculator';
+import LoanCalculator from '@/components/calculators/loan-calculator';
 
 type CalculatorClientPageProps = {
   calculator: Omit<Calculator, 'icon'>;
@@ -18,6 +19,7 @@ type CalculatorClientPageProps = {
 
 const calculatorComponents: { [key: string]: React.ComponentType } = {
   'mortgage-calculator': MortgageCalculator,
+  'loan-calculator': LoanCalculator,
   // Other calculators will be added here
 };
 
