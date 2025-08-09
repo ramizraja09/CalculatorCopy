@@ -21,7 +21,13 @@ type FormData = z.infer<typeof formSchema>;
 export default function CssUnitConverter() {
   const { control, watch, setValue } = useForm<FormData>({
     resolver: zodResolver(formSchema),
-    defaultValues: { baseFontSize: 16, px: 16 },
+    defaultValues: { 
+        baseFontSize: 16, 
+        px: 16,
+        rem: 1,
+        em: 1,
+        percent: 100,
+     },
   });
 
   const formData = watch();
@@ -57,7 +63,7 @@ export default function CssUnitConverter() {
       <div>
           <Label>{label}</Label>
            <Controller name={name} control={control} render={({ field }) => (
-                <Input type="number" {...field} onFocus={() => setLastChanged(name as any)} onChange={e => field.onChange(parseFloat(e.target.value))} />
+                <Input type="number" {...field} value={field.value ?? ''} onFocus={() => setLastChanged(name as any)} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />
             )} />
       </div>
   );
