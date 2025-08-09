@@ -10,10 +10,17 @@ import Link from 'next/link';
 import { ArrowLeft, Share2 } from 'lucide-react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Button } from '@/components/ui/button';
+import MortgageCalculator from '@/components/calculators/mortgage-calculator';
 
 type CalculatorClientPageProps = {
   calculator: Omit<Calculator, 'icon'>;
 };
+
+const calculatorComponents: { [key: string]: React.ComponentType } = {
+  'mortgage-calculator': MortgageCalculator,
+  // Other calculators will be added here
+};
+
 
 export default function CalculatorClientPage({ calculator }: CalculatorClientPageProps) {
   const [lastUpdated, setLastUpdated] = useState('');
@@ -21,6 +28,8 @@ export default function CalculatorClientPage({ calculator }: CalculatorClientPag
   useEffect(() => {
     setLastUpdated(new Date().toISOString().split('T')[0]);
   }, []);
+
+  const CalculatorComponent = calculatorComponents[calculator.slug];
   
 
   return (
@@ -51,7 +60,8 @@ export default function CalculatorClientPage({ calculator }: CalculatorClientPag
             <CardContent>
               {/* Main calculator UI */}
               <div className="mt-6 border rounded-lg p-4 md:p-6">
-                  <div className="grid md:grid-cols-2 gap-8">
+                  {CalculatorComponent ? <CalculatorComponent /> : (
+                     <div className="grid md:grid-cols-2 gap-8">
                       {/* Inputs */}
                       <div className="space-y-4">
                           <h3 className="text-xl font-semibold">Inputs</h3>
@@ -67,6 +77,7 @@ export default function CalculatorClientPage({ calculator }: CalculatorClientPag
                           </div>
                       </div>
                   </div>
+                  )}
               </div>
 
               {/* Accordion for additional details */}
