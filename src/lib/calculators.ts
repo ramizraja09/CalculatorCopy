@@ -1,5 +1,5 @@
 import type { ComponentType } from 'react';
-import { PiggyBank, Car, Utensils, HeartPulse, Percent, Home, BrainCircuit, GraduationCap, TrendingUp, Footprints, Scale, Calculator, Calendar, Repeat, Atom, FlaskConical, Beaker, Ruler, Clock, Landmark, FileText, Wallet, Receipt, CreditCard, Recycle, Banknote, CandlestickChart, Briefcase, DraftingCompass, Cigarette, Droplets, Sun, Shirt, Building, Shovel, Box, Weight, Map, BookOpen, Beer, Dna, Leaf, Zap, Sigma, Coins, Award, Baby, UserCheck, Plane, ShoppingCart, TestTube2, Ratio, Code, Timer, Binary, Server, BriefcaseMedical, Handshake, Target, SlidersHorizontal, Settings, PaintRoller, Cable, CircuitBoard, Wallpaper } from 'lucide-react';
+import { PiggyBank, Car, Utensils, HeartPulse, Percent, Home, BrainCircuit, GraduationCap, TrendingUp, Footprints, Scale, Calculator, Calendar, Repeat, Atom, FlaskConical, Beaker, Ruler, Clock, Landmark, FileText, Wallet, Receipt, CreditCard, Recycle, Banknote, CandlestickChart, Briefcase, DraftingCompass, Cigarette, Droplets, Sun, Shirt, Building, Shovel, Box, Weight, Map, BookOpen, Beer, Dna, Leaf, Zap, Sigma, Coins, Award, Baby, UserCheck, Plane, ShoppingCart, TestTube2, Ratio, Code, Timer, Binary, Server, BriefcaseMedical, Handshake, Target, SlidersHorizontal, Settings, PaintRoller, Cable, CircuitBoard, Wallpaper, Lungs, Moon, Soup, ShieldCheck } from 'lucide-react';
 
 export type Calculator = {
   name: string;
@@ -221,7 +221,7 @@ export const calculators: Calculator[] = [
     category: 'Finance',
     icon: ShoppingCart,
   },
-  // Health & Fitness (20)
+  // Health & Fitness (20 -> 29)
   {
     name: 'BMI Calculator',
     slug: 'bmi-calculator',
@@ -361,6 +361,69 @@ export const calculators: Calculator[] = [
     description: 'Estimate how tall your child will be as an adult.',
     category: 'Health & Fitness',
     icon: Baby,
+  },
+  {
+    name: 'VO2 Max Estimator',
+    slug: 'vo2-max-estimator',
+    description: 'Estimate your maximal oxygen uptake based on race performance.',
+    category: 'Health & Fitness',
+    icon: Lungs,
+  },
+  {
+    name: 'FFMI Calculator',
+    slug: 'ffmi-calculator',
+    description: 'Calculate your Fat-Free Mass Index, a measure of muscularity.',
+    category: 'Health & Fitness',
+    icon: Shirt,
+  },
+  {
+    name: 'Sleep Calculator',
+    slug: 'sleep-calculator',
+    description: 'Determine the best time to wake up or go to sleep based on sleep cycles.',
+    category: 'Health & Fitness',
+    icon: Moon,
+  },
+  {
+    name: 'Protein Intake Calculator',
+    slug: 'protein-intake-calculator',
+    description: 'Calculate your optimal daily protein intake for your body and goals.',
+    category: 'Health & Fitness',
+    icon: Soup,
+  },
+  {
+    name: 'Advanced Hydration Calculator',
+    slug: 'hydration-calculator',
+    description: 'Calculate hydration needs based on activity and sweat rate.',
+    category: 'Health & Fitness',
+    icon: Droplets,
+  },
+  {
+    name: 'Healthy Weight Gain Calculator',
+    slug: 'healthy-weight-gain-calculator',
+    description: 'Calculate the calorie surplus needed for a healthy rate of weight gain.',
+    category: 'Health & Fitness',
+    icon: Utensils,
+  },
+  {
+    name: 'Cardiovascular Risk Calculator',
+    slug: 'cardiovascular-risk-calculator',
+    description: 'Estimate your 10-year risk of cardiovascular disease. For informational purposes only.',
+    category: 'Health & Fitness',
+    icon: ShieldCheck,
+  },
+  {
+    name: 'Marine PFT Calculator',
+    slug: 'marine-pft-calculator',
+    description: 'Calculate your score for the Marine Corps Physical Fitness Test.',
+    category: 'Health & Fitness',
+    icon: Award,
+  },
+  {
+    name: 'Navy PRT Calculator',
+    slug: 'navy-prt-calculator',
+    description: 'Calculate your score for the Navy Physical Readiness Test.',
+    category: 'Health & Fitness',
+    icon: Award,
   },
   // Math (20)
   {
@@ -574,7 +637,7 @@ export const calculators: Calculator[] = [
     category: 'Time & Date',
     icon: Briefcase,
   },
-  // Everyday Utilities (10 -> 8)
+  // Everyday Utilities (8)
   {
     name: 'Tip Calculator',
     slug: 'tip-calculator',
@@ -675,7 +738,7 @@ export const calculators: Calculator[] = [
     category: 'Electronics',
     icon: Server,
   },
-  // Developer (5)
+  // Developer (6)
   {
     name: 'CSS Unit Converter',
     slug: 'css-unit-converter',

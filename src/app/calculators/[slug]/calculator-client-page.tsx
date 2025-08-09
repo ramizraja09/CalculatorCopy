@@ -113,6 +113,15 @@ import FreelanceRateCalculator from '@/components/calculators/freelance-rate-cal
 import WallpaperCalculator from '@/components/calculators/wallpaper-calculator';
 import DilutionCalculator from '@/components/calculators/dilution-calculator';
 import OhmsLawCalculator from '@/components/calculators/ohms-law-calculator';
+import Vo2MaxEstimator from '@/components/calculators/vo2-max-estimator';
+import FfmiCalculator from '@/components/calculators/ffmi-calculator';
+import SleepCalculator from '@/components/calculators/sleep-calculator';
+import ProteinIntakeCalculator from '@/components/calculators/protein-intake-calculator';
+import HydrationCalculator from '@/components/calculators/hydration-calculator';
+import HealthyWeightGainCalculator from '@/components/calculators/healthy-weight-gain-calculator';
+import CardiovascularRiskCalculator from '@/components/calculators/cardiovascular-risk-calculator';
+import MarinePftCalculator from '@/components/calculators/marine-pft-calculator';
+import NavyPrtCalculator from '@/components/calculators/navy-prt-calculator';
 
 type CalculatorClientPageProps = {
   calculator: Omit<Calculator, 'icon'>;
@@ -222,6 +231,15 @@ const calculatorComponents: { [key: string]: React.ComponentType<any> } = {
   'wallpaper-calculator': WallpaperCalculator,
   'dilution-calculator': DilutionCalculator,
   'ohms-law-calculator': OhmsLawCalculator,
+  'vo2-max-estimator': Vo2MaxEstimator,
+  'ffmi-calculator': FfmiCalculator,
+  'sleep-calculator': SleepCalculator,
+  'protein-intake-calculator': ProteinIntakeCalculator,
+  'hydration-calculator': HydrationCalculator,
+  'healthy-weight-gain-calculator': HealthyWeightGainCalculator,
+  'cardiovascular-risk-calculator': CardiovascularRiskCalculator,
+  'marine-pft-calculator': MarinePftCalculator,
+  'navy-prt-calculator': NavyPrtCalculator,
 };
 
 const PageSkeleton = ({ calculator }: { calculator: Omit<Calculator, 'icon'> }) => (
