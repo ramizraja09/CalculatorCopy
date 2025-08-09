@@ -28,7 +28,7 @@ export async function generateMetadata({ params }: CalculatorPageProps) {
     };
   }
   return {
-    title: `${calculator.name} | top100calculators`,
+    title: `${calculator.name} — Free Online ${calculator.category} Calculator | top100calculators`,
     description: calculator.description,
   };
 }
