@@ -1,5 +1,5 @@
 import type { ComponentType } from 'react';
-import { PiggyBank, Car, Utensils, HeartPulse, Percent, Home, BrainCircuit, GraduationCap, TrendingUp, Footprints, Scale, Calculator, Calendar, Repeat, Atom, FlaskConical, Beaker, Ruler, Clock, Landmark, FileText, Wallet, Receipt, CreditCard, Recycle, Banknote, CandlestickChart, Briefcase, DraftingCompass, Cigarette, Droplets, Sun, Shirt, Building, Shovel, Box, Weight, Map, BookOpen, Beer, Dna, Leaf, Zap, Sigma, Coins, Award, Baby, UserCheck, Plane, ShoppingCart, TestTube2, Ratio, Code, Timer, Binary, Server, BriefcaseMedical, Handshake, Target, SlidersHorizontal, Settings, PaintRoller, Cable, CircuitBoard, Wallpaper, Lungs, Moon, Soup, ShieldCheck } from 'lucide-react';
+import { PiggyBank, Car, Utensils, HeartPulse, Percent, Home, BrainCircuit, GraduationCap, TrendingUp, Footprints, Scale, Calculator, Calendar, Repeat, Atom, FlaskConical, Beaker, Ruler, Clock, Landmark, FileText, Wallet, Receipt, CreditCard, Recycle, Banknote, CandlestickChart, Briefcase, DraftingCompass, Cigarette, Droplets, Sun, Shirt, Building, Shovel, Box, Weight, Map, BookOpen, Beer, Dna, Leaf, Zap, Sigma, Coins, Award, Baby, UserCheck, Plane, ShoppingCart, TestTube2, Ratio, Code, Timer, Binary, Server, BriefcaseMedical, Handshake, Target, SlidersHorizontal, Settings, PaintRoller, Cable, CircuitBoard, Wallpaper, Activity, Moon, Soup, ShieldCheck } from 'lucide-react';
 
 export type Calculator = {
   name: string;
@@ -367,7 +367,7 @@ export const calculators: Calculator[] = [
     slug: 'vo2-max-estimator',
     description: 'Estimate your maximal oxygen uptake based on race performance.',
     category: 'Health & Fitness',
-    icon: Lungs,
+    icon: Activity,
   },
   {
     name: 'FFMI Calculator',
