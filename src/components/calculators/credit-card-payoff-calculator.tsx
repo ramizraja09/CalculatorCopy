@@ -29,7 +29,7 @@ const formSchema = z.object({
     return true;
 }, {
     message: "Please provide a valid input for your chosen strategy.",
-    path: ["monthlyPayment"], // or payoffMonths, doesn't matter much
+    path: ["monthlyPayment"],
 });
 
 
@@ -59,7 +59,6 @@ export default function CreditCardPayoffCalculator() {
     let totalMonths = 0;
     
     if (payoffStrategy === 'fixedPayment' && monthlyPayment) {
-        // Check if payment is high enough to cover interest
         if(monthlyPayment <= balance * monthlyRate) {
             setResults({ error: 'Monthly payment is too low to cover interest. Increase the payment amount.'});
             return;
@@ -246,5 +245,3 @@ export default function CreditCardPayoffCalculator() {
     </form>
   );
 }
-
-    
