@@ -65,22 +65,28 @@ function HomePageContent() {
             </div>
         </div>
 
-        {filteredCalculators.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {filteredCalculators.map(calculator => (
-              <CalculatorCard
-                key={calculator.slug}
-                calculator={calculator}
-                isFavorite={favorites.includes(calculator.slug)}
-                onToggleFavorite={toggleFavorite}
-              />
-            ))}
-          </div>
+        {isLoaded ? (
+          filteredCalculators.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {filteredCalculators.map(calculator => (
+                <CalculatorCard
+                  key={calculator.slug}
+                  calculator={calculator}
+                  isFavorite={favorites.includes(calculator.slug)}
+                  onToggleFavorite={toggleFavorite}
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-16">
+              <p className="text-lg text-muted-foreground">No calculators found.</p>
+              {searchTerm && <p className="text-sm text-muted-foreground">Try adjusting your search or filters.</p>}
+            </div>
+          )
         ) : (
-          <div className="text-center py-16">
-            <p className="text-lg text-muted-foreground">No calculators found.</p>
-            {searchTerm && <p className="text-sm text-muted-foreground">Try adjusting your search or filters.</p>}
-          </div>
+           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {[...Array(8)].map((_, i) => <Skeleton key={i} className="h-64 w-full" />)}
+            </div>
         )}
       </div>
     </div>
