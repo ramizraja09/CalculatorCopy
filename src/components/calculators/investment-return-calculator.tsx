@@ -42,7 +42,6 @@ export default function InvestmentReturnCalculator() {
     const totalReturn = finalValue - initialInvestment;
     const roi = (totalReturn / initialInvestment) * 100;
     
-    // CAGR (Compound Annual Growth Rate)
     const cagr = (Math.pow(finalValue / initialInvestment, 1 / investmentLength) - 1) * 100;
 
     setResults({
