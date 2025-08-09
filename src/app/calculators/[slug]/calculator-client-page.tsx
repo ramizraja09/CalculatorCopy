@@ -16,6 +16,7 @@ import CarLoanCalculator from '@/components/calculators/car-loan-calculator';
 import AmortizationCalculator from '@/components/calculators/amortization-calculator';
 import InterestCalculator from '@/components/calculators/interest-calculator';
 import CompoundInterestCalculator from '@/components/calculators/compound-interest-calculator';
+import InvestmentReturnCalculator from '@/components/calculators/investment-return-calculator';
 
 type CalculatorClientPageProps = {
   calculator: Omit<Calculator, 'icon'>;
@@ -28,6 +29,7 @@ const calculatorComponents: { [key: string]: React.ComponentType<any> } = {
   'amortization-calculator': AmortizationCalculator,
   'interest-calculator': InterestCalculator,
   'compound-interest-calculator': CompoundInterestCalculator,
+  'investment-return-calculator': InvestmentReturnCalculator,
   // Other calculators will be added here
 };
 
