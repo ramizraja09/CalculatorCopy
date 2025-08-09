@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { useState, useEffect, Suspense } from 'react';
@@ -17,6 +18,16 @@ import AmortizationCalculator from '@/components/calculators/amortization-calcul
 import InterestCalculator from '@/components/calculators/interest-calculator';
 import CompoundInterestCalculator from '@/components/calculators/compound-interest-calculator';
 import InvestmentReturnCalculator from '@/components/calculators/investment-return-calculator';
+import TipCalculator from '@/components/calculators/tip-calculator';
+import FuelCostCalculator from '@/components/calculators/fuel-cost-calculator';
+import GpaCalculator from '@/components/calculators/gpa-calculator';
+import ConcreteCalculator from '@/components/calculators/concrete-calculator';
+import PaintCalculator from '@/components/calculators/paint-calculator';
+import PlantSpacingCalculator from '@/components/calculators/plant-spacing-calculator';
+import SunAngleCalculator from '@/components/calculators/sun-angle-calculator';
+import TravelTimeCalculator from '@/components/calculators/travel-time-calculator';
+import DistanceCalculator from '@/components/calculators/distance-calculator';
+import CostOfLivingCalculator from '@/components/calculators/cost-of-living-calculator';
 
 type CalculatorClientPageProps = {
   calculator: Omit<Calculator, 'icon'>;
@@ -30,6 +41,16 @@ const calculatorComponents: { [key: string]: React.ComponentType<any> } = {
   'interest-calculator': InterestCalculator,
   'compound-interest-calculator': CompoundInterestCalculator,
   'investment-return-calculator': InvestmentReturnCalculator,
+  'tip-calculator': TipCalculator,
+  'fuel-cost-calculator': FuelCostCalculator,
+  'gpa-calculator': GpaCalculator,
+  'concrete-calculator': ConcreteCalculator,
+  'paint-calculator': PaintCalculator,
+  'plant-spacing-calculator': PlantSpacingCalculator,
+  'sun-angle-calculator': SunAngleCalculator,
+  'travel-time-calculator': TravelTimeCalculator,
+  'distance-calculator': DistanceCalculator,
+  'cost-of-living-calculator': CostOfLivingCalculator,
   // Other calculators will be added here
 };
 
