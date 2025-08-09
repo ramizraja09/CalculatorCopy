@@ -1,7 +1,4 @@
 
-
-
-
 "use client";
 
 import { useState, useEffect, Suspense } from 'react';
@@ -93,6 +90,16 @@ import MeanMedianModeCalculator from '@/components/calculators/mean-median-mode-
 import NumberSequenceCalculator from '@/components/calculators/number-sequence-calculator';
 import RootCalculator from '@/components/calculators/root-calculator';
 import CombinationsPermutationsCalculator from '@/components/calculators/combinations-permutations-calculator';
+import AgeCalculator from '@/components/calculators/age-calculator';
+import DateDifferenceCalculator from '@/components/calculators/date-difference-calculator';
+import TimeCalculator from '@/components/calculators/time-calculator';
+import BirthdayCalculator from '@/components/calculators/birthday-calculator';
+import DateToDayCalculator from '@/components/calculators/date-to-day-calculator';
+import WorkingDaysCalculator from '@/components/calculators/working-days-calculator';
+import TimeDurationCalculator from '@/components/calculators/time-duration-calculator';
+import CountdownTimer from '@/components/calculators/countdown-timer';
+import StopwatchCalculator from '@/components/calculators/stopwatch-calculator';
+import TimeCardCalculator from '@/components/calculators/time-card-calculator';
 type CalculatorClientPageProps = {
   calculator: Omit<Calculator, 'icon'>;
 };
@@ -178,6 +185,16 @@ const calculatorComponents: { [key: string]: React.ComponentType<any> } = {
   'number-sequence-calculator': NumberSequenceCalculator,
   'root-calculator': RootCalculator,
   'combinations-permutations-calculator': CombinationsPermutationsCalculator,
+  'age-calculator': AgeCalculator,
+  'date-difference-calculator': DateDifferenceCalculator,
+  'time-calculator': TimeCalculator,
+  'birthday-calculator': BirthdayCalculator,
+  'date-to-day-calculator': DateToDayCalculator,
+  'working-days-calculator': WorkingDaysCalculator,
+  'time-duration-calculator': TimeDurationCalculator,
+  'countdown-timer': CountdownTimer,
+  'stopwatch-calculator': StopwatchCalculator,
+  'time-card-calculator': TimeCardCalculator,
 };
 
 const PageSkeleton = ({ calculator }: { calculator: Omit<Calculator, 'icon'> }) => (
