@@ -27,10 +27,18 @@ export default function PaceCalculator() {
     resolver: zodResolver(formSchema),
     defaultValues: { distance: 5, distanceUnit: 'km', timeHours: 0, timeMinutes: 25, timeSeconds: 0 },
   });
+  
+  const [isClient, setIsClient] = useState(false);
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   const formData = watch();
 
   useEffect(() => {
+    // Only run calculations on the client after initial mount
+    if (!isClient) return;
+
     const { distance, distanceUnit, timeHours, timeMinutes, timeSeconds } = formData;
     if (distance > 0 && (timeHours > 0 || timeMinutes > 0 || timeSeconds > 0)) {
         const totalTimeSeconds = (timeHours * 3600) + (timeMinutes * 60) + timeSeconds;
@@ -52,9 +60,10 @@ export default function PaceCalculator() {
     } else {
         setResults(null);
     }
-  }, [formData]);
+  }, [formData, isClient]);
 
-  const onSubmit = () => {}; // Submission handled by useEffect
+  // The form submission is handled by the useEffect watching for data changes.
+  const onSubmit = () => {};
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="grid md:grid-cols-2 gap-8">
@@ -95,7 +104,7 @@ export default function PaceCalculator() {
       {/* Results */}
       <div className="space-y-4">
         <h3 className="text-xl font-semibold">Pace</h3>
-        {results ? (
+        {results && isClient ? (
             <div className="grid grid-cols-2 gap-4">
               <Card>
                 <CardContent className="p-4 text-center">
