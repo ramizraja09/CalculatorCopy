@@ -1,29 +1,150 @@
 
 "use client";
 
-import { Card } from '@/components/ui/card';
+import { useState } from 'react';
+import { useForm, Controller } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
+import { Card, CardContent } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Button } from '@/components/ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Info } from 'lucide-react';
+
+// 2024 Federal Income Tax Brackets & Standard Deductions
+const taxBrackets = {
+  single: [
+    { rate: 0.10, from: 0, to: 11600 },
+    { rate: 0.12, from: 11601, to: 47150 },
+    { rate: 0.22, from: 47151, to: 100525 },
+    { rate: 0.24, from: 100526, to: 191950 },
+    { rate: 0.32, from: 191951, to: 243725 },
+    { rate: 0.35, from: 243726, to: 609350 },
+    { rate: 0.37, from: 609351, to: Infinity },
+  ],
+  married_jointly: [
+    { rate: 0.10, from: 0, to: 23200 },
+    { rate: 0.12, from: 23201, to: 94300 },
+    { rate: 0.22, from: 94301, to: 201050 },
+    { rate: 0.24, from: 201051, to: 383900 },
+    { rate: 0.32, from: 383901, to: 487450 },
+    { rate: 0.35, from: 487451, to: 731200 },
+    { rate: 0.37, from: 731201, to: Infinity },
+  ],
+};
+
+const standardDeductions = {
+  single: 14600,
+  married_jointly: 29200,
+};
+
+const formSchema = z.object({
+  income: z.number().min(0, 'Income must be non-negative'),
+  filingStatus: z.enum(['single', 'married_jointly']),
+});
+
+type FormData = z.infer<typeof formSchema>;
 
 export default function IncomeTaxCalculator() {
+  const [results, setResults] = useState<any>(null);
+
+  const { control, handleSubmit, formState: { errors } } = useForm<FormData>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      income: 75000,
+      filingStatus: 'single',
+    },
+  });
+
+  const calculateTax = (data: FormData) => {
+    const { income, filingStatus } = data;
+    const deduction = standardDeductions[filingStatus];
+    const taxableIncome = Math.max(0, income - deduction);
+    const brackets = taxBrackets[filingStatus];
+
+    let tax = 0;
+    let remainingIncome = taxableIncome;
+
+    for (const bracket of brackets) {
+      if (remainingIncome > bracket.from) {
+        const taxableInBracket = Math.min(remainingIncome, bracket.to) - bracket.from;
+        tax += taxableInBracket * bracket.rate;
+      }
+    }
+
+    const effectiveRate = income > 0 ? (tax / income) * 100 : 0;
+
+    setResults({
+      totalTax: tax,
+      taxableIncome,
+      effectiveRate,
+      error: null,
+    });
+  };
+
+  const formatCurrency = (value: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value);
+
   return (
-    <div className="grid md:grid-cols-2 gap-8">
-      {/* Inputs */}
+    <form onSubmit={handleSubmit(calculateTax)} className="grid md:grid-cols-2 gap-8">
+      {/* Inputs Column */}
       <div className="space-y-4">
         <h3 className="text-xl font-semibold">Inputs</h3>
-        <Card className="p-4">
-            <div className="flex items-center justify-center h-40 bg-muted/50 rounded-lg border border-dashed">
-                <p className="text-sm text-muted-foreground">Input fields coming soon</p>
-            </div>
-        </Card>
+        
+        <div>
+          <Label htmlFor="income">Gross Annual Income ($)</Label>
+          <Controller name="income" control={control} render={({ field }) => <Input id="income" type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
+          {errors.income && <p className="text-destructive text-sm mt-1">{errors.income.message}</p>}
+        </div>
+
+        <div>
+          <Label htmlFor="filingStatus">Filing Status</Label>
+          <Controller name="filingStatus" control={control} render={({ field }) => (
+            <Select onValueChange={field.onChange} defaultValue={field.value}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="single">Single</SelectItem>
+                <SelectItem value="married_jointly">Married Filing Jointly</SelectItem>
+              </SelectContent>
+            </Select>
+          )} />
+        </div>
+        
+        <Button type="submit" className="w-full">Calculate Tax</Button>
+        <Alert>
+          <Info className="h-4 w-4" />
+          <AlertTitle>For Estimation Only</AlertTitle>
+          <AlertDescription className="text-xs">
+            This calculator provides an estimate for U.S. Federal income tax based on 2024 brackets and standard deductions. It does not account for state taxes, local taxes, tax credits, or other complex situations.
+          </AlertDescription>
+        </Alert>
       </div>
-      {/* Results */}
+
+      {/* Results Column */}
       <div className="space-y-4">
         <h3 className="text-xl font-semibold">Results</h3>
-        <Card className="p-4">
-            <div className="flex items-center justify-center h-40 bg-muted/50 rounded-lg border border-dashed">
-            <p className="text-sm text-muted-foreground">Results display coming soon</p>
+        {results ? (
+            <div className="space-y-4">
+                <Card>
+                    <CardContent className="p-4 text-center">
+                        <p className="text-sm text-muted-foreground">Estimated Federal Tax</p>
+                        <p className="text-3xl font-bold">{formatCurrency(results.totalTax)}</p>
+                    </CardContent>
+                </Card>
+                <Card>
+                    <CardContent className="p-4 grid grid-cols-2 gap-2 text-sm text-center">
+                        <div><p className="text-muted-foreground">Taxable Income</p><p className="font-semibold">{formatCurrency(results.taxableIncome)}</p></div>
+                        <div><p className="text-muted-foreground">Effective Tax Rate</p><p className="font-semibold">{results.effectiveRate.toFixed(2)}%</p></div>
+                    </CardContent>
+                </Card>
             </div>
-        </Card>
+        ) : (
+             <div className="flex items-center justify-center h-60 bg-muted/50 rounded-lg border border-dashed">
+                <p className="text-sm text-muted-foreground">Enter your details to estimate your federal income tax</p>
+            </div>
+        )}
       </div>
-    </div>
+    </form>
   );
 }
