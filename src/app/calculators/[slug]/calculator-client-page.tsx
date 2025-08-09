@@ -28,6 +28,7 @@ export default function CalculatorClientPage({ calculator }: CalculatorClientPag
   const [lastUpdated, setLastUpdated] = useState('');
 
   useEffect(() => {
+    // This now runs only on the client, after hydration
     setLastUpdated(new Date().toISOString().split('T')[0]);
   }, []);
 
@@ -122,7 +123,7 @@ export default function CalculatorClientPage({ calculator }: CalculatorClientPag
 
             </CardContent>
             <CardFooter className="text-xs text-muted-foreground justify-end">
-              {lastUpdated && <p>Last Updated: {lastUpdated} | Formula v1.0</p>}
+              {lastUpdated ? <p>Last Updated: {lastUpdated} | Formula v1.0</p> : <p>Loading...</p>}
             </CardFooter>
         </Card>
     </div>

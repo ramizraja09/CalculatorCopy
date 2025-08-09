@@ -8,6 +8,7 @@ export default function PrivacyPage() {
   const [lastUpdated, setLastUpdated] = useState('');
 
   useEffect(() => {
+    // This now runs only on the client, after hydration
     setLastUpdated(new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }));
   }, []);
 
@@ -18,7 +19,7 @@ export default function PrivacyPage() {
           <CardTitle className="font-headline text-3xl md:text-4xl">Privacy Policy</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4 text-muted-foreground">
-          {lastUpdated && <p><strong>Last Updated:</strong> {lastUpdated}</p>}
+          <p><strong>Last Updated:</strong> {lastUpdated || 'Loading...'}</p>
 
           <p>
             Your privacy is important to us. It is top100calculators' policy to respect your privacy regarding any information we may collect from you across our website.
