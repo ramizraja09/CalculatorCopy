@@ -2,6 +2,7 @@
 "use client";
 
 import { useState, useMemo, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { Input } from '@/components/ui/input';
 import { calculators } from '@/lib/calculators';
 import CalculatorCard from '@/components/calculator-card';
@@ -12,7 +13,10 @@ import { Search } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
 export default function CalculatorsPage() {
-  const [searchTerm, setSearchTerm] = useState('');
+  const searchParams = useSearchParams();
+  const initialCategory = searchParams.get('category');
+  
+  const [searchTerm, setSearchTerm] = useState(initialCategory || '');
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
   const { favorites, toggleFavorite, isLoaded } = useFavorites();
   const [isClient, setIsClient] = useState(false);
@@ -23,9 +27,10 @@ export default function CalculatorsPage() {
 
   const filteredCalculators = useMemo(() => {
     return calculators.filter(calculator => {
-      const matchesSearch = calculator.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                            calculator.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                            calculator.description.toLowerCase().includes(searchTerm.toLowerCase());
+      const lowerCaseSearchTerm = searchTerm.toLowerCase();
+      const matchesSearch = calculator.name.toLowerCase().includes(lowerCaseSearchTerm) ||
+                            calculator.category.toLowerCase().includes(lowerCaseSearchTerm) ||
+                            calculator.description.toLowerCase().includes(lowerCaseSearchTerm);
       
       if (isClient && showFavoritesOnly) {
           return matchesSearch && favorites.includes(calculator.slug);
