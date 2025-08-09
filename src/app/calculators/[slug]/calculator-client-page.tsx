@@ -15,6 +15,7 @@ import LoanCalculator from '@/components/calculators/loan-calculator';
 import CarLoanCalculator from '@/components/calculators/car-loan-calculator';
 import AmortizationCalculator from '@/components/calculators/amortization-calculator';
 import InterestCalculator from '@/components/calculators/interest-calculator';
+import CompoundInterestCalculator from '@/components/calculators/compound-interest-calculator';
 
 type CalculatorClientPageProps = {
   calculator: Omit<Calculator, 'icon'>;
@@ -26,17 +27,43 @@ const calculatorComponents: { [key: string]: React.ComponentType<any> } = {
   'car-loan-calculator': CarLoanCalculator,
   'amortization-calculator': AmortizationCalculator,
   'interest-calculator': InterestCalculator,
+  'compound-interest-calculator': CompoundInterestCalculator,
   // Other calculators will be added here
 };
 
 
 export default function CalculatorClientPage({ calculator }: CalculatorClientPageProps) {
   const [lastUpdated, setLastUpdated] = useState('');
+  const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
     // This now runs only on the client, after hydration
+    setIsClient(true);
     setLastUpdated(new Date().toISOString().split('T')[0]);
   }, []);
+
+  if (!isClient) {
+     return (
+        <div className="container max-w-4xl mx-auto p-4 md:p-8 space-y-6">
+            <Link href="/" className="flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors">
+                <ArrowLeft className="h-4 w-4" />
+                Back to all calculators
+            </Link>
+            <Card>
+                <CardHeader>
+                    {/* Skeleton for header */}
+                </CardHeader>
+                <CardContent>
+                    <div className="mt-6 border rounded-lg p-4 md:p-6">
+                        <div className="flex items-center justify-center h-60 bg-muted/50 rounded-lg border border-dashed">
+                            <p className="text-sm text-muted-foreground">Loading Calculator...</p>
+                        </div>
+                    </div>
+                </CardContent>
+            </Card>
+        </div>
+    );
+  }
 
   const CalculatorComponent = calculatorComponents[calculator.slug];
   
