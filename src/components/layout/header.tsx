@@ -12,7 +12,7 @@ export default function Header() {
         </Link>
         <nav className="flex items-center space-x-4">
             <Button variant="link" asChild className="text-muted-foreground hover:text-primary">
-                <Link href="/">All Calculators</Link>
+                <Link href="/calculators">All Calculators</Link>
             </Button>
         </nav>
       </div>
