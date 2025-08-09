@@ -1,5 +1,6 @@
 
 
+
 "use client";
 
 import { useState, useEffect, Suspense } from 'react';
@@ -51,6 +52,26 @@ import EmergencyFundCalculator from '@/components/calculators/emergency-fund-cal
 import CollegeSavingsCalculator from '@/components/calculators/college-savings-calculator';
 import HomeAffordabilityCalculator from '@/components/calculators/home-affordability-calculator';
 import DiscountCalculator from '@/components/calculators/discount-calculator';
+import BmiCalculator from '@/components/calculators/bmi-calculator';
+import CalorieCalculator from '@/components/calculators/calorie-calculator';
+import PaceCalculator from '@/components/calculators/pace-calculator';
+import BmrCalculator from '@/components/calculators/bmr-calculator';
+import BodyFatCalculator from '@/components/calculators/body-fat-calculator';
+import IdealWeightCalculator from '@/components/calculators/ideal-weight-calculator';
+import TdeeCalculator from '@/components/calculators/tdee-calculator';
+import MacroCalculator from '@/components/calculators/macro-calculator';
+import OneRepMaxCalculator from '@/components/calculators/one-rep-max-calculator';
+import PregnancyDueDateCalculator from '@/components/calculators/pregnancy-due-date-calculator';
+import OvulationCalculator from '@/components/calculators/ovulation-calculator';
+import BacCalculator from '@/components/calculators/bac-calculator';
+import SmokingCostCalculator from '@/components/calculators/smoking-cost-calculator';
+import WaterIntakeCalculator from '@/components/calculators/water-intake-calculator';
+import HeartRateZoneCalculator from '@/components/calculators/heart-rate-zone-calculator';
+import RunningTimePredictor from '@/components/calculators/running-time-predictor';
+import WilksScoreCalculator from '@/components/calculators/wilks-score-calculator';
+import ApftCalculator from '@/components/calculators/apft-calculator';
+import BsaCalculator from '@/components/calculators/bsa-calculator';
+import ChildHeightPredictor from '@/components/calculators/child-height-predictor';
 
 type CalculatorClientPageProps = {
   calculator: Omit<Calculator, 'icon'>;
@@ -97,6 +118,26 @@ const calculatorComponents: { [key: string]: React.ComponentType<any> } = {
   'college-savings-calculator': CollegeSavingsCalculator,
   'home-affordability-calculator': HomeAffordabilityCalculator,
   'discount-calculator': DiscountCalculator,
+  'bmi-calculator': BmiCalculator,
+  'calorie-calculator': CalorieCalculator,
+  'pace-calculator': PaceCalculator,
+  'bmr-calculator': BmrCalculator,
+  'body-fat-calculator': BodyFatCalculator,
+  'ideal-weight-calculator': IdealWeightCalculator,
+  'tdee-calculator': TdeeCalculator,
+  'macro-calculator': MacroCalculator,
+  'one-rep-max-calculator': OneRepMaxCalculator,
+  'pregnancy-due-date-calculator': PregnancyDueDateCalculator,
+  'ovulation-calculator': OvulationCalculator,
+  'bac-calculator': BacCalculator,
+  'smoking-cost-calculator': SmokingCostCalculator,
+  'water-intake-calculator': WaterIntakeCalculator,
+  'heart-rate-zone-calculator': HeartRateZoneCalculator,
+  'running-time-predictor': RunningTimePredictor,
+  'wilks-score-calculator': WilksScoreCalculator,
+  'apft-calculator': ApftCalculator,
+  'bsa-calculator': BsaCalculator,
+  'child-height-predictor': ChildHeightPredictor,
 };
 
 const PageSkeleton = ({ calculator }: { calculator: Omit<Calculator, 'icon'> }) => (

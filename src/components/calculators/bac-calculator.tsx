@@ -1,0 +1,71 @@
+
+"use client";
+
+import { useState } from 'react';
+import { useForm, Controller } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
+import { Card, CardContent } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Button } from '@/components/ui/button';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+
+const formSchema = z.object({
+  gender: z.enum(['male', 'female']),
+  weightLbs: z.number().min(1),
+  drinks: z.number().min(1),
+  hours: z.number().min(0),
+});
+
+type FormData = z.infer<typeof formSchema>;
+
+export default function BacCalculator() {
+  const [results, setResults] = useState<any>(null);
+  const { control, handleSubmit } = useForm<FormData>({
+    resolver: zodResolver(formSchema),
+    defaultValues: { gender: 'male', weightLbs: 160, drinks: 2, hours: 2 },
+  });
+
+  const calculateBac = (data: FormData) => {
+    const { gender, weightLbs, drinks, hours } = data;
+    const genderConstant = gender === 'male' ? 0.68 : 0.55;
+    const bac = ((drinks * 14 * 1.055) / (weightLbs * 453.592 * genderConstant)) * 100 - (hours * 0.015);
+    setResults({ bac: Math.max(0, bac) });
+  };
+
+  return (
+    <form onSubmit={handleSubmit(calculateBac)} className="grid md:grid-cols-2 gap-8">
+      {/* Inputs */}
+      <div className="space-y-4">
+        <h3 className="text-xl font-semibold">Inputs</h3>
+        <Controller name="gender" control={control} render={({ field }) => (
+            <RadioGroup onValueChange={field.onChange} defaultValue={field.value} className="grid grid-cols-2 gap-4">
+                <Label className="flex items-center justify-center rounded-md border-2 border-muted bg-popover p-4 peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary"><RadioGroupItem value="male" className="mr-2"/>Male</Label>
+                <Label className="flex items-center justify-center rounded-md border-2 border-muted bg-popover p-4 peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary"><RadioGroupItem value="female" className="mr-2"/>Female</Label>
+            </RadioGroup>
+        )}/>
+        <div><Label>Weight (lbs)</Label><Controller name="weightLbs" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} /></div>
+        <div><Label>Number of Standard Drinks</Label><Controller name="drinks" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value) || 0)} />} /></div>
+        <div><Label>Hours Since First Drink</Label><Controller name="hours" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} /></div>
+        <Button type="submit" className="w-full">Calculate BAC</Button>
+      </div>
+
+      {/* Results */}
+      <div className="space-y-4">
+        <h3 className="text-xl font-semibold">Results</h3>
+        {results ? (
+            <Card>
+                <CardContent className="p-6 text-center">
+                    <p className="text-sm text-muted-foreground">Estimated Blood Alcohol Content</p>
+                    <p className="text-4xl font-bold my-2">{results.bac.toFixed(3)}%</p>
+                    {results.bac > 0.08 && <p className="text-destructive font-semibold">Over legal limit in most places.</p>}
+                </CardContent>
+            </Card>
+        ) : (
+          <div className="flex items-center justify-center h-40 bg-muted/50 rounded-lg border border-dashed"><p>Enter details to estimate BAC</p></div>
+        )}
+      </div>
+    </form>
+  );
+}
