@@ -1,5 +1,5 @@
 import type { ComponentType } from 'react';
-import { PiggyBank, Car, Utensils, HeartPulse, Percent, Home, BrainCircuit, GraduationCap, TrendingUp, Footprints, Scale, Calculator, Calendar, Repeat, Atom, FlaskConical, Beaker, Ruler, Clock } from 'lucide-react';
+import { PiggyBank, Car, Utensils, HeartPulse, Percent, Home, BrainCircuit, GraduationCap, TrendingUp, Footprints, Scale, Calculator, Calendar, Repeat, Atom, FlaskConical, Beaker, Ruler, Clock, Landmark, FileText, Wallet, Receipt, CreditCard, Recycle, Banknote, CandlestickChart, Briefcase } from 'lucide-react';
 
 export type Calculator = {
   name: string;
@@ -36,7 +36,14 @@ export const calculators: Calculator[] = [
     slug: 'amortization-calculator',
     description: 'See how your loan payments are applied to principal and interest over time.',
     category: 'Finance',
-    icon: PiggyBank,
+    icon: FileText,
+  },
+  {
+    name: 'Interest Calculator',
+    slug: 'interest-calculator',
+    description: 'Calculate simple and compound interest for a loan or investment.',
+    category: 'Finance',
+    icon: Percent,
   },
   {
     name: 'Compound Interest Calculator',
@@ -46,11 +53,95 @@ export const calculators: Calculator[] = [
     icon: TrendingUp,
   },
   {
+    name: 'Investment Return Calculator',
+    slug: 'investment-return-calculator',
+    description: 'Evaluate the performance of an investment and see its growth.',
+    category: 'Finance',
+    icon: CandlestickChart,
+  },
+  {
     name: 'Retirement Savings Calculator',
     slug: 'retirement-savings-calculator',
     description: 'Project your retirement savings growth and see if you are on track.',
     category: 'Finance',
+    icon: Landmark,
+  },
+  {
+    name: 'Inflation Calculator',
+    slug: 'inflation-calculator',
+    description: 'See how the value of money changes over time due to inflation.',
+    category: 'Finance',
     icon: TrendingUp,
+  },
+  {
+    name: 'Income Tax Calculator',
+    slug: 'income-tax-calculator',
+    description: 'Estimate your federal income tax liability based on your filing status and income.',
+    category: 'Finance',
+    icon: Receipt,
+  },
+  {
+    name: 'Salary (Take-Home Pay) Calculator',
+    slug: 'salary-calculator',
+    description: 'Calculate your net pay by subtracting taxes and other deductions from your gross salary.',
+    category: 'Finance',
+    icon: Wallet,
+  },
+  {
+    name: 'Sales Tax Calculator',
+    slug: 'sales-tax-calculator',
+    description: 'Quickly calculate sales tax for any amount and tax rate.',
+    category: 'Finance',
+    icon: Receipt,
+  },
+  {
+    name: 'Credit Card Payoff Calculator',
+    slug: 'credit-card-payoff-calculator',
+    description: 'Find out how long it will take to pay off your credit card balance.',
+    category: 'Finance',
+    icon: CreditCard,
+  },
+  {
+    name: 'Debt Payoff/Snowball Calculator',
+    slug: 'debt-snowball-calculator',
+    description: 'Create a plan to pay off multiple debts using the debt snowball method.',
+    category: 'Finance',
+    icon: Recycle,
+  },
+  {
+    name: 'Refinance Calculator',
+    slug: 'refinance-calculator',
+    description: 'Determine if refinancing your mortgage could save you money.',
+    category: 'Finance',
+    icon: Home,
+  },
+  {
+    name: 'APR/APY Calculator',
+    slug: 'apr-apy-calculator',
+    description: 'Convert between Annual Percentage Rate (APR) and Annual Percentage Yield (APY).',
+    category: 'Finance',
+    icon: Percent,
+  },
+  {
+    name: 'ROI (Return on Investment) Calculator',
+    slug: 'roi-calculator',
+    description: 'Calculate the profitability of an investment as a percentage.',
+    category: 'Finance',
+    icon: Briefcase,
+  },
+  {
+    name: 'Time Value of Money (TVM) Calculator',
+    slug: 'tvm-calculator',
+    description: 'Solve for present value, future value, rate, or periods in financial calculations.',
+    category: 'Finance',
+    icon: Clock,
+  },
+  {
+    name: 'Savings Goal Calculator',
+    slug: 'savings-goal-calculator',
+    description: 'Determine how much you need to save regularly to reach a financial goal.',
+    category: 'Finance',
+    icon: PiggyBank,
   },
   {
     name: 'Investment Calculator',
