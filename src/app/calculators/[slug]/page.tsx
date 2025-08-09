@@ -35,5 +35,8 @@ export default function CalculatorPage({ params }: CalculatorPageProps) {
     notFound();
   }
 
-  return <CalculatorClientPage calculator={calculator} />;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { icon, ...calculatorData } = calculator;
+
+  return <CalculatorClientPage calculator={calculatorData} />;
 }
