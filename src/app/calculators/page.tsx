@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Input } from '@/components/ui/input';
 import { calculators } from '@/lib/calculators';
@@ -106,32 +106,37 @@ function CalculatorsPageContent() {
     );
 }
 
-export default function CalculatorsPage() {
-  const [isClient, setIsClient] = useState(false);
-
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
-
-  const PageSkeleton = () => (
+const PageSkeleton = () => (
     <div className="container max-w-screen-2xl mx-auto p-4 md:p-8 space-y-8">
         <div className="space-y-4">
             <Skeleton className="h-10 w-1/3" />
             <Skeleton className="h-6 w-1/2" />
-            <div className="flex flex-col md:flex-row gap-4 items-center">
-                <Skeleton className="h-10 w-full" />
-                <Skeleton className="h-10 w-48" />
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                {[...Array(12)].map((_, i) => <Skeleton key={i} className="h-64 w-full" />)}
-            </div>
+        </div>
+        <div className="flex flex-col md:flex-row gap-4 items-center">
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-10 w-48" />
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {[...Array(12)].map((_, i) => <Skeleton key={i} className="h-64 w-full" />)}
         </div>
     </div>
-  );
+);
 
-  if (!isClient) {
-    return <PageSkeleton />;
-  }
 
-  return <CalculatorsPageContent />;
+function CalculatorsPage() {
+  return (
+    <Suspense fallback={<PageSkeleton />}>
+      <CalculatorsPageContent />
+    </Suspense>
+  )
+}
+
+// This is the component that will be rendered by Next.js
+export default function CalculatorsPageWrapper() {
+    const [isClient, setIsClient] = useState(false);
+    useEffect(() => {
+        setIsClient(true);
+    }, []);
+
+    return isClient ? <CalculatorsPage /> : <PageSkeleton />;
 }
