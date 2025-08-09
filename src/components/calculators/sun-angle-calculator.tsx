@@ -49,7 +49,7 @@ type FormData = z.infer<typeof formSchema>;
 
 export default function SunAngleCalculator() {
   const [results, setResults] = useState<any>(null);
-  const [currentTime, setCurrentTime] = useState(new Date());
+  const [currentTime, setCurrentTime] = useState<Date | null>(null);
 
   const { control, handleSubmit, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -60,22 +60,23 @@ export default function SunAngleCalculator() {
   });
 
   useEffect(() => {
+    // Run all date logic on the client side
+    const date = new Date();
+    setCurrentTime(date);
+    const initialPosition = getSunPosition(date, 40.7128, -74.0060);
+    setResults(initialPosition);
+
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
     return () => clearInterval(timer);
   }, []);
 
   const calculateSunAngle = (data: FormData) => {
+    if(!currentTime) return;
     const { latitude, longitude } = data;
     const position = getSunPosition(currentTime, latitude, longitude);
     setResults(position);
   };
   
-   useEffect(() => {
-    calculateSunAngle({ latitude: 40.7128, longitude: -74.0060 });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-
   return (
     <form onSubmit={handleSubmit(calculateSunAngle)} className="grid md:grid-cols-2 gap-8">
       {/* Inputs Column */}
@@ -98,7 +99,7 @@ export default function SunAngleCalculator() {
          <Card className="mt-4">
             <CardContent className="p-4 text-center">
                  <p className="text-sm text-muted-foreground">Current UTC Time</p>
-                 <p className="font-mono">{currentTime.toUTCString()}</p>
+                 <p className="font-mono">{currentTime ? currentTime.toUTCString() : "Loading..."}</p>
             </CardContent>
          </Card>
       </div>
