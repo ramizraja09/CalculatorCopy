@@ -17,6 +17,9 @@ function HomePageContent() {
   const { favorites, toggleFavorite, isLoaded } = useFavorites();
 
   const filteredCalculators = useMemo(() => {
+    if (!isLoaded) {
+      return [];
+    }
     return calculators.filter(calculator => {
       const matchesSearch = calculator.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                             calculator.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -28,7 +31,7 @@ function HomePageContent() {
 
       return matchesSearch;
     });
-  }, [searchTerm, showFavoritesOnly, favorites]);
+  }, [searchTerm, showFavoritesOnly, favorites, isLoaded]);
 
 
   return (
@@ -65,7 +68,11 @@ function HomePageContent() {
             </div>
         </div>
 
-        {isLoaded ? (
+        {!isLoaded ? (
+           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {[...Array(8)].map((_, i) => <Skeleton key={i} className="h-64 w-full" />)}
+            </div>
+        ) : (
           filteredCalculators.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {filteredCalculators.map(calculator => (
@@ -83,10 +90,6 @@ function HomePageContent() {
               {searchTerm && <p className="text-sm text-muted-foreground">Try adjusting your search or filters.</p>}
             </div>
           )
-        ) : (
-           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                {[...Array(8)].map((_, i) => <Skeleton key={i} className="h-64 w-full" />)}
-            </div>
         )}
       </div>
     </div>

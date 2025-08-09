@@ -27,19 +27,22 @@ function CalculatorsPageContent() {
     }, [searchParams]);
 
     const filteredCalculators = useMemo(() => {
-        return calculators.filter(calculator => {
-        const lowerCaseSearchTerm = searchTerm.toLowerCase();
-        const matchesSearch = calculator.name.toLowerCase().includes(lowerCaseSearchTerm) ||
-                                calculator.category.toLowerCase().includes(lowerCaseSearchTerm) ||
-                                calculator.description.toLowerCase().includes(lowerCaseSearchTerm);
-        
-        if (showFavoritesOnly) {
-            return matchesSearch && favorites.includes(calculator.slug);
+        if (!isLoaded) {
+            return [];
         }
+        return calculators.filter(calculator => {
+            const lowerCaseSearchTerm = searchTerm.toLowerCase();
+            const matchesSearch = calculator.name.toLowerCase().includes(lowerCaseSearchTerm) ||
+                                    calculator.category.toLowerCase().includes(lowerCaseSearchTerm) ||
+                                    calculator.description.toLowerCase().includes(lowerCaseSearchTerm);
+            
+            if (showFavoritesOnly) {
+                return matchesSearch && favorites.includes(calculator.slug);
+            }
 
-        return matchesSearch;
+            return matchesSearch;
         });
-    }, [searchTerm, showFavoritesOnly, favorites]);
+    }, [searchTerm, showFavoritesOnly, favorites, isLoaded]);
 
 
     return (
@@ -75,7 +78,11 @@ function CalculatorsPageContent() {
                     </div>
                 </div>
 
-                {isLoaded ? (
+                {!isLoaded ? (
+                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                        {[...Array(12)].map((_, i) => <Skeleton key={i} className="h-64 w-full" />)}
+                    </div>
+                ) : (
                     filteredCalculators.length > 0 ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                         {filteredCalculators.map(calculator => (
@@ -93,10 +100,6 @@ function CalculatorsPageContent() {
                         {searchTerm && <p className="text-sm text-muted-foreground">Try adjusting your search or filters.</p>}
                     </div>
                     )
-                ) : (
-                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                        {[...Array(12)].map((_, i) => <Skeleton key={i} className="h-64 w-full" />)}
-                    </div>
                 )}
             </div>
         </div>
@@ -113,7 +116,8 @@ export default function CalculatorsPage() {
   const PageSkeleton = () => (
     <div className="container max-w-screen-2xl mx-auto p-4 md:p-8 space-y-8">
         <div className="space-y-4">
-          <Skeleton className="h-10 w-1/2" />
+            <Skeleton className="h-10 w-1/3" />
+            <Skeleton className="h-6 w-1/2" />
             <div className="flex flex-col md:flex-row gap-4 items-center">
                 <Skeleton className="h-10 w-full" />
                 <Skeleton className="h-10 w-48" />
