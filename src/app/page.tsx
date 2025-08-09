@@ -1,6 +1,7 @@
+
 "use client";
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { calculators } from '@/lib/calculators';
 import CalculatorCard from '@/components/calculator-card';
@@ -15,6 +16,11 @@ export default function Home() {
   const [searchTerm, setSearchTerm] = useState('');
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
   const { favorites, toggleFavorite, isLoaded } = useFavorites();
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   const filteredCalculators = useMemo(() => {
     return calculators.filter(calculator => {
@@ -47,7 +53,7 @@ export default function Home() {
     </div>
   );
 
-  if (!isLoaded) {
+  if (!isLoaded || !isClient) {
     return <PageSkeleton />;
   }
 
