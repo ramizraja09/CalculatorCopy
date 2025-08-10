@@ -9,7 +9,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
-import { differenceInYears, differenceInMonths, differenceInDays, differenceInHours, differenceInMinutes, differenceInSeconds, subYears, subMonths } from 'date-fns';
+import { differenceInYears, differenceInMonths, differenceInDays, differenceInHours, differenceInMinutes, differenceInSeconds, addYears, addMonths } from 'date-fns';
 
 const formSchema = z.object({
   birthDate: z.string().refine((val) => !isNaN(Date.parse(val)), { message: "Invalid date" }),
@@ -35,12 +35,12 @@ export default function AgeCalculator() {
     const targetDate = new Date(data.ageAtDate);
     const birthDate = new Date(data.birthDate);
     
+    // Exact age calculation
     const years = differenceInYears(targetDate, birthDate);
-    let tempDate = subYears(birthDate, years);
-    const months = differenceInMonths(targetDate, tempDate);
-    tempDate = subMonths(tempDate, months);
-    const days = differenceInDays(targetDate, tempDate);
+    const months = differenceInMonths(targetDate, addYears(birthDate, years));
+    const days = differenceInDays(targetDate, addMonths(addYears(birthDate, years), months));
 
+    // Total duration calculations
     const totalDays = differenceInDays(targetDate, birthDate);
     const totalHours = differenceInHours(targetDate, birthDate);
     const totalMinutes = differenceInMinutes(targetDate, birthDate);
@@ -77,8 +77,8 @@ export default function AgeCalculator() {
                         <p className="text-sm text-muted-foreground">Age</p>
                         <p className="text-2xl font-bold">{results.years} Years, {results.months} Months, {results.days} Days</p>
                     </div>
-                     <div className="text-sm space-y-1 text-muted-foreground pt-2 border-t">
-                        <p>{results.totalDays.toLocaleString()} days</p>
+                     <div className="text-sm space-y-1 text-muted-foreground pt-4 border-t">
+                        <p>or {results.totalDays.toLocaleString()} days</p>
                         <p>or {results.totalHours.toLocaleString()} hours</p>
                         <p>or {results.totalMinutes.toLocaleString()} minutes</p>
                         <p>or {results.totalSeconds.toLocaleString()} seconds</p>
