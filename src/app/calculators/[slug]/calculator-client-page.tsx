@@ -160,7 +160,6 @@ import GeriatricBmiCalculator from '@/components/calculators/geriatric-bmi-calcu
 import InsulinDosageCalculator from '@/components/calculators/insulin-dosage-calculator';
 import VitaminCalculator from '@/components/calculators/vitamin-calculator';
 import WeightWatchersPointsCalculator from '@/components/calculators/weight-watchers-points-calculator';
-import ProteinCalculator from '@/components/calculators/protein-calculator';
 
 
 type CalculatorClientPageProps = {
@@ -317,7 +316,6 @@ const calculatorComponents: { [key: string]: React.ComponentType<any> } = {
   'insulin-dosage-calculator': InsulinDosageCalculator,
   'vitamin-calculator': VitaminCalculator,
   'weight-watchers-points-calculator': WeightWatchersPointsCalculator,
-  'protein-calculator': ProteinCalculator,
 };
 
 const PageSkeleton = ({ calculator }: { calculator: Omit<Calculator, 'icon'> }) => (

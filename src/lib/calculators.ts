@@ -301,13 +301,6 @@ export const calculators: Calculator[] = [
     icon: Wheat,
   },
   {
-    name: 'Protein Calculator',
-    slug: 'protein-calculator',
-    description: 'Calculate your optimal daily protein intake for your body and goals.',
-    category: 'Health & Fitness',
-    icon: Soup,
-  },
-  {
     name: 'Vitamin Calculator',
     slug: 'vitamin-calculator',
     description: 'Informational tool about vitamin needs. Not a substitute for medical advice.',
