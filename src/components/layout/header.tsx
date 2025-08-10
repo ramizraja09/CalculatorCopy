@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { calculatorCategories } from '@/lib/calculators';
 import {
   Sheet,
+  SheetClose,
   SheetContent,
   SheetHeader,
   SheetTitle,
@@ -50,20 +51,23 @@ export default function Header() {
                 <SheetTitle className="sr-only">Main Menu</SheetTitle>
               </SheetHeader>
               <nav className="grid gap-6 text-lg font-medium mt-8">
-                <Link
-                  href="/calculators"
-                  className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground"
-                >
-                  All Calculators
-                </Link>
+                <SheetClose asChild>
+                  <Link
+                    href="/calculators"
+                    className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground"
+                  >
+                    All Calculators
+                  </Link>
+                </SheetClose>
                  {calculatorCategories.map((category) => (
-                    <Link
-                      href={`/calculators?category=${encodeURIComponent(category)}`}
-                      key={category}
-                      className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground"
-                    >
-                      {category}
-                    </Link>
+                    <SheetClose asChild key={category}>
+                      <Link
+                        href={`/calculators?category=${encodeURIComponent(category)}`}
+                        className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground"
+                      >
+                        {category}
+                      </Link>
+                    </SheetClose>
                   ))}
               </nav>
             </SheetContent>
