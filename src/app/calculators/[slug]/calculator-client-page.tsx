@@ -110,7 +110,6 @@ import OhmsLawCalculator from '@/components/calculators/ohms-law-calculator';
 import Vo2MaxEstimator from '@/components/calculators/vo2-max-estimator';
 import FfmiCalculator from '@/components/calculators/ffmi-calculator';
 import SleepCalculator from '@/components/calculators/sleep-calculator';
-import ProteinIntakeCalculator from '@/components/calculators/protein-intake-calculator';
 import HydrationCalculator from '@/components/calculators/hydration-calculator';
 import HealthyWeightGainCalculator from '@/components/calculators/healthy-weight-gain-calculator';
 import CardiovascularRiskCalculator from '@/components/calculators/cardiovascular-risk-calculator';
@@ -149,17 +148,13 @@ import ShouldIGoFreelanceCalculator from '@/components/calculators/should-i-go-f
 import WorkHoursCalculator from '@/components/calculators/work-hours-calculator';
 import RaisePercentageCalculator from '@/components/calculators/raise-percentage-calculator';
 import BloodSugarConverter from '@/components/calculators/blood-sugar-converter';
-import BmiCalculatorForKids from '@/components/calculators/bmi-calculator-for-kids';
-import BmiCalculatorForMen from '@/components/calculators/bmi-calculator-for-men';
-import BmiCalculatorForTeens from '@/components/calculators/bmi-calculator-for-teens';
-import BmiCalculatorForWomen from '@/components/calculators/bmi-calculator-for-women';
 import BmiWeightLossCalculator from '@/components/calculators/bmi-weight-loss-calculator';
 import CarbCalculator from '@/components/calculators/carb-calculator';
 import DiabetesRiskCalculator from '@/components/calculators/diabetes-risk-calculator';
-import GeriatricBmiCalculator from '@/components/calculators/geriatric-bmi-calculator';
 import InsulinDosageCalculator from '@/components/calculators/insulin-dosage-calculator';
 import VitaminCalculator from '@/components/calculators/vitamin-calculator';
 import WeightWatchersPointsCalculator from '@/components/calculators/weight-watchers-points-calculator';
+import ProteinIntakeCalculator from '@/components/calculators/protein-intake-calculator';
 
 
 type CalculatorClientPageProps = {
@@ -305,14 +300,9 @@ const calculatorComponents: { [key: string]: React.ComponentType<any> } = {
   'work-hours-calculator': WorkHoursCalculator,
   'raise-percentage-calculator': RaisePercentageCalculator,
   'blood-sugar-converter': BloodSugarConverter,
-  'bmi-calculator-for-kids': BmiCalculatorForKids,
-  'bmi-calculator-for-men': BmiCalculatorForMen,
-  'bmi-calculator-for-teens': BmiCalculatorForTeens,
-  'bmi-calculator-for-women': BmiCalculatorForWomen,
   'bmi-weight-loss-calculator': BmiWeightLossCalculator,
   'carb-calculator': CarbCalculator,
   'diabetes-risk-calculator': DiabetesRiskCalculator,
-  'geriatric-bmi-calculator': GeriatricBmiCalculator,
   'insulin-dosage-calculator': InsulinDosageCalculator,
   'vitamin-calculator': VitaminCalculator,
   'weight-watchers-points-calculator': WeightWatchersPointsCalculator,
