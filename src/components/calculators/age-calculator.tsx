@@ -36,8 +36,10 @@ export default function AgeCalculator() {
     const birthDate = new Date(data.birthDate);
     
     const years = differenceInYears(targetDate, birthDate);
-    const months = differenceInMonths(targetDate, subYears(birthDate, years));
-    const days = differenceInDays(targetDate, subMonths(subYears(birthDate, years), months));
+    let tempDate = subYears(birthDate, years);
+    const months = differenceInMonths(targetDate, tempDate);
+    tempDate = subMonths(tempDate, months);
+    const days = differenceInDays(targetDate, tempDate);
 
     const totalDays = differenceInDays(targetDate, birthDate);
     const totalHours = differenceInHours(targetDate, birthDate);
@@ -73,10 +75,10 @@ export default function AgeCalculator() {
                 <CardContent className="p-6 space-y-4">
                     <div>
                         <p className="text-sm text-muted-foreground">Age</p>
-                        <p className="text-2xl font-bold">{results.years} years, {results.months} months, {results.days} days</p>
+                        <p className="text-2xl font-bold">{results.years} Years, {results.months} Months, {results.days} Days</p>
                     </div>
-                     <div className="text-sm space-y-1 text-muted-foreground">
-                        <p>or {results.totalDays.toLocaleString()} days</p>
+                     <div className="text-sm space-y-1 text-muted-foreground pt-2 border-t">
+                        <p>{results.totalDays.toLocaleString()} days</p>
                         <p>or {results.totalHours.toLocaleString()} hours</p>
                         <p>or {results.totalMinutes.toLocaleString()} minutes</p>
                         <p>or {results.totalSeconds.toLocaleString()} seconds</p>
