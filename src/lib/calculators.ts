@@ -1,5 +1,6 @@
+
 import type { ComponentType } from 'react';
-import { PiggyBank, Car, Utensils, HeartPulse, Percent, Home, BrainCircuit, GraduationCap, TrendingUp, Footprints, Scale, Calculator, Calendar, Repeat, Atom, FlaskConical, Beaker, Ruler, Clock, Landmark, FileText, Wallet, Receipt, CreditCard, Recycle, Banknote, CandlestickChart, Briefcase, DraftingCompass, Cigarette, Droplets, Sun, Shirt, Building, Shovel, Box, Weight, Map, BookOpen, Beer, Dna, Leaf, Zap, Sigma, Coins, Award, Baby, UserCheck, Plane, ShoppingCart, TestTube2, CircuitBoard, Wallpaper, Activity, Moon, Soup, ShieldCheck, Handshake, Target, PaintRoller } from 'lucide-react';
+import { PiggyBank, Car, Utensils, HeartPulse, Percent, Home, BrainCircuit, GraduationCap, TrendingUp, Footprints, Scale, Calculator, Calendar, Repeat, Atom, FlaskConical, Beaker, Ruler, Clock, Landmark, FileText, Wallet, Receipt, CreditCard, Recycle, Banknote, CandlestickChart, Briefcase, DraftingCompass, Cigarette, Droplets, Sun, Shirt, Building, Shovel, Box, Weight, Map, BookOpen, Beer, Dna, Leaf, Zap, Sigma, Coins, Award, Baby, UserCheck, Plane, ShoppingCart, TestTube2, Wallpaper, Activity, Moon, Soup, ShieldCheck, Handshake, Target, PaintRoller, Ratio, FunctionSquare, Pilcrow, Infinity, Equal, GitCompareArrows, BookText, AreaChart, CircuitBoard } from 'lucide-react';
 
 export type Calculator = {
   name: string;
@@ -221,7 +222,7 @@ export const calculators: Calculator[] = [
     category: 'Finance',
     icon: ShoppingCart,
   },
-  // Health & Fitness (20 -> 29)
+  // Health & Fitness (29)
   {
     name: 'BMI Calculator',
     slug: 'bmi-calculator',
@@ -425,7 +426,7 @@ export const calculators: Calculator[] = [
     category: 'Health & Fitness',
     icon: Award,
   },
-  // Math (20)
+  // Math (20 -> 28)
   {
     name: 'Basic Calculator',
     slug: 'basic-calculator',
@@ -566,6 +567,62 @@ export const calculators: Calculator[] = [
     category: 'Math',
     icon: Repeat,
   },
+  {
+    name: 'Graphing Calculator',
+    slug: 'graphing-calculator',
+    description: 'Plot functions and equations on an interactive graph.',
+    category: 'Math',
+    icon: AreaChart,
+  },
+  {
+    name: 'Derivative Calculator',
+    slug: 'derivative-calculator',
+    description: 'Find the derivative of a function.',
+    category: 'Math',
+    icon: FunctionSquare,
+  },
+  {
+    name: 'Integral Calculator',
+    slug: 'integral-calculator',
+    description: 'Find the definite or indefinite integral of a function.',
+    category: 'Math',
+    icon: Pilcrow,
+  },
+  {
+    name: 'Limits Calculator',
+    slug: 'limits-calculator',
+    description: 'Evaluate the limit of a function as it approaches a value.',
+    category: 'Math',
+    icon: Infinity,
+  },
+  {
+    name: 'Equation Solver',
+    slug: 'equation-solver',
+    description: 'Solve for variables in various types of equations.',
+    category: 'Math',
+    icon: Equal,
+  },
+  {
+    name: 'Ratio Calculator',
+    slug: 'ratio-calculator',
+    description: 'Simplify ratios and solve for missing values in proportions.',
+    category: 'Math',
+    icon: Ratio,
+  },
+  {
+    name: 'Unit Converter',
+    slug: 'unit-converter',
+    description: 'Convert between various units of measurement (length, weight, temp, etc.).',
+    category: 'Math',
+    icon: GitCompareArrows,
+  },
+  {
+    name: 'Significant Figures Calculator',
+    slug: 'sig-fig-calculator',
+    description: 'Round numbers to a specified number of significant figures.',
+    category: 'Math',
+    icon: BookText,
+  },
   // Time & Date (10)
   {
     name: 'Age Calculator',
@@ -637,7 +694,7 @@ export const calculators: Calculator[] = [
     category: 'Time & Date',
     icon: Briefcase,
   },
-  // Everyday Utilities (8)
+  // Everyday Utilities (8 -> 6)
   {
     name: 'Tip Calculator',
     slug: 'tip-calculator',
@@ -764,3 +821,5 @@ export const calculators: Calculator[] = [
 
 export const calculatorCategories = [...new Set(calculators.map(c => c.category))].sort();
 export const calculatorNames = calculators.map(c => c.name);
+
+    

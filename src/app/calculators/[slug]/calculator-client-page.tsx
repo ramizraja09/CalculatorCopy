@@ -116,6 +116,14 @@ import HealthyWeightGainCalculator from '@/components/calculators/healthy-weight
 import CardiovascularRiskCalculator from '@/components/calculators/cardiovascular-risk-calculator';
 import MarinePftCalculator from '@/components/calculators/marine-pft-calculator';
 import NavyPrtCalculator from '@/components/calculators/navy-prt-calculator';
+import GraphingCalculator from '@/components/calculators/graphing-calculator';
+import DerivativeCalculator from '@/components/calculators/derivative-calculator';
+import IntegralCalculator from '@/components/calculators/integral-calculator';
+import LimitsCalculator from '@/components/calculators/limits-calculator';
+import EquationSolver from '@/components/calculators/equation-solver';
+import RatioCalculator from '@/components/calculators/ratio-calculator';
+import UnitConverter from '@/components/calculators/unit-converter';
+import SigFigCalculator from '@/components/calculators/sig-fig-calculator';
 
 type CalculatorClientPageProps = {
   calculator: Omit<Calculator, 'icon'>;
@@ -228,6 +236,14 @@ const calculatorComponents: { [key: string]: React.ComponentType<any> } = {
   'cardiovascular-risk-calculator': CardiovascularRiskCalculator,
   'marine-pft-calculator': MarinePftCalculator,
   'navy-prt-calculator': NavyPrtCalculator,
+  'graphing-calculator': GraphingCalculator,
+  'derivative-calculator': DerivativeCalculator,
+  'integral-calculator': IntegralCalculator,
+  'limits-calculator': LimitsCalculator,
+  'equation-solver': EquationSolver,
+  'ratio-calculator': RatioCalculator,
+  'unit-converter': UnitConverter,
+  'sig-fig-calculator': SigFigCalculator,
 };
 
 const PageSkeleton = ({ calculator }: { calculator: Omit<Calculator, 'icon'> }) => (
