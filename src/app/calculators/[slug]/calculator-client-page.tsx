@@ -106,7 +106,6 @@ import FreelanceRateCalculator from '@/components/calculators/freelance-rate-cal
 import WallpaperCalculator from '@/components/calculators/wallpaper-calculator';
 import DilutionCalculator from '@/components/calculators/dilution-calculator';
 import OhmsLawCalculator from '@/components/calculators/ohms-law-calculator';
-import DataTransferTimeCalculator from '@/components/calculators/data-transfer-time-calculator';
 import Vo2MaxEstimator from '@/components/calculators/vo2-max-estimator';
 import FfmiCalculator from '@/components/calculators/ffmi-calculator';
 import SleepCalculator from '@/components/calculators/sleep-calculator';
@@ -124,6 +123,15 @@ import EquationSolver from '@/components/calculators/equation-solver';
 import RatioCalculator from '@/components/calculators/ratio-calculator';
 import UnitConverter from '@/components/calculators/unit-converter';
 import SigFigCalculator from '@/components/calculators/sig-fig-calculator';
+import DataStorageConverter from '@/components/calculators/data-storage-converter';
+import DataTransferSpeedConverter from '@/components/calculators/data-transfer-speed-converter';
+import PressureConverter from '@/components/calculators/pressure-converter';
+import EnergyPowerConverter from '@/components/calculators/energy-power-converter';
+import ForceConverter from '@/components/calculators/force-converter';
+import AreaUnitConverter from '@/components/calculators/area-unit-converter';
+import SpeedConverter from '@/components/calculators/speed-converter';
+import DataTransferTimeCalculator from '@/components/calculators/data-transfer-time-calculator';
+
 
 type CalculatorClientPageProps = {
   calculator: Omit<Calculator, 'icon'>;
@@ -244,6 +252,13 @@ const calculatorComponents: { [key: string]: React.ComponentType<any> } = {
   'ratio-calculator': RatioCalculator,
   'unit-converter': UnitConverter,
   'sig-fig-calculator': SigFigCalculator,
+  'data-storage-converter': DataStorageConverter,
+  'data-transfer-speed-converter': DataTransferSpeedConverter,
+  'pressure-converter': PressureConverter,
+  'energy-power-converter': EnergyPowerConverter,
+  'force-converter': ForceConverter,
+  'area-unit-converter': AreaUnitConverter,
+  'speed-converter': SpeedConverter,
 };
 
 const PageSkeleton = ({ calculator }: { calculator: Omit<Calculator, 'icon'> }) => (

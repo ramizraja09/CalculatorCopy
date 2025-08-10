@@ -1,6 +1,6 @@
 
 import type { ComponentType } from 'react';
-import { PiggyBank, Car, Utensils, HeartPulse, Percent, Home, BrainCircuit, GraduationCap, TrendingUp, Footprints, Scale, Calculator, Calendar, Repeat, Atom, FlaskConical, Beaker, Ruler, Clock, Landmark, FileText, Wallet, Receipt, CreditCard, Recycle, Banknote, CandlestickChart, Briefcase, DraftingCompass, Cigarette, Droplets, Sun, Shirt, Building, Shovel, Box, Weight, Map, BookOpen, Beer, Dna, Leaf, Zap, Sigma, Coins, Award, Baby, UserCheck, Plane, ShoppingCart, TestTube2, Wallpaper, Activity, Moon, Soup, ShieldCheck, Handshake, Target, PaintRoller, Ratio, FunctionSquare, Pilcrow, Infinity, Equal, GitCompareArrows, BookText, AreaChart, CircuitBoard } from 'lucide-react';
+import { PiggyBank, Car, Utensils, HeartPulse, Percent, Home, BrainCircuit, GraduationCap, TrendingUp, Footprints, Scale, Calculator, Calendar, Repeat, Atom, FlaskConical, Beaker, Ruler, Clock, Landmark, FileText, Wallet, Receipt, CreditCard, Recycle, Banknote, CandlestickChart, Briefcase, DraftingCompass, Cigarette, Droplets, Sun, Shirt, Building, Shovel, Box, Weight, Map, BookOpen, Beer, Dna, Leaf, Zap, Sigma, Coins, Award, Baby, UserCheck, Plane, ShoppingCart, TestTube2, Wallpaper, Activity, Moon, Soup, ShieldCheck, Handshake, Target, PaintRoller, Ratio, FunctionSquare, Pilcrow, Infinity, Equal, GitCompareArrows, BookText, AreaChart, CircuitBoard, HardDrive, Network, Gauge, Move, Square } from 'lucide-react';
 
 export type Calculator = {
   name: string;
@@ -631,7 +631,7 @@ export const calculators: Calculator[] = [
     category: 'Math',
     icon: BookText,
   },
-   // Time & Date
+   // Other
   {
     name: 'Age Calculator',
     slug: 'age-calculator',
@@ -702,7 +702,6 @@ export const calculators: Calculator[] = [
     category: 'Other',
     icon: Briefcase,
   },
-  // Career
   {
     name: 'Salary Negotiation Calculator',
     slug: 'salary-negotiation-calculator',
@@ -724,7 +723,6 @@ export const calculators: Calculator[] = [
     category: 'Other',
     icon: Target,
   },
-  // Everyday Utilities
   {
     name: 'Sun Angle Calculator',
     slug: 'sun-angle-calculator',
@@ -788,13 +786,6 @@ export const calculators: Calculator[] = [
     category: 'Other',
     icon: CircuitBoard,
   },
-  {
-    name: 'Data Transfer Time Calculator',
-    slug: 'data-transfer-time-calculator',
-    description: 'Estimate how long it will take to transfer a file over a specific network speed.',
-    category: 'Other',
-    icon: CircuitBoard,
-  },
   // Unit Converters
   {
     name: 'Unit Converter',
@@ -803,12 +794,61 @@ export const calculators: Calculator[] = [
     category: 'Unit Converters',
     icon: GitCompareArrows,
   },
-    {
+  {
     name: 'Currency Converter',
     slug: 'currency-converter',
     description: 'Convert between different currencies using the latest exchange rates.',
     category: 'Unit Converters',
     icon: Coins,
+  },
+  {
+    name: 'Data Storage Converter',
+    slug: 'data-storage-converter',
+    description: 'Convert between bytes, kilobytes, megabytes, gigabytes, and terabytes.',
+    category: 'Unit Converters',
+    icon: HardDrive,
+  },
+  {
+    name: 'Data Transfer Speed Converter',
+    slug: 'data-transfer-speed-converter',
+    description: 'Convert between different data transfer speed units (e.g., Mbps to MB/s).',
+    category: 'Unit Converters',
+    icon: Network,
+  },
+  {
+    name: 'Pressure Converter',
+    slug: 'pressure-converter',
+    description: 'Convert between pressure units like pascals, PSI, and atmospheres.',
+    category: 'Unit Converters',
+    icon: Gauge,
+  },
+  {
+    name: 'Energy & Power Converter',
+    slug: 'energy-power-converter',
+    description: 'Convert between energy (joules, calories) and power (watts, horsepower) units.',
+    category: 'Unit Converters',
+    icon: Zap,
+  },
+  {
+    name: 'Force Converter',
+    slug: 'force-converter',
+    description: 'Convert between units of force, such as Newtons and pounds-force.',
+    category: 'Unit Converters',
+    icon: Move,
+  },
+  {
+    name: 'Area Unit Converter',
+    slug: 'area-unit-converter',
+    description: 'Convert between area units like square feet, square meters, and acres.',
+    category: 'Unit Converters',
+    icon: Square,
+  },
+  {
+    name: 'Speed Converter',
+    slug: 'speed-converter',
+    description: 'Convert between different units of speed, such as MPH, KPH, and m/s.',
+    category: 'Unit Converters',
+    icon: Gauge,
   },
 ];
 
