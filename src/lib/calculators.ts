@@ -238,20 +238,6 @@ export const calculators: Calculator[] = [
     icon: Droplets,
   },
   {
-    name: 'Diabetes Risk Calculator',
-    slug: 'diabetes-risk-calculator',
-    description: 'Assess your risk for type 2 diabetes based on common factors. Not a diagnostic tool.',
-    category: 'Health & Fitness',
-    icon: Stethoscope,
-  },
-  {
-    name: 'Insulin Dosage Calculator',
-    slug: 'insulin-dosage-calculator',
-    description: 'SAFETY WARNING: For informational purposes only. Consult a doctor for insulin dosage.',
-    category: 'Health & Fitness',
-    icon: Syringe,
-  },
-  {
     name: 'Calorie Calculator',
     slug: 'calorie-calculator',
     description: 'Estimate your daily calorie needs for maintaining, losing, or gaining weight.',
@@ -264,13 +250,6 @@ export const calculators: Calculator[] = [
     description: 'Calculate your recommended daily carbohydrate intake based on your goals.',
     category: 'Health & Fitness',
     icon: Wheat,
-  },
-  {
-    name: 'Vitamin Calculator',
-    slug: 'vitamin-calculator',
-    description: 'Informational tool about vitamin needs. Not a substitute for medical advice.',
-    category: 'Health & Fitness',
-    icon: Sparkles,
   },
   {
     name: 'Weight Watchers Points Calculator',

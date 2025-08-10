@@ -150,9 +150,6 @@ import RaisePercentageCalculator from '@/components/calculators/raise-percentage
 import BloodSugarConverter from '@/components/calculators/blood-sugar-converter';
 import BmiWeightLossCalculator from '@/components/calculators/bmi-weight-loss-calculator';
 import CarbCalculator from '@/components/calculators/carb-calculator';
-import DiabetesRiskCalculator from '@/components/calculators/diabetes-risk-calculator';
-import InsulinDosageCalculator from '@/components/calculators/insulin-dosage-calculator';
-import VitaminCalculator from '@/components/calculators/vitamin-calculator';
 import WeightWatchersPointsCalculator from '@/components/calculators/weight-watchers-points-calculator';
 import ProteinIntakeCalculator from '@/components/calculators/protein-intake-calculator';
 
@@ -302,13 +299,20 @@ const calculatorComponents: { [key: string]: React.ComponentType<any> } = {
   'blood-sugar-converter': BloodSugarConverter,
   'bmi-weight-loss-calculator': BmiWeightLossCalculator,
   'carb-calculator': CarbCalculator,
-  'diabetes-risk-calculator': DiabetesRiskCalculator,
-  'insulin-dosage-calculator': InsulinDosageCalculator,
-  'vitamin-calculator': VitaminCalculator,
   'weight-watchers-points-calculator': WeightWatchersPointsCalculator,
 };
 
-const PageSkeleton = ({ calculator }: { calculator: Omit<Calculator, 'icon'> }) => (
+const PageSkeleton = ({ calculator }: { calculator: Omit<Calculator, 'icon'> }) => {
+  const [isClient, setIsClient] = useState(false);
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  if (!isClient) {
+    return null;
+  }
+  
+  return (
     <div className="container max-w-4xl mx-auto p-4 md:p-8 space-y-6">
         <Link href="/" className="flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors">
             <ArrowLeft className="h-4 w-4" />
@@ -344,7 +348,8 @@ const PageSkeleton = ({ calculator }: { calculator: Omit<Calculator, 'icon'> }) 
             </CardFooter>
         </Card>
     </div>
-);
+  );
+};
 
 
 function CalculatorPageContent({ calculator }: CalculatorClientPageProps) {
@@ -498,6 +503,10 @@ export default function CalculatorClientPage({ calculator }: CalculatorClientPag
   if (!isClient) {
     return <PageSkeleton calculator={calculator} />;
   }
-
-  return <CalculatorPageContent calculator={calculator} />;
+  
+  return (
+     <Suspense fallback={<PageSkeleton calculator={calculator} />}>
+      <CalculatorPageContent calculator={calculator} />
+    </Suspense>
+  );
 }
