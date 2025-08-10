@@ -426,7 +426,7 @@ export const calculators: Calculator[] = [
     category: 'Health & Fitness',
     icon: Award,
   },
-  // Math (20 -> 28)
+  // Math (28)
   {
     name: 'Basic Calculator',
     slug: 'basic-calculator',
@@ -748,73 +748,70 @@ export const calculators: Calculator[] = [
     name: 'Dilution Calculator',
     slug: 'dilution-calculator',
     description: 'Calculate how to dilute a concentrated solution to a desired final volume or concentration.',
-    category: 'Everyday Utilities',
+    category: 'Other',
     icon: TestTube2,
   },
-  // Home & Garden (4)
    {
     name: 'Concrete Calculator',
     slug: 'concrete-calculator',
     description: 'Estimate the amount of concrete you need for a slab, footing, or post.',
-    category: 'Home & Garden',
+    category: 'Other',
     icon: Shovel,
   },
   {
     name: 'Paint Calculator',
     slug: 'paint-calculator',
     description: 'Estimate how much paint you need to cover a certain area.',
-    category: 'Home & Garden',
+    category: 'Other',
     icon: PaintRoller,
   },
   {
     name: 'Plant Spacing Calculator',
     slug: 'plant-spacing-calculator',
     description: 'Calculate how many plants you can fit in a given garden area.',
-    category: 'Home & Garden',
+    category: 'Other',
     icon: Leaf,
   },
   {
     name: 'Wallpaper Calculator',
     slug: 'wallpaper-calculator',
     description: 'Determine how many rolls of wallpaper are needed for a room.',
-    category: 'Home & Garden',
+    category: 'Other',
     icon: Wallpaper,
   },
-  // Electronics (2)
   {
     name: 'Ohm\'s Law Calculator',
     slug: 'ohms-law-calculator',
     description: 'Calculate Voltage, Current, Resistance, or Power using Ohm\'s Law.',
-    category: 'Electronics',
+    category: 'Other',
     icon: CircuitBoard,
   },
   {
     name: 'Data Transfer Time Calculator',
     slug: 'data-transfer-time-calculator',
     description: 'Estimate how long it will take to transfer a file over a specific network speed.',
-    category: 'Electronics',
+    category: 'Other',
     icon: CircuitBoard,
   },
-  // Career (3)
   {
     name: 'Salary Negotiation Calculator',
     slug: 'salary-negotiation-calculator',
     description: 'Determine a target salary range based on current pay and market rates.',
-    category: 'Career',
+    category: 'Other',
     icon: Handshake,
   },
   {
     name: 'Job Offer Comparison Calculator',
     slug: 'job-offer-comparison-calculator',
     description: 'Compare two job offers side-by-side, including benefits and other factors.',
-    category: 'Career',
+    category: 'Other',
     icon: Briefcase,
   },
   {
     name: 'Freelance Rate Calculator',
     slug: 'freelance-rate-calculator',
     description: 'Determine an hourly or project rate based on your desired salary and expenses.',
-    category: 'Career',
+    category: 'Other',
     icon: Target,
   },
 ];
