@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { useState, useEffect } from 'react';
@@ -49,7 +50,7 @@ type FormData = z.infer<typeof formSchema>;
 
 export default function SunAngleCalculator() {
   const [results, setResults] = useState<any>(null);
-  const [currentTime, setCurrentTime] = useState<Date>(new Date());
+  const [currentTime, setCurrentTime] = useState<string>('Loading...');
   const [isClient, setIsClient] = useState(false);
 
   const { control, handleSubmit, getValues, formState: { errors } } = useForm<FormData>({
@@ -62,9 +63,13 @@ export default function SunAngleCalculator() {
 
   useEffect(() => {
     setIsClient(true);
+    // Set initial position on mount
+    const { latitude, longitude } = getValues();
+    setResults(getSunPosition(new Date(), latitude, longitude));
+    
     const timer = setInterval(() => {
         const now = new Date();
-        setCurrentTime(now);
+        setCurrentTime(now.toUTCString());
         const { latitude, longitude } = getValues();
         setResults(getSunPosition(now, latitude, longitude));
     }, 1000);
@@ -99,7 +104,7 @@ export default function SunAngleCalculator() {
          <Card className="mt-4">
             <CardContent className="p-4 text-center">
                  <p className="text-sm text-muted-foreground">Current UTC Time</p>
-                 <p className="font-mono">{isClient ? currentTime.toUTCString() : "Loading..."}</p>
+                 <p className="font-mono">{currentTime}</p>
             </CardContent>
          </Card>
       </div>

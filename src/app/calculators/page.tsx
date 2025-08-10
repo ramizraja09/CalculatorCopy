@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { useState, useMemo, useEffect } from 'react';
@@ -33,7 +34,13 @@ function CalculatorsPageContent() {
     const { favorites, toggleFavorite, isLoaded } = useFavorites();
   
     useEffect(() => {
-        setSearchTerm(initialCategory || '');
+        // We only set the search term from the category on initial load or when the category changes.
+        // This allows the user to clear the search bar and see all calculators again.
+        if (initialCategory) {
+            setSearchTerm(initialCategory);
+        } else {
+            setSearchTerm('');
+        }
     }, [initialCategory]);
 
     const pageTitle = initialCategory ? `${initialCategory} Calculators` : 'All Calculators';
@@ -45,13 +52,17 @@ function CalculatorsPageContent() {
         }
         let results = calculators;
         
+        // If an initial category is set, we start with that subset
         if (initialCategory) {
             results = results.filter(c => c.category === initialCategory);
         }
 
-        if (searchTerm) {
+        // Then, we filter by the live search term if it's different from the initial category or if there's no initial category
+        if (searchTerm && searchTerm.toLowerCase() !== (initialCategory || '').toLowerCase()) {
             const lowerCaseSearchTerm = searchTerm.toLowerCase();
-            results = results.filter(calculator => 
+            // If there was an initial category, we search within that. Otherwise, we search all calculators.
+            const sourceToFilter = initialCategory ? results : calculators;
+            results = sourceToFilter.filter(calculator => 
                 calculator.name.toLowerCase().includes(lowerCaseSearchTerm) ||
                 calculator.description.toLowerCase().includes(lowerCaseSearchTerm) ||
                 calculator.category.toLowerCase().includes(lowerCaseSearchTerm)
