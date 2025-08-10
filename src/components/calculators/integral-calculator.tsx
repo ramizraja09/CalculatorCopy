@@ -10,7 +10,7 @@ export default function IntegralCalculator() {
         <h3 className="text-xl font-semibold text-center">Coming Soon</h3>
         <Card className="flex items-center justify-center h-60 bg-muted/50 border-dashed">
             <p className="text-sm text-muted-foreground text-center p-4">
-              A full integral calculator with step-by-step solutions requires a symbolic math engine and is currently under development.
+              Symbolic integration is a complex feature. While the 'mathjs' library has been added for derivatives, its integral support is limited. A full integral calculator is still under development.
             </p>
         </Card>
     </div>

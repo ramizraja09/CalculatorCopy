@@ -12,13 +12,14 @@ import { Button } from '@/components/ui/button';
 import { Equal } from 'lucide-react';
 
 const formSchema = z.object({
-  a: z.number().optional(),
-  b: z.number().optional(),
-  c: z.number().optional(),
-  d: z.number().optional(),
+  a: z.string().optional(),
+  b: z.string().optional(),
+  c: z.string().optional(),
+  d: z.string().optional(),
 }).refine(data => {
-    const definedValues = [data.a, data.b, data.c, data.d].filter(v => v !== undefined && v !== null && !isNaN(v)).length;
-    return definedValues === 3;
+    const values = [data.a, data.b, data.c, data.d];
+    const emptyCount = values.filter(v => v === undefined || v === '').length;
+    return emptyCount === 1;
 }, {
     message: "Please enter exactly three values to solve for the fourth.",
     path: ['a'], 
@@ -30,21 +31,25 @@ export default function RatioCalculator() {
   const [result, setResult] = useState<string | null>(null);
   const { control, handleSubmit, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(formSchema),
-    defaultValues: { a: 2, b: 3, c: 10, d: undefined },
+    defaultValues: { a: "2", b: "3", c: "10", d: "" },
   });
 
   const solveRatio = (data: FormData) => {
-    let { a, b, c, d } = data;
+    const a = data.a !== '' ? parseFloat(data.a as string) : undefined;
+    const b = data.b !== '' ? parseFloat(data.b as string) : undefined;
+    const c = data.c !== '' ? parseFloat(data.c as string) : undefined;
+    const d = data.d !== '' ? parseFloat(data.d as string) : undefined;
+
     let solvedValue;
     let missingVar;
 
-    if (a === undefined || a === null || isNaN(a)) {
+    if (a === undefined) {
         solvedValue = (b! * c!) / d!;
         missingVar = `A = ${solvedValue.toFixed(4)}`;
-    } else if (b === undefined || b === null || isNaN(b)) {
+    } else if (b === undefined) {
         solvedValue = (a! * d!) / c!;
         missingVar = `B = ${solvedValue.toFixed(4)}`;
-    } else if (c === undefined || c === null || isNaN(c)) {
+    } else if (c === undefined) {
         solvedValue = (a! * d!) / b!;
         missingVar = `C = ${solvedValue.toFixed(4)}`;
     } else {
@@ -59,18 +64,18 @@ export default function RatioCalculator() {
       <div className="flex flex-col md:flex-row items-center justify-center gap-4">
         {/* Ratio A:B */}
         <div className="flex items-center gap-2">
-            <Controller name="a" control={control} render={({ field }) => <Input placeholder="A" className="w-24 text-center" type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? undefined : parseFloat(e.target.value))} value={field.value ?? ''} />} />
+            <Controller name="a" control={control} render={({ field }) => <Input placeholder="A" className="w-24 text-center" type="number" step="any" {...field} />} />
             <Label className="text-xl">:</Label>
-            <Controller name="b" control={control} render={({ field }) => <Input placeholder="B" className="w-24 text-center" type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? undefined : parseFloat(e.target.value))} value={field.value ?? ''} />} />
+            <Controller name="b" control={control} render={({ field }) => <Input placeholder="B" className="w-24 text-center" type="number" step="any" {...field} />} />
         </div>
         
         <Equal />
 
         {/* Ratio C:D */}
          <div className="flex items-center gap-2">
-            <Controller name="c" control={control} render={({ field }) => <Input placeholder="C" className="w-24 text-center" type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? undefined : parseFloat(e.target.value))} value={field.value ?? ''} />} />
+            <Controller name="c" control={control} render={({ field }) => <Input placeholder="C" className="w-24 text-center" type="number" step="any" {...field} />} />
             <Label className="text-xl">:</Label>
-            <Controller name="d" control={control} render={({ field }) => <Input placeholder="D" className="w-24 text-center" type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? undefined : parseFloat(e.target.value))} value={field.value ?? ''} />} />
+            <Controller name="d" control={control} render={({ field }) => <Input placeholder="D" className="w-24 text-center" type="number" step="any" {...field} />} />
         </div>
       </div>
        {errors.a && <p className="text-destructive text-sm mt-1 text-center">{errors.a.message}</p>}

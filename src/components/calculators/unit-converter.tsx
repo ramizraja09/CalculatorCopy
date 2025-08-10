@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -26,8 +26,8 @@ const conversionFactors: { [key: string]: { [key: string]: number } } = {
     ounces: 35.274,
   },
   temperature: {
-    celsius: 1, // These are placeholders, temp conversion is not factor-based
-    fahrenheit: 1, 
+    celsius: 1,
+    fahrenheit: 1,
     kelvin: 1,
   }
 };
@@ -44,7 +44,7 @@ type FormData = z.infer<typeof formSchema>;
 export default function UnitConverter() {
   const [result, setResult] = useState<string | null>(null);
 
-  const { control, handleSubmit, watch, setValue } = useForm<FormData>({
+  const { control, handleSubmit, watch, setValue, trigger } = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       category: 'length',
@@ -54,44 +54,49 @@ export default function UnitConverter() {
     },
   });
 
-  const category = watch('category');
+  const formData = watch();
+
+  useEffect(() => {
+    convertUnits(formData);
+  }, [formData]);
 
   const handleCategoryChange = (newCategory: string) => {
     setValue('category', newCategory);
     const units = Object.keys(conversionFactors[newCategory]);
     setValue('fromUnit', units[0]);
     setValue('toUnit', units[1] || units[0]);
+    trigger();
   }
 
   const convertUnits = (data: FormData) => {
+    if (!data.fromUnit || !data.toUnit) return;
+
     const { category, fromUnit, toUnit, value } = data;
     
     let convertedValue;
     if (category === 'temperature') {
-      if (fromUnit === toUnit) {
-        convertedValue = value;
-      } else if (fromUnit === 'celsius' && toUnit === 'fahrenheit') {
-        convertedValue = (value * 9/5) + 32;
-      } else if (fromUnit === 'fahrenheit' && toUnit === 'celsius') {
-        convertedValue = (value - 32) * 5/9;
-      } else if (fromUnit === 'celsius' && toUnit === 'kelvin') {
-        convertedValue = value + 273.15;
-      } else if (fromUnit === 'kelvin' && toUnit === 'celsius') {
-        convertedValue = value - 273.15;
-      } else if (fromUnit === 'fahrenheit' && toUnit === 'kelvin') {
-        convertedValue = (value - 32) * 5/9 + 273.15;
-      } else if (fromUnit === 'kelvin' && toUnit === 'fahrenheit') {
-        convertedValue = (value - 273.15) * 9/5 + 32;
-      } else {
-        convertedValue = value; // Should not happen with valid units
-      }
+        if (fromUnit === toUnit) {
+            convertedValue = value;
+        } else if (fromUnit === 'celsius' && toUnit === 'fahrenheit') {
+            convertedValue = (value * 9/5) + 32;
+        } else if (fromUnit === 'fahrenheit' && toUnit === 'celsius') {
+            convertedValue = (value - 32) * 5/9;
+        } else if (fromUnit === 'celsius' && toUnit === 'kelvin') {
+            convertedValue = value + 273.15;
+        } else if (fromUnit === 'kelvin' && toUnit === 'celsius') {
+            convertedValue = value - 273.15;
+        } else if (fromUnit === 'fahrenheit' && toUnit === 'kelvin') {
+            convertedValue = (value - 32) * 5/9 + 273.15;
+        } else { // kelvin to fahrenheit
+            convertedValue = (value - 273.15) * 9/5 + 32;
+        }
     } else {
       const factors = conversionFactors[category];
       const valueInBaseUnit = value / factors[fromUnit];
       convertedValue = valueInBaseUnit * factors[toUnit];
     }
     
-    setResult(convertedValue.toFixed(4));
+    setResult(convertedValue.toLocaleString(undefined, { maximumFractionDigits: 4 }));
   };
 
   return (
@@ -101,7 +106,7 @@ export default function UnitConverter() {
         <CardContent className="space-y-4">
           <div>
             <Label>Category</Label>
-            <Select onValueChange={handleCategoryChange} defaultValue={category}>
+            <Select onValueChange={handleCategoryChange} value={formData.category}>
                 <SelectTrigger><SelectValue/></SelectTrigger>
                 <SelectContent>
                   {Object.keys(conversionFactors).map(cat => <SelectItem key={cat} value={cat} className="capitalize">{cat}</SelectItem>)}
@@ -115,7 +120,7 @@ export default function UnitConverter() {
                 <Select onValueChange={field.onChange} value={field.value}>
                     <SelectTrigger><SelectValue/></SelectTrigger>
                     <SelectContent>
-                      {Object.keys(conversionFactors[category]).map(unit => <SelectItem key={unit} value={unit} className="capitalize">{unit}</SelectItem>)}
+                      {Object.keys(conversionFactors[formData.category]).map(unit => <SelectItem key={unit} value={unit} className="capitalize">{unit}</SelectItem>)}
                     </SelectContent>
                 </Select>
               )} />
@@ -126,7 +131,7 @@ export default function UnitConverter() {
                 <Select onValueChange={field.onChange} value={field.value}>
                     <SelectTrigger><SelectValue/></SelectTrigger>
                     <SelectContent>
-                      {Object.keys(conversionFactors[category]).map(unit => <SelectItem key={unit} value={unit} className="capitalize">{unit}</SelectItem>)}
+                      {Object.keys(conversionFactors[formData.category]).map(unit => <SelectItem key={unit} value={unit} className="capitalize">{unit}</SelectItem>)}
                     </SelectContent>
                 </Select>
               )} />
@@ -134,9 +139,8 @@ export default function UnitConverter() {
           </div>
           <div>
             <Label>Value</Label>
-            <Controller name="value" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
+            <Controller name="value" control={control} render={({ field }) => <Input type="number" step="any" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
           </div>
-          <Button type="submit" className="w-full">Convert</Button>
         </CardContent>
       </Card>
 
