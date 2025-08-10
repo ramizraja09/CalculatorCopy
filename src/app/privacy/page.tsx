@@ -22,7 +22,7 @@ export default function PrivacyPage() {
           <p><strong>Last Updated:</strong> {lastUpdated || 'Loading...'}</p>
 
           <p>
-            Your privacy is important to us. It is top100calculators' policy to respect your privacy regarding any information we may collect from you across our website.
+            Your privacy is important to us. It is My Genius Calculator's policy to respect your privacy regarding any information we may collect from you across our website.
           </p>
 
           <h2 className="text-2xl font-headline text-foreground pt-4">Information We Collect</h2>
@@ -50,7 +50,7 @@ export default function PrivacyPage() {
           
           <h2 className="text-2xl font-headline text-foreground pt-4">Contact Us</h2>
            <p>
-            If you have any questions about this Privacy Policy, please contact us at <a href="mailto:privacy@top100calculators.com" className="text-primary hover:underline">privacy@top100calculators.com</a>.
+            If you have any questions about this Privacy Policy, please contact us at <a href="mailto:privacy@mygeniuscalculator.com" className="text-primary hover:underline">privacy@mygeniuscalculator.com</a>.
           </p>
         </CardContent>
       </Card>

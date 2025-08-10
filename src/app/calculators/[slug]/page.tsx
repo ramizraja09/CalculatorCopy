@@ -23,7 +23,7 @@ export async function generateMetadata({ params }: CalculatorPageProps): Promise
     };
   }
   return {
-    title: `${calculator.name} — Free Online ${calculator.category} Calculator | top100calculators`,
+    title: `${calculator.name} — Free Online ${calculator.category} Calculator | My Genius Calculator`,
     description: calculator.description,
   };
 }

@@ -19,7 +19,7 @@ export default function Header() {
         <div className="flex items-center">
           <Link href="/" className="flex items-center space-x-2 mr-6">
             <Calculator className="h-6 w-6 text-primary" />
-            <span className="font-headline text-xl font-bold text-foreground">top100calculators</span>
+            <span className="font-headline text-xl font-bold text-foreground">My Genius Calculator</span>
           </Link>
           <nav className="hidden md:flex items-center space-x-4 lg:space-x-6 text-sm font-medium">
               <Link href="/calculators" className="text-muted-foreground transition-colors hover:text-foreground">

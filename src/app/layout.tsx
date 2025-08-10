@@ -5,8 +5,8 @@ import Header from '@/components/layout/header';
 import Footer from '@/components/layout/footer';
 
 export const metadata: Metadata = {
-  title: 'Top 100 Calculators - Free Online Calculators',
-  description: 'The 100 most-used online calculators for finance, health, math, and more. Clean, fast, and accessible.',
+  title: 'My Genius Calculator - Free Online Calculators',
+  description: 'My Genius Calculator provides a wide array of free online calculators for finance, health, math, and more. Clean, fast, and accessible.',
 };
 
 export default function RootLayout({
