@@ -1,6 +1,6 @@
 
 import type { ComponentType } from 'react';
-import { PiggyBank, Car, Utensils, HeartPulse, Percent, Home, BrainCircuit, GraduationCap, TrendingUp, Footprints, Scale, Calculator, Calendar, Repeat, Atom, FlaskConical, Beaker, Ruler, Clock, Landmark, FileText, Wallet, Receipt, CreditCard, Recycle, Banknote, CandlestickChart, Briefcase, DraftingCompass, Cigarette, Droplets, Sun, Shirt, Building, Shovel, Box, Weight, Map, BookOpen, Beer, Dna, Leaf, Zap, Sigma, Coins, Award, Baby, UserCheck, Plane, ShoppingCart, TestTube2, Wallpaper, Activity, Moon, Soup, ShieldCheck, Handshake, Target, PaintRoller, Ratio, FunctionSquare, Pilcrow, Infinity, Equal, GitCompareArrows, BookText, AreaChart, CircuitBoard, HardDrive, Network, Gauge, Move, Square } from 'lucide-react';
+import { PiggyBank, Car, Utensils, HeartPulse, Percent, Home, BrainCircuit, GraduationCap, TrendingUp, Footprints, Scale, Calculator, Calendar, Repeat, Atom, FlaskConical, Beaker, Ruler, Clock, Landmark, FileText, Wallet, Receipt, CreditCard, Recycle, Banknote, CandlestickChart, Briefcase, DraftingCompass, Cigarette, Droplets, Sun, Shirt, Building, Shovel, Box, Weight, Map, BookOpen, Beer, Dna, Leaf, Zap, Sigma, Coins, Award, Baby, UserCheck, Plane, ShoppingCart, TestTube2, Wallpaper, Activity, Moon, Soup, ShieldCheck, Handshake, Target, PaintRoller, Ratio, FunctionSquare, Pilcrow, Infinity, Equal, GitCompareArrows, BookText, AreaChart, CircuitBoard, HardDrive, Network, Gauge, Move, Square, Telescope, Text, Asterisk } from 'lucide-react';
 
 export type Calculator = {
   name: string;
@@ -478,20 +478,6 @@ export const calculators: Calculator[] = [
     icon: Sigma,
   },
   {
-    name: 'Area Calculator',
-    slug: 'area-calculator',
-    description: 'Calculate the area of various shapes like circles, squares, and triangles.',
-    category: 'Math',
-    icon: DraftingCompass,
-  },
-  {
-    name: 'Volume Calculator',
-    slug: 'volume-calculator',
-    description: 'Calculate the volume of 3D shapes like spheres, cubes, and cylinders.',
-    category: 'Math',
-    icon: Box,
-  },
-  {
     name: 'Prime Number Calculator',
     slug: 'prime-number-calculator',
     description: 'Check if a number is prime and generate a list of prime numbers.',
@@ -795,7 +781,7 @@ export const calculators: Calculator[] = [
   },
   // Unit Converters
   {
-    name: 'Unit Converter',
+    name: 'Universal Unit Converter',
     slug: 'unit-converter',
     description: 'Convert between various units of measurement (length, weight, temp, etc.).',
     category: 'Unit Converters',
@@ -851,18 +837,96 @@ export const calculators: Calculator[] = [
     icon: Move,
   },
   {
-    name: 'Area Unit Converter',
-    slug: 'area-unit-converter',
-    description: 'Convert between area units like square feet, square meters, and acres.',
-    category: 'Unit Converters',
-    icon: Square,
-  },
-  {
     name: 'Speed Converter',
     slug: 'speed-converter',
     description: 'Convert between different units of speed, such as MPH, KPH, and m/s.',
     category: 'Unit Converters',
     icon: Gauge,
+  },
+  // Length and area converters
+  {
+    name: 'Acreage Calculator',
+    slug: 'acreage-calculator',
+    description: 'Calculate the total acreage of a plot of land from its dimensions.',
+    category: 'Length and area converters',
+    icon: Map,
+  },
+  {
+    name: 'Area Converter',
+    slug: 'area-converter',
+    description: 'Convert between area units like square feet, square meters, and acres.',
+    category: 'Length and area converters',
+    icon: Square,
+  },
+  {
+    name: 'Ares to Hectares Converter',
+    slug: 'ares-to-hectares-converter',
+    description: 'Convert between ares and hectares for land measurement.',
+    category: 'Length and area converters',
+    icon: Square,
+  },
+  {
+    name: 'Astronomical Unit Calculator',
+    slug: 'astronomical-unit-converter',
+    description: 'Convert between astronomical units, light-years, and parsecs.',
+    category: 'Length and area converters',
+    icon: Telescope,
+  },
+  {
+    name: 'Decimeter to Meter Converter',
+    slug: 'decimeter-to-meter-converter',
+    description: 'Convert decimeters to meters and vice-versa.',
+    category: 'Length and area converters',
+    icon: Ruler,
+  },
+  {
+    name: 'Feet and Inches Calculator',
+    slug: 'feet-and-inches-calculator',
+    description: 'Add or subtract measurements in feet and inches.',
+    category: 'Length and area converters',
+    icon: Ruler,
+  },
+  {
+    name: 'Height in Inches Calculator',
+    slug: 'height-in-inches-calculator',
+    description: 'Quickly convert a height from feet and inches to total inches.',
+    category: 'Length and area converters',
+    icon: Ruler,
+  },
+  {
+    name: 'Inches to Fraction Calculator',
+    slug: 'inches-to-fraction-calculator',
+    description: 'Convert a decimal inch value to its nearest fraction equivalent.',
+    category: 'Length and area converters',
+    icon: Text,
+  },
+  {
+    name: 'Length Converter',
+    slug: 'length-converter',
+    description: 'Convert between various units of length, such as meters, feet, and miles.',
+    category: 'Length and area converters',
+    icon: Ruler,
+  },
+  {
+    name: 'Light Year Converter',
+    slug: 'light-year-converter',
+    description: 'Convert light years to other distance units like miles and kilometers.',
+    category: 'Length and area converters',
+    icon: Telescope,
+  },
+  {
+    name: 'Mesh to Micron Converter',
+    slug: 'mesh-to-micron-converter',
+    description: 'Convert between mesh size and micron rating for filters and sieves.',
+    category: 'Length and area converters',
+    icon: Asterisk,
+  },
+  {
+    name: 'Pixels to Inches Converter',
+    slug: 'pixels-to-inches-converter',
+    description: 'Convert pixels to inches based on screen resolution (DPI).',
+    category: 'Length and area converters',
+    icon: Square,
   },
 ];
 

@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { useState, useEffect, Suspense } from 'react';
@@ -128,10 +129,20 @@ import DataTransferSpeedConverter from '@/components/calculators/data-transfer-s
 import PressureConverter from '@/components/calculators/pressure-converter';
 import EnergyPowerConverter from '@/components/calculators/energy-power-converter';
 import ForceConverter from '@/components/calculators/force-converter';
-import AreaUnitConverter from '@/components/calculators/area-unit-converter';
 import SpeedConverter from '@/components/calculators/speed-converter';
 import DataTransferTimeCalculator from '@/components/calculators/data-transfer-time-calculator';
-
+import AcreageCalculator from '@/components/calculators/acreage-calculator';
+import AreaConverter from '@/components/calculators/area-converter';
+import AstronomicalUnitConverter from '@/components/calculators/astronomical-unit-converter';
+import FeetAndInchesCalculator from '@/components/calculators/feet-and-inches-calculator';
+import HeightInInchesCalculator from '@/components/calculators/height-in-inches-calculator';
+import InchesToFractionCalculator from '@/components/calculators/inches-to-fraction-calculator';
+import LengthConverter from '@/components/calculators/length-converter';
+import MeshToMicronConverter from '@/components/calculators/mesh-to-micron-converter';
+import PixelsToInchesConverter from '@/components/calculators/pixels-to-inches-converter';
+import AresToHectaresConverter from '@/components/calculators/ares-to-hectares-converter';
+import DecimeterToMeterConverter from '@/components/calculators/decimeter-to-meter-converter';
+import LightYearConverter from '@/components/calculators/light-year-converter';
 
 type CalculatorClientPageProps = {
   calculator: Omit<Calculator, 'icon'>;
@@ -257,8 +268,19 @@ const calculatorComponents: { [key: string]: React.ComponentType<any> } = {
   'pressure-converter': PressureConverter,
   'energy-power-converter': EnergyPowerConverter,
   'force-converter': ForceConverter,
-  'area-unit-converter': AreaUnitConverter,
   'speed-converter': SpeedConverter,
+  'acreage-calculator': AcreageCalculator,
+  'area-converter': AreaConverter,
+  'astronomical-unit-converter': AstronomicalUnitConverter,
+  'feet-and-inches-calculator': FeetAndInchesCalculator,
+  'height-in-inches-calculator': HeightInInchesCalculator,
+  'inches-to-fraction-calculator': InchesToFractionCalculator,
+  'length-converter': LengthConverter,
+  'mesh-to-micron-converter': MeshToMicronConverter,
+  'pixels-to-inches-converter': PixelsToInchesConverter,
+  'ares-to-hectares-converter': AresToHectaresConverter,
+  'decimeter-to-meter-converter': DecimeterToMeterConverter,
+  'light-year-converter': LightYearConverter,
 };
 
 const PageSkeleton = ({ calculator }: { calculator: Omit<Calculator, 'icon'> }) => (

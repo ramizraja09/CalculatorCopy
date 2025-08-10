@@ -9,27 +9,19 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ArrowRightLeft } from 'lucide-react';
 
 const units = {
-  'square-meters': 'Square Meters',
-  'square-kilometers': 'Square Kilometers',
-  'square-miles': 'Square Miles',
-  'square-feet': 'Square Feet',
-  'square-inches': 'Square Inches',
-  acres: 'Acres',
-  hectares: 'Hectares',
+  'light-years': 'Light-Years',
+  'kilometers': 'Kilometers',
+  'miles': 'Miles',
+  'au': 'Astronomical Units (AU)',
 };
 
-// All conversions relative to square meters
 const factors: { [key: string]: number } = {
-  'square-meters': 1,
-  'square-kilometers': 1_000_000,
-  'square-miles': 2_589_988.11,
-  'square-feet': 0.092903,
-  'square-inches': 0.00064516,
-  acres: 4046.86,
-  hectares: 10000,
+  'kilometers': 1,
+  'miles': 1.60934,
+  'au': 149597870.7,
+  'light-years': 9.461e12,
 };
 
 const formSchema = z.object({
@@ -40,36 +32,27 @@ const formSchema = z.object({
 
 type FormData = z.infer<typeof formSchema>;
 
-export default function AreaUnitConverter() {
+export default function LightYearConverter() {
   const [result, setResult] = useState<string | null>(null);
-  const { control, watch, setValue } = useForm<FormData>({
+  const { control, watch } = useForm<FormData>({
     resolver: zodResolver(formSchema),
-    defaultValues: {
-      value: 100,
-      fromUnit: 'square-feet',
-      toUnit: 'square-meters',
-    },
+    defaultValues: { value: 1, fromUnit: 'light-years', toUnit: 'miles' },
   });
 
   const formData = watch();
 
   useEffect(() => {
     const { value, fromUnit, toUnit } = formData;
-    const fromFactor = factors[fromUnit];
-    const toFactor = factors[toUnit];
-    if (fromFactor && toFactor) {
-      const valueInBase = value * fromFactor;
-      const convertedValue = valueInBase / toFactor;
-      setResult(convertedValue.toLocaleString(undefined, { maximumFractionDigits: 5 }));
+     if (value >= 0 && fromUnit && toUnit) {
+      const fromFactor = factors[fromUnit];
+      const toFactor = factors[toUnit];
+      if (fromFactor !== undefined && toFactor !== undefined) {
+        const valueInBase = value * fromFactor;
+        const convertedValue = valueInBase / toFactor;
+        setResult(convertedValue.toExponential(4));
+      }
     }
   }, [formData]);
-  
-  const swapUnits = () => {
-    const from = formData.fromUnit;
-    const to = formData.toUnit;
-    setValue('fromUnit', to);
-    setValue('toUnit', from);
-  };
 
   return (
     <form onSubmit={(e) => e.preventDefault()} className="space-y-4">
@@ -77,7 +60,7 @@ export default function AreaUnitConverter() {
         <div>
           <Label>From</Label>
           <div className="flex gap-2">
-            <Controller name="value" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
+            <Controller name="value" control={control} render={({ field }) => <Input type="number" step="any" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
             <Controller name="fromUnit" control={control} render={({ field }) => (
               <Select onValueChange={field.onChange} value={field.value}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
