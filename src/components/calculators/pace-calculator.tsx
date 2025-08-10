@@ -29,8 +29,8 @@ export default function PaceCalculator() {
   
   const formData = watch();
 
-  useEffect(() => {
-    const { distance, distanceUnit, timeHours, timeMinutes, timeSeconds } = formData;
+  const calculatePace = (data: FormData) => {
+    const { distance, distanceUnit, timeHours, timeMinutes, timeSeconds } = data;
     if (distance > 0 && (timeHours > 0 || timeMinutes > 0 || timeSeconds > 0)) {
         const totalTimeSeconds = (timeHours * 3600) + (timeMinutes * 60) + timeSeconds;
         
@@ -51,12 +51,15 @@ export default function PaceCalculator() {
     } else {
         setResults(null);
     }
+  }
+
+  useEffect(() => {
+    calculatePace(formData);
   }, [formData]);
 
-  const onSubmit = () => {};
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="grid md:grid-cols-2 gap-8">
+    <form onSubmit={(e) => { e.preventDefault(); calculatePace(watch()) }} className="grid md:grid-cols-2 gap-8">
       {/* Inputs */}
       <div className="space-y-4">
         <h3 className="text-xl font-semibold">Inputs</h3>

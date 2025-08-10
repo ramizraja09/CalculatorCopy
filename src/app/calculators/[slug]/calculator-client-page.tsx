@@ -303,15 +303,6 @@ const calculatorComponents: { [key: string]: React.ComponentType<any> } = {
 };
 
 const PageSkeleton = ({ calculator }: { calculator: Omit<Calculator, 'icon'> }) => {
-  const [isClient, setIsClient] = useState(false);
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
-
-  if (!isClient) {
-    return null;
-  }
-  
   return (
     <div className="container max-w-4xl mx-auto p-4 md:p-8 space-y-6">
         <Link href="/" className="flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors">
@@ -356,6 +347,7 @@ function CalculatorPageContent({ calculator }: CalculatorClientPageProps) {
   const [lastUpdated, setLastUpdated] = useState('');
 
   useEffect(() => {
+    // This will only run on the client, after hydration
     setLastUpdated(new Date().toISOString().split('T')[0]);
   }, []);
   
@@ -505,8 +497,6 @@ export default function CalculatorClientPage({ calculator }: CalculatorClientPag
   }
   
   return (
-     <Suspense fallback={<PageSkeleton calculator={calculator} />}>
-      <CalculatorPageContent calculator={calculator} />
-    </Suspense>
+    <CalculatorPageContent calculator={calculator} />
   );
 }
