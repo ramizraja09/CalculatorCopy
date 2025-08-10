@@ -38,8 +38,8 @@ function HomePageContent() {
      <div className="container max-w-screen-2xl mx-auto p-4 md:p-8 space-y-8">
       <div className="text-center space-y-4">
         <h1 className="text-4xl md:text-6xl font-bold font-headline text-foreground">My Genius Calculator</h1>
-        <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto">
-          Your central hub for calculations. Fast, accurate, and easy-to-use tools for everyday needs.
+        <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto">
+          My Genius Calculator – Free online calculators for math, finance, health, and conversions. Get instant, accurate results with our easy-to-use tools.
         </p>
       </div>
 

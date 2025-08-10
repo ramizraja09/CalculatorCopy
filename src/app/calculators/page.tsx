@@ -12,6 +12,18 @@ import { Switch } from '@/components/ui/switch';
 import { Search } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
+const categoryDescriptions: { [key: string]: string } = {
+    'All Calculators': "Explore all free calculators at My Genius Calculator – math, finance, health, conversions, and more. Instant, accurate results online.",
+    'Career': "Career calculators to plan your future – salary, tax, savings, and skill-based tools. Free, accurate, and easy to use online.",
+    'Everyday Utilities': "Everyday utility calculators for daily life – bills, shopping, travel, and more. Fast, accurate results for practical tasks.",
+    'Finance': "Free finance calculators – loan EMI, interest, savings, mortgage, and budget tools. Plan your money with accurate results.",
+    'Health & Fitness': "Health and fitness calculators – BMI, calorie, body fat, and more. Track and improve your wellness with free online tools.",
+    'Length and Area': "Length and area calculators – convert and calculate dimensions easily. Free, accurate tools for work, school, or projects.",
+    'Math': "Math calculators for quick, accurate problem solving – percentages, equations, algebra, geometry, and more.",
+    'Time & Date': "Time and date calculators – age, duration, countdowns, and time zone conversions. Instant, precise results online.",
+    'Unit Converters': "Free online unit converters – length, weight, temperature, volume, and more. Quick, accurate, and easy to use."
+};
+
 function CalculatorsPageContent() {
     const searchParams = useSearchParams();
     const initialCategory = searchParams.get('category');
@@ -25,6 +37,7 @@ function CalculatorsPageContent() {
     }, [initialCategory]);
 
     const pageTitle = initialCategory ? `${initialCategory} Calculators` : 'All Calculators';
+    const pageDescription = initialCategory ? categoryDescriptions[initialCategory] : categoryDescriptions['All Calculators'];
 
     const filteredCalculators = useMemo(() => {
         if (!isLoaded) {
@@ -57,7 +70,7 @@ function CalculatorsPageContent() {
         <div className="container max-w-screen-2xl mx-auto p-4 md:p-8 space-y-8">
             <div className="space-y-2">
                 <h1 className="text-4xl font-bold font-headline text-foreground">{pageTitle}</h1>
-                <p className="text-lg text-muted-foreground">Browse, search, and find the perfect tool for your calculation needs.</p>
+                <p className="text-lg text-muted-foreground">{pageDescription}</p>
             </div>
 
 
