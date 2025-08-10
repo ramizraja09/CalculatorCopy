@@ -10,10 +10,13 @@ export default function InsulinDosageCalculator() {
 
   return (
     <div className="space-y-4">
-        <Card className="flex items-center justify-center h-60 bg-muted/50 border-dashed border-destructive">
-            <p className="text-sm text-destructive font-semibold text-center p-4">
-                This feature is not available for safety reasons.
-            </p>
+        <Card className="flex items-center justify-center h-60 bg-destructive/20 border-2 border-dashed border-destructive">
+            <div className="text-center p-4">
+              <ShieldAlert className="h-12 w-12 text-destructive mx-auto mb-2" />
+              <p className="text-lg text-destructive font-semibold">
+                  This feature is intentionally unavailable for your safety.
+              </p>
+            </div>
         </Card>
         <Alert variant="destructive">
             <ShieldAlert className="h-4 w-4" />
