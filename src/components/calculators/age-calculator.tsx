@@ -39,11 +39,12 @@ export default function AgeCalculator() {
     const months = differenceInMonths(targetDate, subYears(birthDate, years));
     const days = differenceInDays(targetDate, subMonths(subYears(birthDate, years), months));
 
+    const totalDays = differenceInDays(targetDate, birthDate);
     const totalHours = differenceInHours(targetDate, birthDate);
     const totalMinutes = differenceInMinutes(targetDate, birthDate);
     const totalSeconds = differenceInSeconds(targetDate, birthDate);
 
-    setResults({ years, months, days, totalHours, totalMinutes, totalSeconds });
+    setResults({ years, months, days, totalDays, totalHours, totalMinutes, totalSeconds });
   };
 
   return (
@@ -75,6 +76,7 @@ export default function AgeCalculator() {
                         <p className="text-2xl font-bold">{results.years} years, {results.months} months, {results.days} days</p>
                     </div>
                      <div className="text-sm space-y-1 text-muted-foreground">
+                        <p>or {results.totalDays.toLocaleString()} days</p>
                         <p>or {results.totalHours.toLocaleString()} hours</p>
                         <p>or {results.totalMinutes.toLocaleString()} minutes</p>
                         <p>or {results.totalSeconds.toLocaleString()} seconds</p>
