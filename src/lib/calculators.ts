@@ -617,6 +617,13 @@ export const calculators: Calculator[] = [
     category: 'Math',
     icon: BookText,
   },
+  {
+    name: 'Volume Calculator',
+    slug: 'volume-calculator',
+    description: 'Calculate the volume of common shapes like cubes, spheres, and cylinders.',
+    category: 'Math',
+    icon: Box,
+  },
    // Other
   {
     name: 'Age Calculator',
@@ -927,13 +934,6 @@ export const calculators: Calculator[] = [
     description: 'Convert pixels to inches based on screen resolution (DPI).',
     category: 'Length and Area',
     icon: Square,
-  },
-  {
-    name: 'Volume Calculator',
-    slug: 'volume-calculator',
-    description: 'Calculate the volume of common shapes like cubes, spheres, and cylinders.',
-    category: 'Math',
-    icon: Box,
   },
 ];
 
