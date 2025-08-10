@@ -786,6 +786,13 @@ export const calculators: Calculator[] = [
     category: 'Other',
     icon: CircuitBoard,
   },
+  {
+    name: 'Cost of Living Calculator',
+    slug: 'cost-of-living-calculator',
+    description: 'Compare the cost of living and required salary between two cities.',
+    category: 'Other',
+    icon: Building,
+  },
   // Unit Converters
   {
     name: 'Unit Converter',
@@ -814,6 +821,13 @@ export const calculators: Calculator[] = [
     description: 'Convert between different data transfer speed units (e.g., Mbps to MB/s).',
     category: 'Unit Converters',
     icon: Network,
+  },
+  {
+    name: 'Data Transfer Time Calculator',
+    slug: 'data-transfer-time-calculator',
+    description: 'Estimate how long it will take to transfer a file based on size and speed.',
+    category: 'Unit Converters',
+    icon: Clock,
   },
   {
     name: 'Pressure Converter',
@@ -852,5 +866,14 @@ export const calculators: Calculator[] = [
   },
 ];
 
-export const calculatorCategories = [...new Set(calculators.map(c => c.category))].sort();
+const allCategories = [...new Set(calculators.map(c => c.category))];
+const otherCategory = 'Other';
+// Sort all categories except 'Other' alphabetically
+const sortedCategories = allCategories.filter(c => c !== otherCategory).sort();
+// Add 'Other' to the end of the list if it exists
+if (allCategories.includes(otherCategory)) {
+  sortedCategories.push(otherCategory);
+}
+
+export const calculatorCategories = sortedCategories;
 export const calculatorNames = calculators.map(c => c.name);
