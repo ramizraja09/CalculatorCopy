@@ -8,7 +8,6 @@ import * as z from 'zod';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 const formSchema = z.object({
@@ -28,17 +27,9 @@ export default function PaceCalculator() {
     defaultValues: { distance: 5, distanceUnit: 'km', timeHours: 0, timeMinutes: 25, timeSeconds: 0 },
   });
   
-  const [isClient, setIsClient] = useState(false);
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
-
   const formData = watch();
 
   useEffect(() => {
-    // Only run calculations on the client after initial mount
-    if (!isClient) return;
-
     const { distance, distanceUnit, timeHours, timeMinutes, timeSeconds } = formData;
     if (distance > 0 && (timeHours > 0 || timeMinutes > 0 || timeSeconds > 0)) {
         const totalTimeSeconds = (timeHours * 3600) + (timeMinutes * 60) + timeSeconds;
@@ -60,9 +51,8 @@ export default function PaceCalculator() {
     } else {
         setResults(null);
     }
-  }, [formData, isClient]);
+  }, [formData]);
 
-  // The form submission is handled by the useEffect watching for data changes.
   const onSubmit = () => {};
 
   return (
@@ -104,7 +94,7 @@ export default function PaceCalculator() {
       {/* Results */}
       <div className="space-y-4">
         <h3 className="text-xl font-semibold">Pace</h3>
-        {results && isClient ? (
+        {results ? (
             <div className="grid grid-cols-2 gap-4">
               <Card>
                 <CardContent className="p-4 text-center">

@@ -152,5 +152,9 @@ export default function CalculatorsPage() {
       setIsClient(true);
   }, []);
 
-  return isClient ? <CalculatorsPageContent /> : <PageSkeleton />;
+  if (!isClient) {
+    return <PageSkeleton />;
+  }
+
+  return <CalculatorsPageContent />;
 }

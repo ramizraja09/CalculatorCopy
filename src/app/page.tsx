@@ -124,5 +124,9 @@ export default function Home() {
     setIsClient(true);
   }, []);
 
-  return isClient ? <HomePageContent /> : <PageSkeleton />;
+  if (!isClient) {
+    return <PageSkeleton />;
+  }
+
+  return <HomePageContent />;
 }

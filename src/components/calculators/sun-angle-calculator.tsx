@@ -49,9 +49,10 @@ type FormData = z.infer<typeof formSchema>;
 
 export default function SunAngleCalculator() {
   const [results, setResults] = useState<any>(null);
-  const [currentTime, setCurrentTime] = useState<Date | null>(null);
+  const [currentTime, setCurrentTime] = useState<Date>(new Date());
+  const [isClient, setIsClient] = useState(false);
 
-  const { control, handleSubmit, formState: { errors } } = useForm<FormData>({
+  const { control, handleSubmit, getValues, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       latitude: 40.7128, // New York City
@@ -60,20 +61,19 @@ export default function SunAngleCalculator() {
   });
 
   useEffect(() => {
-    // Run all date logic on the client side
-    const date = new Date();
-    setCurrentTime(date);
-    const initialPosition = getSunPosition(date, 40.7128, -74.0060);
-    setResults(initialPosition);
-
-    const timer = setInterval(() => setCurrentTime(new Date()), 1000);
+    setIsClient(true);
+    const timer = setInterval(() => {
+        const now = new Date();
+        setCurrentTime(now);
+        const { latitude, longitude } = getValues();
+        setResults(getSunPosition(now, latitude, longitude));
+    }, 1000);
     return () => clearInterval(timer);
-  }, []);
+  }, [getValues]);
 
   const calculateSunAngle = (data: FormData) => {
-    if(!currentTime) return;
     const { latitude, longitude } = data;
-    const position = getSunPosition(currentTime, latitude, longitude);
+    const position = getSunPosition(new Date(), latitude, longitude);
     setResults(position);
   };
   
@@ -99,7 +99,7 @@ export default function SunAngleCalculator() {
          <Card className="mt-4">
             <CardContent className="p-4 text-center">
                  <p className="text-sm text-muted-foreground">Current UTC Time</p>
-                 <p className="font-mono">{currentTime ? currentTime.toUTCString() : "Loading..."}</p>
+                 <p className="font-mono">{isClient ? currentTime.toUTCString() : "Loading..."}</p>
             </CardContent>
          </Card>
       </div>
@@ -107,7 +107,7 @@ export default function SunAngleCalculator() {
       {/* Results Column */}
       <div className="space-y-4">
         <h3 className="text-xl font-semibold">Sun Position</h3>
-        {results ? (
+        {results && isClient ? (
             results.error ? (
                 <Card className="flex items-center justify-center h-60 bg-muted/50 border-dashed">
                     <p className="text-destructive">{results.error}</p>
