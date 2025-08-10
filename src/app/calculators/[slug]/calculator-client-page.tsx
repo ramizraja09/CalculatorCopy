@@ -2,7 +2,7 @@
 
 "use client";
 
-import { useState, useEffect, Suspense } from 'react';
+import { useState, useEffect } from 'react';
 import type { Calculator } from '@/lib/calculators';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
 import FavoriteButton from '@/components/favorite-button';
@@ -11,6 +11,7 @@ import Link from 'next/link';
 import { ArrowLeft, Share2 } from 'lucide-react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Button } from '@/components/ui/button';
+import BmiWeightLossCalculator from '@/components/calculators/bmi-weight-loss-calculator';
 import MortgageCalculator from '@/components/calculators/mortgage-calculator';
 import LoanCalculator from '@/components/calculators/loan-calculator';
 import CarLoanCalculator from '@/components/calculators/car-loan-calculator';
@@ -148,7 +149,6 @@ import ShouldIGoFreelanceCalculator from '@/components/calculators/should-i-go-f
 import WorkHoursCalculator from '@/components/calculators/work-hours-calculator';
 import RaisePercentageCalculator from '@/components/calculators/raise-percentage-calculator';
 import BloodSugarConverter from '@/components/calculators/blood-sugar-converter';
-import BmiWeightLossCalculator from '@/components/calculators/bmi-weight-loss-calculator';
 import CarbCalculator from '@/components/calculators/carb-calculator';
 import WeightWatchersPointsCalculator from '@/components/calculators/weight-watchers-points-calculator';
 import ProteinIntakeCalculator from '@/components/calculators/protein-intake-calculator';
@@ -496,7 +496,5 @@ export default function CalculatorClientPage({ calculator }: CalculatorClientPag
     return <PageSkeleton calculator={calculator} />;
   }
   
-  return (
-    <CalculatorPageContent calculator={calculator} />
-  );
+  return <CalculatorPageContent calculator={calculator} />;
 }
