@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { useState, useEffect, Suspense } from 'react';
@@ -147,6 +148,20 @@ import HourlyToSalaryConverter from '@/components/calculators/hourly-to-salary-c
 import ShouldIGoFreelanceCalculator from '@/components/calculators/should-i-go-freelance-calculator';
 import WorkHoursCalculator from '@/components/calculators/work-hours-calculator';
 import RaisePercentageCalculator from '@/components/calculators/raise-percentage-calculator';
+import BloodSugarConverter from '@/components/calculators/blood-sugar-converter';
+import BmiCalculatorForKids from '@/components/calculators/bmi-calculator-for-kids';
+import BmiCalculatorForMen from '@/components/calculators/bmi-calculator-for-men';
+import BmiCalculatorForTeens from '@/components/calculators/bmi-calculator-for-teens';
+import BmiCalculatorForWomen from '@/components/calculators/bmi-calculator-for-women';
+import BmiWeightLossCalculator from '@/components/calculators/bmi-weight-loss-calculator';
+import CarbCalculator from '@/components/calculators/carb-calculator';
+import DiabetesRiskCalculator from '@/components/calculators/diabetes-risk-calculator';
+import GeriatricBmiCalculator from '@/components/calculators/geriatric-bmi-calculator';
+import InsulinDosageCalculator from '@/components/calculators/insulin-dosage-calculator';
+import VitaminCalculator from '@/components/calculators/vitamin-calculator';
+import WeightWatchersPointsCalculator from '@/components/calculators/weight-watchers-points-calculator';
+import ProteinCalculator from '@/components/calculators/protein-calculator';
+
 
 type CalculatorClientPageProps = {
   calculator: Omit<Calculator, 'icon'>;
@@ -290,6 +305,19 @@ const calculatorComponents: { [key: string]: React.ComponentType<any> } = {
   'should-i-go-freelance-calculator': ShouldIGoFreelanceCalculator,
   'work-hours-calculator': WorkHoursCalculator,
   'raise-percentage-calculator': RaisePercentageCalculator,
+  'blood-sugar-converter': BloodSugarConverter,
+  'bmi-calculator-for-kids': BmiCalculatorForKids,
+  'bmi-calculator-for-men': BmiCalculatorForMen,
+  'bmi-calculator-for-teens': BmiCalculatorForTeens,
+  'bmi-calculator-for-women': BmiCalculatorForWomen,
+  'bmi-weight-loss-calculator': BmiWeightLossCalculator,
+  'carb-calculator': CarbCalculator,
+  'diabetes-risk-calculator': DiabetesRiskCalculator,
+  'geriatric-bmi-calculator': GeriatricBmiCalculator,
+  'insulin-dosage-calculator': InsulinDosageCalculator,
+  'vitamin-calculator': VitaminCalculator,
+  'weight-watchers-points-calculator': WeightWatchersPointsCalculator,
+  'protein-calculator': ProteinCalculator,
 };
 
 const PageSkeleton = ({ calculator }: { calculator: Omit<Calculator, 'icon'> }) => (

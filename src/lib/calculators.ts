@@ -1,6 +1,6 @@
 
 import type { ComponentType } from 'react';
-import { PiggyBank, Car, Utensils, HeartPulse, Percent, Home, BrainCircuit, GraduationCap, TrendingUp, Footprints, Scale, Calculator, Calendar, Repeat, Atom, FlaskConical, Beaker, Ruler, Clock, Landmark, FileText, Wallet, Receipt, CreditCard, Recycle, Banknote, CandlestickChart, Briefcase, DraftingCompass, Cigarette, Droplets, Sun, Shirt, Building, Shovel, Box, Weight, Map, BookOpen, Beer, Dna, Leaf, Zap, Sigma, Coins, Award, Baby, UserCheck, Plane, ShoppingCart, TestTube2, Wallpaper, Activity, Moon, Soup, ShieldCheck, Handshake, Target, PaintRoller, Ratio, FunctionSquare, Pilcrow, Infinity, Equal, GitCompareArrows, BookText, AreaChart, CircuitBoard, HardDrive, Network, Gauge, Move, Square, Telescope, Text, Asterisk, WalletCards, Hourglass, BarChart3, TrendingDown } from 'lucide-react';
+import { PiggyBank, Car, Utensils, HeartPulse, Percent, Home, BrainCircuit, GraduationCap, TrendingUp, Footprints, Scale, Calculator, Calendar, Repeat, Atom, FlaskConical, Beaker, Ruler, Clock, Landmark, FileText, Wallet, Receipt, CreditCard, Recycle, Banknote, CandlestickChart, Briefcase, DraftingCompass, Cigarette, Droplets, Sun, Shirt, Building, Shovel, Box, Weight, Map, BookOpen, Beer, Dna, Leaf, Zap, Sigma, Coins, Award, Baby, UserCheck, Plane, ShoppingCart, TestTube2, Wallpaper, Activity, Moon, Soup, ShieldCheck, Handshake, Target, PaintRoller, Ratio, FunctionSquare, Pilcrow, Infinity, Equal, GitCompareArrows, BookText, AreaChart, CircuitBoard, HardDrive, Network, Gauge, Move, Square, Telescope, Text, Asterisk, WalletCards, Hourglass, BarChart3, TrendingDown, Drip, Syringe, Wheat, Sparkles, User, Users, Stethoscope } from 'lucide-react';
 
 export type Calculator = {
   name: string;
@@ -215,22 +215,7 @@ export const calculators: Calculator[] = [
     category: 'Finance',
     icon: ShoppingCart,
   },
-  {
-    name: 'Tip Calculator',
-    slug: 'tip-calculator',
-    description: 'Quickly calculate the tip for a bill for any number of people.',
-    category: 'Everyday Utilities',
-    icon: Utensils,
-  },
-  {
-    name: 'Fuel Cost Calculator',
-    slug: 'fuel-cost-calculator',
-    description: 'Estimate the total fuel cost for a road trip based on distance and MPG.',
-    category: 'Everyday Utilities',
-    icon: Car,
-  },
-
-  // Health & Fitness (29)
+  // Health & Fitness (29 -> 44)
   {
     name: 'BMI Calculator',
     slug: 'bmi-calculator',
@@ -238,12 +223,103 @@ export const calculators: Calculator[] = [
     category: 'Health & Fitness',
     icon: HeartPulse,
   },
+    {
+    name: 'BMI Calculator for Kids',
+    slug: 'bmi-calculator-for-kids',
+    description: 'Interpret BMI for children using age and gender-specific percentiles. Medical consultation advised.',
+    category: 'Health & Fitness',
+    icon: Baby,
+  },
+  {
+    name: 'BMI Calculator for Men',
+    slug: 'bmi-calculator-for-men',
+    description: 'Standard BMI calculation with considerations for male body composition.',
+    category: 'Health & Fitness',
+    icon: User,
+  },
+  {
+    name: 'BMI Calculator for Teens',
+    slug: 'bmi-calculator-for-teens',
+    description: 'Interpret BMI for teenagers using age and gender-specific percentiles. Medical consultation advised.',
+    category: 'Health & Fitness',
+    icon: Users,
+  },
+  {
+    name: 'BMI Calculator for Women',
+    slug: 'bmi-calculator-for-women',
+    description: 'Standard BMI calculation with considerations for female body composition.',
+    category: 'Health & Fitness',
+    icon: User,
+  },
+  {
+    name: 'BMI Weight Loss Calculator',
+    slug: 'bmi-weight-loss-calculator',
+    description: 'Integrate BMI with weight loss goals to set calorie targets.',
+    category: 'Health & Fitness',
+    icon: TrendingDown,
+  },
+  {
+    name: 'Geriatric BMI Calculator',
+    slug: 'geriatric-bmi-calculator',
+    description: 'BMI calculator with adjusted ranges for older adults. Medical consultation advised.',
+    category: 'Health & Fitness',
+    icon: User,
+  },
+  {
+    name: 'Blood Sugar Converter',
+    slug: 'blood-sugar-converter',
+    description: 'Convert blood glucose levels between mg/dL and mmol/L.',
+    category: 'Health & Fitness',
+    icon: Drip,
+  },
+  {
+    name: 'Diabetes Risk Calculator',
+    slug: 'diabetes-risk-calculator',
+    description: 'Assess your risk for type 2 diabetes based on common factors. Not a diagnostic tool.',
+    category: 'Health & Fitness',
+    icon: Stethoscope,
+  },
+  {
+    name: 'Insulin Dosage Calculator',
+    slug: 'insulin-dosage-calculator',
+    description: 'SAFETY WARNING: For informational purposes only. Consult a doctor for insulin dosage.',
+    category: 'Health & Fitness',
+    icon: Syringe,
+  },
   {
     name: 'Calorie Calculator',
     slug: 'calorie-calculator',
     description: 'Estimate your daily calorie needs for maintaining, losing, or gaining weight.',
     category: 'Health & Fitness',
     icon: Utensils,
+  },
+  {
+    name: 'Carb (Carbohydrate) Calculator',
+    slug: 'carb-calculator',
+    description: 'Calculate your recommended daily carbohydrate intake based on your goals.',
+    category: 'Health & Fitness',
+    icon: Wheat,
+  },
+  {
+    name: 'Protein Calculator',
+    slug: 'protein-calculator',
+    description: 'Calculate your optimal daily protein intake for your body and goals.',
+    category: 'Health & Fitness',
+    icon: Soup,
+  },
+  {
+    name: 'Vitamin Calculator',
+    slug: 'vitamin-calculator',
+    description: 'Informational tool about vitamin needs. Not a substitute for medical advice.',
+    category: 'Health & Fitness',
+    icon: Sparkles,
+  },
+  {
+    name: 'Weight Watchers Points Calculator',
+    slug: 'weight-watchers-points-calculator',
+    description: 'Estimate points based on a legacy Weight Watchers formula for educational purposes.',
+    category: 'Health & Fitness',
+    icon: Scale,
   },
   {
     name: 'Pace Calculator',
@@ -434,7 +510,7 @@ export const calculators: Calculator[] = [
     category: 'Health & Fitness',
     icon: Award,
   },
-  // Math (29)
+  // Math (29 -> 27)
   {
     name: 'Basic Calculator',
     slug: 'basic-calculator',
