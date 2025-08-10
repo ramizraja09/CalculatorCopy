@@ -1,6 +1,6 @@
 
 import type { ComponentType } from 'react';
-import { PiggyBank, Car, Utensils, HeartPulse, Percent, Home, BrainCircuit, GraduationCap, TrendingUp, Footprints, Scale, Calculator, Calendar, Repeat, Atom, FlaskConical, Beaker, Ruler, Clock, Landmark, FileText, Wallet, Receipt, CreditCard, Recycle, Banknote, CandlestickChart, Briefcase, DraftingCompass, Cigarette, Droplets, Sun, Shirt, Building, Shovel, Box, Weight, Map, BookOpen, Beer, Dna, Leaf, Zap, Sigma, Coins, Award, Baby, UserCheck, Plane, ShoppingCart, TestTube2, Wallpaper, Activity, Moon, Soup, ShieldCheck, Handshake, Target, PaintRoller, Ratio, FunctionSquare, Pilcrow, Infinity, Equal, GitCompareArrows, BookText, AreaChart, CircuitBoard, HardDrive, Network, Gauge, Move, Square, Telescope, Text, Asterisk } from 'lucide-react';
+import { PiggyBank, Car, Utensils, HeartPulse, Percent, Home, BrainCircuit, GraduationCap, TrendingUp, Footprints, Scale, Calculator, Calendar, Repeat, Atom, FlaskConical, Beaker, Ruler, Clock, Landmark, FileText, Wallet, Receipt, CreditCard, Recycle, Banknote, CandlestickChart, Briefcase, DraftingCompass, Cigarette, Droplets, Sun, Shirt, Building, Shovel, Box, Weight, Map, BookOpen, Beer, Dna, Leaf, Zap, Sigma, Coins, Award, Baby, UserCheck, Plane, ShoppingCart, TestTube2, Wallpaper, Activity, Moon, Soup, ShieldCheck, Handshake, Target, PaintRoller, Ratio, FunctionSquare, Pilcrow, Infinity, Equal, GitCompareArrows, BookText, AreaChart, CircuitBoard, HardDrive, Network, Gauge, Move, Square, Telescope, Text, Asterisk, WalletCards, Hourglass, BarChart3, TrendingDown } from 'lucide-react';
 
 export type Calculator = {
   name: string;
@@ -717,6 +717,41 @@ export const calculators: Calculator[] = [
     description: 'Determine an hourly or project rate based on your desired salary and expenses.',
     category: 'Career',
     icon: Target,
+  },
+  {
+    name: 'Commute Cost Calculator',
+    slug: 'commute-cost-calculator',
+    description: 'Analyze the true cost of your daily commute, factoring in fuel, time, and vehicle wear.',
+    category: 'Career',
+    icon: Car,
+  },
+  {
+    name: 'Hourly to Salary Converter',
+    slug: 'hourly-to-salary-converter',
+    description: 'Convert an hourly wage to an equivalent annual salary, and vice versa.',
+    category: 'Career',
+    icon: WalletCards,
+  },
+  {
+    name: 'Should I Go Freelance?',
+    slug: 'should-i-go-freelance-calculator',
+    description: 'Compare a salaried position to freelance work to see the financial difference.',
+    category: 'Career',
+    icon: Briefcase,
+  },
+  {
+    name: 'Work Hours Calculator',
+    slug: 'work-hours-calculator',
+    description: 'Track and sum up work hours for projects or pay periods.',
+    category: 'Career',
+    icon: Hourglass,
+  },
+  {
+    name: 'Raise Percentage Calculator',
+    slug: 'raise-percentage-calculator',
+    description: 'Calculate the impact of a raise on your salary and take-home pay.',
+    category: 'Career',
+    icon: BarChart3,
   },
 
   // Everyday Utilities

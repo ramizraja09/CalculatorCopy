@@ -142,6 +142,11 @@ import PixelsToInchesConverter from '@/components/calculators/pixels-to-inches-c
 import AresToHectaresConverter from '@/components/calculators/ares-to-hectares-converter';
 import DecimeterToMeterConverter from '@/components/calculators/decimeter-to-meter-converter';
 import LightYearConverter from '@/components/calculators/light-year-converter';
+import CommuteCostCalculator from '@/components/calculators/commute-cost-calculator';
+import HourlyToSalaryConverter from '@/components/calculators/hourly-to-salary-converter';
+import ShouldIGoFreelanceCalculator from '@/components/calculators/should-i-go-freelance-calculator';
+import WorkHoursCalculator from '@/components/calculators/work-hours-calculator';
+import RaisePercentageCalculator from '@/components/calculators/raise-percentage-calculator';
 
 type CalculatorClientPageProps = {
   calculator: Omit<Calculator, 'icon'>;
@@ -280,6 +285,11 @@ const calculatorComponents: { [key: string]: React.ComponentType<any> } = {
   'ares-to-hectares-converter': AresToHectaresConverter,
   'decimeter-to-meter-converter': DecimeterToMeterConverter,
   'light-year-converter': LightYearConverter,
+  'commute-cost-calculator': CommuteCostCalculator,
+  'hourly-to-salary-converter': HourlyToSalaryConverter,
+  'should-i-go-freelance-calculator': ShouldIGoFreelanceCalculator,
+  'work-hours-calculator': WorkHoursCalculator,
+  'raise-percentage-calculator': RaisePercentageCalculator,
 };
 
 const PageSkeleton = ({ calculator }: { calculator: Omit<Calculator, 'icon'> }) => (
