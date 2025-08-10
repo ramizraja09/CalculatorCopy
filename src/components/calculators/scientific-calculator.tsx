@@ -14,7 +14,7 @@ export default function ScientificCalculator() {
     if (value === '=') {
       try {
         // Replace ^ with ** for exponentiation
-        const evalExpression = expression.replace(/\^/g, '**').replace(/π/g, 'Math.PI').replace(/e/g, 'Math.E');
+        const evalExpression = expression.replace(/\^/g, '**').replace(/π/g, 'Math.PI').replace(/e/g, 'Math.E').replace(/√/g, 'Math.sqrt').replace(/ln/g, 'Math.log');
         // Using a function constructor for safer evaluation than direct eval()
         const calculatedResult = new Function('return ' + evalExpression)();
         setResult(String(calculatedResult));
@@ -26,9 +26,7 @@ export default function ScientificCalculator() {
       setResult('');
     } else if (value === 'DEL') {
         setExpression((prev) => prev.slice(0, -1));
-    } else if (value === 'sqrt') {
-        setExpression((prev) => prev + 'Math.sqrt(');
-    } else if (value === 'sin' || value === 'cos' || value === 'tan' || value === 'log' || value === 'ln') {
+    } else if (['sin', 'cos', 'tan', 'log'].includes(value)) {
         setExpression((prev) => prev + `Math.${value}(`);
     } else {
       setExpression((prev) => prev + value);
@@ -39,7 +37,7 @@ export default function ScientificCalculator() {
     '(', ')', 'sin', 'cos', 'tan',
     '7', '8', '9', '/', 'C',
     '4', '5', '6', '*', 'DEL',
-    '1', '2', '3', '-', 'sqrt',
+    '1', '2', '3', '-', '√',
     '0', '.', '=', '+', '^',
     'π', 'e', 'log', 'ln',
   ];
@@ -71,7 +69,7 @@ export default function ScientificCalculator() {
               className="text-lg h-14"
               onClick={() => handleButtonClick(btn)}
             >
-              {btn === 'sqrt' ? '√' : btn}
+              {btn}
             </Button>
           ))}
         </div>
