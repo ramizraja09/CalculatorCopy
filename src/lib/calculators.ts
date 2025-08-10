@@ -928,6 +928,13 @@ export const calculators: Calculator[] = [
     category: 'Length and Area',
     icon: Square,
   },
+  {
+    name: 'Volume Calculator',
+    slug: 'volume-calculator',
+    description: 'Calculate the volume of common shapes like cubes, spheres, and cylinders.',
+    category: 'Math',
+    icon: Box,
+  },
 ];
 
 const allCategories = [...new Set(calculators.map(c => c.category))];

@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from 'next/link';
@@ -14,8 +15,21 @@ type CalculatorCardProps = {
   onToggleFavorite: (slug: string) => void;
 };
 
+const categoryColors: { [key: string]: string } = {
+  'Finance': 'bg-green-100 text-green-800 border-green-200 dark:bg-green-900/50 dark:text-green-300 dark:border-green-800',
+  'Health & Fitness': 'bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-900/50 dark:text-blue-300 dark:border-blue-800',
+  'Math': 'bg-purple-100 text-purple-800 border-purple-200 dark:bg-purple-900/50 dark:text-purple-300 dark:border-purple-800',
+  'Unit Converters': 'bg-yellow-100 text-yellow-800 border-yellow-200 dark:bg-yellow-900/50 dark:text-yellow-300 dark:border-yellow-800',
+  'Length and Area': 'bg-sky-100 text-sky-800 border-sky-200 dark:bg-sky-900/50 dark:text-sky-300 dark:border-sky-800',
+  'Other': 'bg-slate-100 text-slate-800 border-slate-200 dark:bg-slate-900/50 dark:text-slate-300 dark:border-slate-800',
+  'Time & Date': 'bg-orange-100 text-orange-800 border-orange-200 dark:bg-orange-900/50 dark:text-orange-300 dark:border-orange-800',
+  'Everyday Utilities': 'bg-indigo-100 text-indigo-800 border-indigo-200 dark:bg-indigo-900/50 dark:text-indigo-300 dark:border-indigo-800',
+  'Career': 'bg-pink-100 text-pink-800 border-pink-200 dark:bg-pink-900/50 dark:text-pink-300 dark:border-pink-800',
+};
+
 export default function CalculatorCard({ calculator, isFavorite, onToggleFavorite }: CalculatorCardProps) {
   const Icon = calculator.icon;
+  const categoryColorClass = categoryColors[calculator.category] || categoryColors['Other'];
   
   return (
     <Card className="flex flex-col h-full transition-all hover:shadow-xl hover:-translate-y-1 bg-card">
@@ -26,7 +40,7 @@ export default function CalculatorCard({ calculator, isFavorite, onToggleFavorit
                         {calculator.name}
                     </Link>
                 </CardTitle>
-                 <Badge variant="outline">{calculator.category}</Badge>
+                 <Badge variant="outline" className={cn(categoryColorClass, 'font-medium')}>{calculator.category}</Badge>
             </div>
              <Button
                 variant="ghost"
@@ -45,7 +59,7 @@ export default function CalculatorCard({ calculator, isFavorite, onToggleFavorit
             <p className="text-sm text-muted-foreground flex-grow">{calculator.description}</p>
             <Link href={`/calculators/${calculator.slug}`} className="w-full mt-4">
                 <Button className="w-full" variant="secondary">
-                    {Icon && <Icon className="mr-2 h-4 w-4" />} Open
+                    {Icon && <Icon className="mr-2 h-4 w-4" />} Calculate
                 </Button>
             </Link>
         </CardContent>
