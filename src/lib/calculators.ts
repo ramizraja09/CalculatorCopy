@@ -1,5 +1,5 @@
 import type { ComponentType } from 'react';
-import { PiggyBank, Car, Utensils, HeartPulse, Percent, Home, BrainCircuit, GraduationCap, TrendingUp, Footprints, Scale, Calculator, Calendar, Repeat, Atom, FlaskConical, Beaker, Ruler, Clock, Landmark, FileText, Wallet, Receipt, CreditCard, Recycle, Banknote, CandlestickChart, Briefcase, DraftingCompass, Cigarette, Droplets, Sun, Shirt, Building, Shovel, Box, Weight, Map, BookOpen, Beer, Dna, Leaf, Zap, Sigma, Coins, Award, Baby, UserCheck, Plane, ShoppingCart, TestTube2, Ratio, Code, Timer, Binary, Server, BriefcaseMedical, Handshake, Target, SlidersHorizontal, Settings, PaintRoller, Cable, CircuitBoard, Wallpaper, Activity, Moon, Soup, ShieldCheck } from 'lucide-react';
+import { PiggyBank, Car, Utensils, HeartPulse, Percent, Home, BrainCircuit, GraduationCap, TrendingUp, Footprints, Scale, Calculator, Calendar, Repeat, Atom, FlaskConical, Beaker, Ruler, Clock, Landmark, FileText, Wallet, Receipt, CreditCard, Recycle, Banknote, CandlestickChart, Briefcase, DraftingCompass, Cigarette, Droplets, Sun, Shirt, Building, Shovel, Box, Weight, Map, BookOpen, Beer, Dna, Leaf, Zap, Sigma, Coins, Award, Baby, UserCheck, Plane, ShoppingCart, TestTube2, CircuitBoard, Wallpaper, Activity, Moon, Soup, ShieldCheck, Handshake, Target, PaintRoller } from 'lucide-react';
 
 export type Calculator = {
   name: string;
@@ -736,50 +736,7 @@ export const calculators: Calculator[] = [
     slug: 'data-transfer-time-calculator',
     description: 'Estimate how long it will take to transfer a file over a specific network speed.',
     category: 'Electronics',
-    icon: Server,
-  },
-  // Developer (6)
-  {
-    name: 'CSS Unit Converter',
-    slug: 'css-unit-converter',
-    description: 'Convert between px, em, rem, %, and viewport units for responsive web design.',
-    category: 'Developer',
-    icon: Code,
-  },
-  {
-    name: 'Color Converter',
-    slug: 'color-converter',
-    description: 'Convert color codes between HEX, RGB, and HSL formats.',
-    category: 'Developer',
-    icon: SlidersHorizontal,
-  },
-  {
-    name: 'Aspect Ratio Calculator',
-    slug: 'aspect-ratio-calculator',
-    description: 'Calculate dimensions for images or videos to maintain a specific aspect ratio.',
-    category: 'Developer',
-    icon: Ratio,
-  },
-  {
-    name: 'Timestamp Converter',
-    slug: 'timestamp-converter',
-    description: 'Convert Unix timestamps to human-readable dates and back.',
-    category: 'Developer',
-    icon: Timer,
-  },
-  {
-    name: 'Base64 Encoder/Decoder',
-    slug: 'base64-encoder',
-    description: 'Encode files or text into Base64 strings and decode them back.',
-    category: 'Developer',
-    icon: Binary,
-  },
-  {
-    name: 'Cron Job Generator',
-    slug: 'cron-job-generator',
-    description: 'Create complex cron job schedules with a user-friendly interface.',
-    category: 'Developer',
-    icon: Settings,
+    icon: CircuitBoard,
   },
   // Career (3)
   {
@@ -794,7 +751,7 @@ export const calculators: Calculator[] = [
     slug: 'job-offer-comparison-calculator',
     description: 'Compare two job offers side-by-side, including benefits and other factors.',
     category: 'Career',
-    icon: BriefcaseMedical,
+    icon: Briefcase,
   },
   {
     name: 'Freelance Rate Calculator',
