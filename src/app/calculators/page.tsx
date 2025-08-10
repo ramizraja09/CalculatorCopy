@@ -14,17 +14,17 @@ import { Skeleton } from '@/components/ui/skeleton';
 
 function CalculatorsPageContent() {
     const searchParams = useSearchParams();
+    const initialCategory = searchParams.get('category');
   
-    const [searchTerm, setSearchTerm] = useState('');
+    const [searchTerm, setSearchTerm] = useState(initialCategory || '');
     const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
     const { favorites, toggleFavorite, isLoaded } = useFavorites();
   
     useEffect(() => {
-      const initialCategory = searchParams.get('category');
-      if (initialCategory) {
-        setSearchTerm(initialCategory);
-      }
-    }, [searchParams]);
+        setSearchTerm(initialCategory || '');
+    }, [initialCategory]);
+
+    const pageTitle = initialCategory ? `${initialCategory} Calculators` : 'All Calculators';
 
     const filteredCalculators = useMemo(() => {
         if (!isLoaded) {
@@ -48,7 +48,7 @@ function CalculatorsPageContent() {
     return (
         <div className="container max-w-screen-2xl mx-auto p-4 md:p-8 space-y-8">
             <div className="space-y-2">
-                <h1 className="text-4xl font-bold font-headline text-foreground">All Calculators</h1>
+                <h1 className="text-4xl font-bold font-headline text-foreground">{pageTitle}</h1>
                 <p className="text-lg text-muted-foreground">Browse, search, and find the perfect tool for your calculation needs.</p>
             </div>
 
