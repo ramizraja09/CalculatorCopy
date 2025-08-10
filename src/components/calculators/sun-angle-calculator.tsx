@@ -51,6 +51,7 @@ type FormData = z.infer<typeof formSchema>;
 export default function SunAngleCalculator() {
   const [results, setResults] = useState<any>(null);
   const [currentTime, setCurrentTime] = useState<string | null>(null);
+  const [isClient, setIsClient] = useState(false);
 
   const { control, handleSubmit, getValues, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -61,21 +62,26 @@ export default function SunAngleCalculator() {
   });
 
   useEffect(() => {
-    // This effect runs only on the client
+    setIsClient(true);
+  }, []);
+
+  useEffect(() => {
+    if (!isClient) return;
+
     const updateSunPosition = () => {
       const now = new Date();
       setCurrentTime(now.toUTCString());
       const { latitude, longitude } = getValues();
-      if(latitude && longitude) {
+      if(latitude !== undefined && longitude !== undefined) {
         setResults(getSunPosition(now, latitude, longitude));
       }
     };
     
-    updateSunPosition(); // Initial calculation
-    const timer = setInterval(updateSunPosition, 1000); // Update every second
+    updateSunPosition();
+    const timer = setInterval(updateSunPosition, 1000); 
     
     return () => clearInterval(timer);
-  }, [getValues]);
+  }, [isClient, getValues]);
 
   const calculateSunAngle = (data: FormData) => {
     const { latitude, longitude } = data;
@@ -105,7 +111,7 @@ export default function SunAngleCalculator() {
          <Card className="mt-4">
             <CardContent className="p-4 text-center">
                  <p className="text-sm text-muted-foreground">Current UTC Time</p>
-                 <p className="font-mono">{currentTime || 'Loading...'}</p>
+                 <p className="font-mono">{isClient ? currentTime : 'Loading...'}</p>
             </CardContent>
          </Card>
       </div>
@@ -113,7 +119,7 @@ export default function SunAngleCalculator() {
       {/* Results Column */}
       <div className="space-y-4">
         <h3 className="text-xl font-semibold">Sun Position</h3>
-        {results ? (
+        {isClient && results ? (
             results.error ? (
                 <Card className="flex items-center justify-center h-60 bg-muted/50 border-dashed">
                     <p className="text-destructive">{results.error}</p>

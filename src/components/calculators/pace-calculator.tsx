@@ -22,15 +22,23 @@ type FormData = z.infer<typeof formSchema>;
 
 export default function PaceCalculator() {
   const [results, setResults] = useState<any>(null);
-  const { control, handleSubmit, watch } = useForm<FormData>({
+  const [isClient, setIsClient] = useState(false);
+
+  const { control, watch } = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: { distance: 5, distanceUnit: 'km', timeHours: 0, timeMinutes: 25, timeSeconds: 0 },
   });
   
   const formData = watch();
 
-  const calculatePace = (data: FormData) => {
-    const { distance, distanceUnit, timeHours, timeMinutes, timeSeconds } = data;
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  useEffect(() => {
+    if (!isClient) return;
+
+    const { distance, distanceUnit, timeHours, timeMinutes, timeSeconds } = formData;
     if (distance > 0 && (timeHours > 0 || timeMinutes > 0 || timeSeconds > 0)) {
         const totalTimeSeconds = (timeHours * 3600) + (timeMinutes * 60) + timeSeconds;
         
@@ -51,15 +59,11 @@ export default function PaceCalculator() {
     } else {
         setResults(null);
     }
-  }
-
-  useEffect(() => {
-    calculatePace(formData);
-  }, [formData]);
+  }, [formData, isClient]);
 
 
   return (
-    <form onSubmit={(e) => { e.preventDefault(); calculatePace(watch()) }} className="grid md:grid-cols-2 gap-8">
+    <form onSubmit={(e) => { e.preventDefault(); }} className="grid md:grid-cols-2 gap-8">
       {/* Inputs */}
       <div className="space-y-4">
         <h3 className="text-xl font-semibold">Inputs</h3>
@@ -97,7 +101,7 @@ export default function PaceCalculator() {
       {/* Results */}
       <div className="space-y-4">
         <h3 className="text-xl font-semibold">Pace</h3>
-        {results ? (
+        {isClient && results ? (
             <div className="grid grid-cols-2 gap-4">
               <Card>
                 <CardContent className="p-4 text-center">
