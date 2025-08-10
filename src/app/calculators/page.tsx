@@ -146,11 +146,13 @@ const PageSkeleton = () => (
             <Skeleton className="h-10 w-1/3" />
             <Skeleton className="h-6 w-1/2" />
         </div>
-        <div className="flex flex-col md:flex-row gap-4 items-center">
+        <div className="sticky top-[55px] md:top-[57px] z-10 bg-muted/80 backdrop-blur-sm -mx-4 px-4 py-4 border-b">
+          <div className="flex flex-col md:flex-row gap-4 items-center max-w-screen-2xl mx-auto">
             <Skeleton className="h-10 w-full" />
             <Skeleton className="h-10 w-48" />
+          </div>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 pt-4">
             {[...Array(12)].map((_, i) => <Skeleton key={i} className="h-64 w-full" />)}
         </div>
     </div>
