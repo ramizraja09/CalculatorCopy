@@ -346,7 +346,7 @@ function CalculatorPageContent({ calculator }: CalculatorClientPageProps) {
               <div className="mt-8">
                 <Accordion type="single" collapsible className="w-full">
                   <AccordionItem value="purpose">
-                    <AccordionTrigger>The Tool's Purpose</AccordionTrigger>
+                    <AccordionTrigger>Why Use This Calculator?</AccordionTrigger>
                     <AccordionContent>
                       <div className="space-y-2 text-muted-foreground">
                         <p>
@@ -359,7 +359,7 @@ function CalculatorPageContent({ calculator }: CalculatorClientPageProps) {
                     </AccordionContent>
                   </AccordionItem>
                   <AccordionItem value="who-should-use">
-                    <AccordionTrigger>Who Should Use It / What Scenarios It Fits</AccordionTrigger>
+                    <AccordionTrigger>Common Uses & Scenarios</AccordionTrigger>
                     <AccordionContent>
                        <div className="space-y-4 text-muted-foreground">
                           <p>This calculator is ideal for:</p>
@@ -375,7 +375,7 @@ function CalculatorPageContent({ calculator }: CalculatorClientPageProps) {
                     </AccordionContent>
                   </AccordionItem>
                   <AccordionItem value="inputs-results">
-                    <AccordionTrigger>Summary of Inputs and Results</AccordionTrigger>
+                    <AccordionTrigger>How It Works</AccordionTrigger>
                     <AccordionContent>
                        <div className="space-y-4 text-muted-foreground">
                         <p>To get the most out of this tool, you will need to provide a few key pieces of information. The results are then calculated instantly based on your entries.</p>
@@ -403,7 +403,7 @@ function CalculatorPageContent({ calculator }: CalculatorClientPageProps) {
                     </AccordionContent>
                   </AccordionItem>
                    <AccordionItem value="context">
-                    <AccordionTrigger>Additional Context or Detailed Info</AccordionTrigger>
+                    <AccordionTrigger>Formulas & Disclaimers</AccordionTrigger>
                     <AccordionContent>
                        <div className="space-y-2 text-muted-foreground">
                         <p>
