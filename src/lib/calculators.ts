@@ -1,6 +1,6 @@
 
 import type { ComponentType } from 'react';
-import { PiggyBank, Car, Utensils, HeartPulse, Percent, Home, BrainCircuit, GraduationCap, TrendingUp, Footprints, Scale, Calculator, Calendar, Repeat, Atom, FlaskConical, Beaker, Ruler, Clock, Landmark, FileText, Wallet, Receipt, CreditCard, Recycle, Banknote, CandlestickChart, Briefcase, DraftingCompass, Cigarette, Droplets, Sun, Shirt, Building, Shovel, Box, Weight, Map, BookOpen, Beer, Dna, Leaf, Zap, Sigma, Coins, Award, Baby, UserCheck, Plane, ShoppingCart, TestTube2, Wallpaper, Activity, Moon, Soup, ShieldCheck, Handshake, Target, PaintRoller, Ratio, FunctionSquare, Pilcrow, Infinity, Equal, GitCompareArrows, BookText, AreaChart, CircuitBoard, HardDrive, Network, Gauge, Move, Square, Telescope, Text, Asterisk, WalletCards, Hourglass, BarChart3, TrendingDown, Drip, Syringe, Wheat, Sparkles, User, Users, Stethoscope } from 'lucide-react';
+import { PiggyBank, Car, Utensils, HeartPulse, Percent, Home, BrainCircuit, GraduationCap, TrendingUp, Footprints, Scale, Calculator, Calendar, Repeat, Atom, FlaskConical, Beaker, Ruler, Clock, Landmark, FileText, Wallet, Receipt, CreditCard, Recycle, Banknote, CandlestickChart, Briefcase, DraftingCompass, Cigarette, Droplets, Sun, Shirt, Building, Shovel, Box, Weight, Map, BookOpen, Beer, Dna, Leaf, Zap, Sigma, Coins, Award, Baby, UserCheck, Plane, ShoppingCart, TestTube2, Wallpaper, Activity, Moon, Soup, ShieldCheck, Handshake, Target, PaintRoller, Ratio, FunctionSquare, Pilcrow, Infinity, Equal, GitCompareArrows, BookText, AreaChart, CircuitBoard, HardDrive, Network, Gauge, Move, Square, Telescope, Text, Asterisk, WalletCards, Hourglass, BarChart3, TrendingDown, Syringe, Wheat, Sparkles, User, Users, Stethoscope } from 'lucide-react';
 
 export type Calculator = {
   name: string;
@@ -270,7 +270,7 @@ export const calculators: Calculator[] = [
     slug: 'blood-sugar-converter',
     description: 'Convert blood glucose levels between mg/dL and mmol/L.',
     category: 'Health & Fitness',
-    icon: Drip,
+    icon: Droplets,
   },
   {
     name: 'Diabetes Risk Calculator',
