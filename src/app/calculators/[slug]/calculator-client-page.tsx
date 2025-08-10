@@ -479,5 +479,9 @@ export default function CalculatorClientPage({ calculator }: CalculatorClientPag
     setIsClient(true);
   }, []);
 
-  return isClient ? <CalculatorPageContent calculator={calculator} /> : <PageSkeleton calculator={calculator} />;
+  if (!isClient) {
+    return <PageSkeleton calculator={calculator} />;
+  }
+
+  return <CalculatorPageContent calculator={calculator} />;
 }
