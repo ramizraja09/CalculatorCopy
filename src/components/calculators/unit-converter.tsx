@@ -26,7 +26,7 @@ const conversionFactors: { [key: string]: { [key: string]: number } } = {
     ounces: 35.274,
   },
   temperature: {
-    celsius: 1,
+    celsius: 1, // These are placeholders, temp conversion is not factor-based
     fahrenheit: 1, 
     kelvin: 1,
   }
@@ -68,13 +68,23 @@ export default function UnitConverter() {
     
     let convertedValue;
     if (category === 'temperature') {
-      if (fromUnit === 'celsius' && toUnit === 'fahrenheit') convertedValue = (value * 9/5) + 32;
-      else if (fromUnit === 'fahrenheit' && toUnit === 'celsius') convertedValue = (value - 32) * 5/9;
-      else if (fromUnit === 'celsius' && toUnit === 'kelvin') convertedValue = value + 273.15;
-      else if (fromUnit === 'kelvin' && toUnit === 'celsius') convertedValue = value - 273.15;
-      else if (fromUnit === 'fahrenheit' && toUnit === 'kelvin') convertedValue = (value - 32) * 5/9 + 273.15;
-      else if (fromUnit === 'kelvin' && toUnit === 'fahrenheit') convertedValue = (value - 273.15) * 9/5 + 32;
-      else convertedValue = value; // same unit
+      if (fromUnit === toUnit) {
+        convertedValue = value;
+      } else if (fromUnit === 'celsius' && toUnit === 'fahrenheit') {
+        convertedValue = (value * 9/5) + 32;
+      } else if (fromUnit === 'fahrenheit' && toUnit === 'celsius') {
+        convertedValue = (value - 32) * 5/9;
+      } else if (fromUnit === 'celsius' && toUnit === 'kelvin') {
+        convertedValue = value + 273.15;
+      } else if (fromUnit === 'kelvin' && toUnit === 'celsius') {
+        convertedValue = value - 273.15;
+      } else if (fromUnit === 'fahrenheit' && toUnit === 'kelvin') {
+        convertedValue = (value - 32) * 5/9 + 273.15;
+      } else if (fromUnit === 'kelvin' && toUnit === 'fahrenheit') {
+        convertedValue = (value - 273.15) * 9/5 + 32;
+      } else {
+        convertedValue = value; // Should not happen with valid units
+      }
     } else {
       const factors = conversionFactors[category];
       const valueInBaseUnit = value / factors[fromUnit];

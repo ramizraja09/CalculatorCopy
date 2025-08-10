@@ -11,7 +11,7 @@ import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 
 const formSchema = z.object({
-  number: z.string().nonempty("Please enter a number."),
+  number: z.string().refine(val => !isNaN(parseFloat(val)), { message: "Please enter a valid number."}),
   sigFigs: z.number().int().min(1, "Must round to at least 1 significant figure."),
 });
 
@@ -25,10 +25,24 @@ export default function SigFigCalculator() {
   });
 
   const countSigFigs = (numStr: string) => {
-    if (numStr.includes('.')) {
-        return numStr.replace('.', '').replace(/^0+/, '').length;
+    numStr = numStr.replace('-', ''); // Ignore negative sign
+    if (numStr.includes('e')) { // Handle scientific notation
+        const parts = numStr.split('e');
+        return countSigFigs(parts[0]);
     }
-    return numStr.replace(/^0+|0+$/g, '').length;
+    if (numStr.includes('.')) {
+        numStr = numStr.replace('.', '');
+        numStr = numStr.replace(/^0+/, ''); // Remove leading zeros
+        return numStr.length;
+    }
+    // No decimal point
+    numStr = numStr.replace(/^0+/, ''); // Remove leading zeros
+    const trailingZeros = numStr.match(/0+$/);
+    // If there are trailing zeros without a decimal, they are not significant
+    if (trailingZeros) {
+        return numStr.length - trailingZeros[0].length;
+    }
+    return numStr.length;
   }
 
   const roundToSigFigs = (data: FormData) => {
@@ -38,11 +52,11 @@ export default function SigFigCalculator() {
         return;
     }
 
-    const roundedNumber = num.toPrecision(data.sigFigs);
-    const originalSigFigs = countSigFigs(data.number.replace('-', ''));
+    const roundedNumber = Number(num.toPrecision(data.sigFigs));
+    const originalSigFigs = countSigFigs(data.number);
 
     setResults({
-        roundedNumber,
+        roundedNumber: roundedNumber.toString(),
         originalSigFigs,
         error: null
     });

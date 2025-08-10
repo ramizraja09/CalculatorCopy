@@ -30,7 +30,7 @@ export default function RatioCalculator() {
   const [result, setResult] = useState<string | null>(null);
   const { control, handleSubmit, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(formSchema),
-    defaultValues: { a: 2, b: 3, c: 10 },
+    defaultValues: { a: 2, b: 3, c: 10, d: undefined },
   });
 
   const solveRatio = (data: FormData) => {
@@ -59,18 +59,18 @@ export default function RatioCalculator() {
       <div className="flex flex-col md:flex-row items-center justify-center gap-4">
         {/* Ratio A:B */}
         <div className="flex items-center gap-2">
-            <Controller name="a" control={control} render={({ field }) => <Input placeholder="A" className="w-24 text-center" type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value))} />} />
+            <Controller name="a" control={control} render={({ field }) => <Input placeholder="A" className="w-24 text-center" type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? undefined : parseFloat(e.target.value))} value={field.value ?? ''} />} />
             <Label className="text-xl">:</Label>
-            <Controller name="b" control={control} render={({ field }) => <Input placeholder="B" className="w-24 text-center" type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value))} />} />
+            <Controller name="b" control={control} render={({ field }) => <Input placeholder="B" className="w-24 text-center" type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? undefined : parseFloat(e.target.value))} value={field.value ?? ''} />} />
         </div>
         
         <Equal />
 
         {/* Ratio C:D */}
          <div className="flex items-center gap-2">
-            <Controller name="c" control={control} render={({ field }) => <Input placeholder="C" className="w-24 text-center" type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value))} />} />
+            <Controller name="c" control={control} render={({ field }) => <Input placeholder="C" className="w-24 text-center" type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? undefined : parseFloat(e.target.value))} value={field.value ?? ''} />} />
             <Label className="text-xl">:</Label>
-            <Controller name="d" control={control} render={({ field }) => <Input placeholder="D" className="w-24 text-center" type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value))} />} />
+            <Controller name="d" control={control} render={({ field }) => <Input placeholder="D" className="w-24 text-center" type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? undefined : parseFloat(e.target.value))} value={field.value ?? ''} />} />
         </div>
       </div>
        {errors.a && <p className="text-destructive text-sm mt-1 text-center">{errors.a.message}</p>}
