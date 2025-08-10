@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import { useState, useEffect, Suspense } from 'react';
@@ -381,7 +380,7 @@ function CalculatorPageContent({ calculator }: CalculatorClientPageProps) {
 
               {/* Accordion for additional details */}
               <div className="mt-8">
-                <Accordion type="single" collapsible className="w-full">
+                <Accordion type="single" collapsible className="w-full" defaultValue="purpose">
                   <AccordionItem value="purpose">
                     <AccordionTrigger>Why Use This Calculator?</AccordionTrigger>
                     <AccordionContent>

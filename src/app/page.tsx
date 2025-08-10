@@ -44,37 +44,39 @@ function HomePageContent() {
       </div>
 
       <div className="space-y-4">
-        <div className="flex flex-col md:flex-row gap-4 items-center">
-            <div className="relative w-full">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                <Input
-                    type="search"
-                    aria-label="Search for a calculator"
-                    placeholder="Search by name, category, or description..."
-                    className="pl-10 w-full"
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                />
-            </div>
-            <div className="flex items-center space-x-2 self-start md:self-center">
-                <Switch
-                    id="favorites-only"
-                    checked={showFavoritesOnly}
-                    onCheckedChange={setShowFavoritesOnly}
-                    aria-label="Show favorites only"
-                    disabled={!isLoaded}
-                />
-                <Label htmlFor="favorites-only">Show Favorites</Label>
+        <div className="sticky top-[55px] md:top-[57px] z-10 bg-muted/80 backdrop-blur-sm -mx-4 px-4 py-4 border-b">
+            <div className="flex flex-col md:flex-row gap-4 items-center max-w-screen-2xl mx-auto">
+                <div className="relative w-full">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                    <Input
+                        type="search"
+                        aria-label="Search for a calculator"
+                        placeholder="Search by name, category, or description..."
+                        className="pl-10 w-full"
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                    />
+                </div>
+                <div className="flex items-center space-x-2 self-start md:self-center">
+                    <Switch
+                        id="favorites-only"
+                        checked={showFavoritesOnly}
+                        onCheckedChange={setShowFavoritesOnly}
+                        aria-label="Show favorites only"
+                        disabled={!isLoaded}
+                    />
+                    <Label htmlFor="favorites-only">Show Favorites</Label>
+                </div>
             </div>
         </div>
 
         {!isLoaded ? (
-           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 pt-4">
                 {[...Array(8)].map((_, i) => <Skeleton key={i} className="h-64 w-full" />)}
             </div>
         ) : (
           filteredCalculators.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 pt-4">
               {filteredCalculators.map(calculator => (
                 <CalculatorCard
                   key={calculator.slug}
