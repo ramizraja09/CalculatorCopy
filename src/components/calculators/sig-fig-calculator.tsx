@@ -11,7 +11,7 @@ import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 
 const formSchema = z.object({
-  number: z.string().refine(val => !isNaN(parseFloat(val)), { message: "Please enter a valid number."}),
+  number: z.string().refine(val => !isNaN(parseFloat(val)) && isFinite(Number(val)), { message: "Please enter a valid number."}),
   sigFigs: z.number().int().min(1, "Must round to at least 1 significant figure."),
 });
 
@@ -25,41 +25,53 @@ export default function SigFigCalculator() {
   });
 
   const countSigFigs = (numStr: string) => {
-    numStr = numStr.replace('-', ''); // Ignore negative sign
-    if (numStr.includes('e')) { // Handle scientific notation
+    if (numStr.includes('e')) {
         const parts = numStr.split('e');
-        return countSigFigs(parts[0]);
+        return countSigFigs(parts[0].replace('.', ''));
     }
+    
+    // Remove negative sign
+    if (numStr.startsWith('-')) {
+        numStr = numStr.substring(1);
+    }
+
     if (numStr.includes('.')) {
+        // Remove leading zeros before the decimal
+        numStr = numStr.replace(/^0+/, '');
+        // Then remove the decimal point
         numStr = numStr.replace('.', '');
-        numStr = numStr.replace(/^0+/, ''); // Remove leading zeros
+        // Again remove leading zeros that were after the decimal (e.g., 0.00123)
+        numStr = numStr.replace(/^0+/, '');
         return numStr.length;
     }
-    // No decimal point
-    numStr = numStr.replace(/^0+/, ''); // Remove leading zeros
-    const trailingZeros = numStr.match(/0+$/);
-    // If there are trailing zeros without a decimal, they are not significant
-    if (trailingZeros) {
-        return numStr.length - trailingZeros[0].length;
-    }
+    
+    // For integers
+    // Remove leading zeros
+    numStr = numStr.replace(/^0+/, '');
+    // Trailing zeros are not significant unless a decimal is present
+    numStr = numStr.replace(/0+$/, '');
     return numStr.length;
   }
 
   const roundToSigFigs = (data: FormData) => {
-    const num = parseFloat(data.number);
-    if (isNaN(num)) {
-        setResults({ error: "Invalid input number." });
-        return;
+    try {
+        const num = parseFloat(data.number);
+        if (isNaN(num)) {
+            setResults({ error: "Invalid input number." });
+            return;
+        }
+
+        const roundedNumber = Number(num.toPrecision(data.sigFigs));
+        const originalSigFigs = countSigFigs(data.number);
+
+        setResults({
+            roundedNumber: roundedNumber.toString(),
+            originalSigFigs,
+            error: null
+        });
+    } catch(e) {
+         setResults({ error: "Could not process the number." });
     }
-
-    const roundedNumber = Number(num.toPrecision(data.sigFigs));
-    const originalSigFigs = countSigFigs(data.number);
-
-    setResults({
-        roundedNumber: roundedNumber.toString(),
-        originalSigFigs,
-        error: null
-    });
   };
 
   return (
