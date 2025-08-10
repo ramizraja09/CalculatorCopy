@@ -219,14 +219,14 @@ export const calculators: Calculator[] = [
     name: 'Tip Calculator',
     slug: 'tip-calculator',
     description: 'Quickly calculate the tip for a bill for any number of people.',
-    category: 'Finance',
+    category: 'Everyday Utilities',
     icon: Utensils,
   },
   {
     name: 'Fuel Cost Calculator',
     slug: 'fuel-cost-calculator',
     description: 'Estimate the total fuel cost for a road trip based on distance and MPG.',
-    category: 'Finance',
+    category: 'Everyday Utilities',
     icon: Car,
   },
 
@@ -624,166 +624,170 @@ export const calculators: Calculator[] = [
     category: 'Math',
     icon: Box,
   },
-   // Other
+  // Time & Date
   {
     name: 'Age Calculator',
     slug: 'age-calculator',
     description: 'Find out your exact age in years, months, and days.',
-    category: 'Other',
+    category: 'Time & Date',
     icon: Calendar,
   },
   {
     name: 'Date Difference Calculator',
     slug: 'date-difference-calculator',
     description: 'Calculate the number of days, months, and years between two dates.',
-    category: 'Other',
+    category: 'Time & Date',
     icon: Calendar,
   },
   {
     name: 'Time Calculator',
     slug: 'time-calculator',
     description: 'Add or subtract time values in hours, minutes, and seconds.',
-    category: 'Other',
+    category: 'Time & Date',
     icon: Clock,
   },
   {
     name: 'Birthday Calculator',
     slug: 'birthday-calculator',
     description: 'Find out the day of the week you were born and how long until your next birthday.',
-    category: 'Other',
+    category: 'Time & Date',
     icon: Calendar,
   },
   {
     name: 'Date to Day Calculator',
     slug: 'date-to-day-calculator',
     description: 'Find the day of the week for any given date in history or the future.',
-    category: 'Other',
+    category: 'Time & Date',
     icon: Calendar,
   },
   {
     name: 'Working Days Calculator',
     slug: 'working-days-calculator',
     description: 'Calculate the number of working days between two dates, excluding weekends and holidays.',
-    category: 'Other',
+    category: 'Time & Date',
     icon: Calendar,
   },
   {
     name: 'Time Duration Calculator',
     slug: 'time-duration-calculator',
     description: 'Calculate the duration between two points in time.',
-    category: 'Other',
+    category: 'Time & Date',
     icon: Clock,
   },
   {
     name: 'Countdown Timer',
     slug: 'countdown-timer',
     description: 'Set a countdown timer to a specific date and time.',
-    category: 'Other',
+    category: 'Time & Date',
     icon: Clock,
   },
   {
     name: 'Stopwatch',
     slug: 'stopwatch-calculator',
     description: 'An online stopwatch to time anything with precision.',
-    category: 'Other',
+    category: 'Time & Date',
     icon: Clock,
   },
   {
     name: 'Time Card Calculator',
     slug: 'time-card-calculator',
     description: 'Calculate total hours worked from a time card, including breaks.',
-    category: 'Other',
+    category: 'Time & Date',
     icon: Briefcase,
   },
+
+  // Career
   {
     name: 'Salary Negotiation Calculator',
     slug: 'salary-negotiation-calculator',
     description: 'Determine a target salary range based on current pay and market rates.',
-    category: 'Other',
+    category: 'Career',
     icon: Handshake,
   },
   {
     name: 'Job Offer Comparison Calculator',
     slug: 'job-offer-comparison-calculator',
     description: 'Compare two job offers side-by-side, including benefits and other factors.',
-    category: 'Other',
+    category: 'Career',
     icon: Briefcase,
   },
   {
     name: 'Freelance Rate Calculator',
     slug: 'freelance-rate-calculator',
     description: 'Determine an hourly or project rate based on your desired salary and expenses.',
-    category: 'Other',
+    category: 'Career',
     icon: Target,
   },
+
+  // Everyday Utilities
   {
     name: 'Sun Angle Calculator',
     slug: 'sun-angle-calculator',
     description: 'Find the sun\'s position (azimuth and elevation) for any location and time.',
-    category: 'Other',
+    category: 'Everyday Utilities',
     icon: Sun,
   },
   {
     name: 'Travel Time Calculator',
     slug: 'travel-time-calculator',
     description: 'Estimate the time it will take to travel a certain distance at a given speed.',
-    category: 'Other',
+    category: 'Everyday Utilities',
     icon: Plane,
   },
   {
     name: 'Distance Calculator',
     slug: 'distance-calculator',
     description: 'Calculate the distance between two points on a map.',
-    category: 'Other',
+    category: 'Everyday Utilities',
     icon: Map,
   },
   {
     name: 'Concrete Calculator',
     slug: 'concrete-calculator',
     description: 'Estimate the amount of concrete you need for a slab, footing, or post.',
-    category: 'Other',
+    category: 'Everyday Utilities',
     icon: Shovel,
   },
   {
     name: 'Paint Calculator',
     slug: 'paint-calculator',
     description: 'Estimate how much paint you need to cover a certain area.',
-    category: 'Other',
+    category: 'Everyday Utilities',
     icon: PaintRoller,
   },
   {
     name: 'Plant Spacing Calculator',
     slug: 'plant-spacing-calculator',
     description: 'Calculate how many plants you can fit in a given garden area.',
-    category: 'Other',
+    category: 'Everyday Utilities',
     icon: Leaf,
   },
   {
     name: 'Wallpaper Calculator',
     slug: 'wallpaper-calculator',
     description: 'Determine how many rolls of wallpaper are needed for a room.',
-    category: 'Other',
+    category: 'Everyday Utilities',
     icon: Wallpaper,
   },
   {
     name: 'Dilution Calculator',
     slug: 'dilution-calculator',
     description: 'Calculate how to dilute a concentrated solution to a desired final volume or concentration.',
-    category: 'Other',
+    category: 'Everyday Utilities',
     icon: TestTube2,
   },
   {
     name: 'Ohm\'s Law Calculator',
     slug: 'ohms-law-calculator',
     description: 'Calculate Voltage, Current, Resistance, or Power using Ohm\'s Law.',
-    category: 'Other',
+    category: 'Everyday Utilities',
     icon: CircuitBoard,
   },
   {
     name: 'Cost of Living Calculator',
     slug: 'cost-of-living-calculator',
     description: 'Compare the cost of living and required salary between two cities.',
-    category: 'Other',
+    category: 'Everyday Utilities',
     icon: Building,
   },
   // Unit Converters
@@ -935,16 +939,23 @@ export const calculators: Calculator[] = [
     category: 'Length and Area',
     icon: Square,
   },
+  {
+    name: 'Area Calculator',
+    slug: 'area-calculator',
+    description: 'Calculate the area of common shapes like rectangles, circles, and triangles.',
+    category: 'Length and Area',
+    icon: Square,
+  },
 ];
 
 const allCategories = [...new Set(calculators.map(c => c.category))];
 const otherCategory = 'Other';
 // Sort all categories except 'Other' alphabetically
-const sortedCategories = allCategories.filter(c => c !== otherCategory).sort();
+const mainCategories = allCategories.filter(c => c !== otherCategory).sort();
 // Add 'Other' to the end of the list if it exists
 if (allCategories.includes(otherCategory)) {
-  sortedCategories.push(otherCategory);
+  mainCategories.push(otherCategory);
 }
 
-export const calculatorCategories = sortedCategories;
+export const calculatorCategories = mainCategories;
 export const calculatorNames = calculators.map(c => c.name);
