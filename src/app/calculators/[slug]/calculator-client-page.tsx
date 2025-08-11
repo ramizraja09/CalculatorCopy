@@ -130,7 +130,7 @@ import PressureConverter from '@/components/calculators/pressure-converter';
 import EnergyPowerConverter from '@/components/calculators/energy-power-converter';
 import ForceConverter from '@/components/calculators/force-converter';
 import SpeedConverter from '@/components/calculators/speed-converter';
-import DataTransferTimeCalculator from '@/components/calculators/data-transfer-time-calculator';
+import BandwidthCalculator from '@/components/calculators/bandwidth-calculator';
 import AcreageCalculator from '@/components/calculators/acreage-calculator';
 import AreaConverter from '@/components/calculators/area-converter';
 import AstronomicalUnitConverter from '@/components/calculators/astronomical-unit-converter';
@@ -154,6 +154,10 @@ import WeightWatchersPointsCalculator from '@/components/calculators/weight-watc
 import OvertimePayCalculator from '@/components/calculators/overtime-pay-calculator';
 import InterviewPrepCostCalculator from '@/components/calculators/interview-prep-cost-calculator';
 import ProteinIntakeCalculator from '@/components/calculators/protein-intake-calculator';
+import StudentLoanCalculator from '@/components/calculators/student-loan-calculator';
+import PensionCalculator from '@/components/calculators/pension-calculator';
+import MortgageCalculatorUK from '@/components/calculators/mortgage-calculator-uk';
+import PValueCalculator from '@/components/calculators/p-value-calculator';
 
 
 type CalculatorClientPageProps = {
@@ -162,7 +166,9 @@ type CalculatorClientPageProps = {
 
 const calculatorComponents: { [key: string]: React.ComponentType<any> } = {
   'mortgage-calculator': MortgageCalculator,
+  'mortgage-calculator-uk': MortgageCalculatorUK,
   'loan-calculator': LoanCalculator,
+  'student-loan-calculator': StudentLoanCalculator,
   'car-loan-calculator': CarLoanCalculator,
   'amortization-calculator': AmortizationCalculator,
   'interest-calculator': InterestCalculator,
@@ -179,6 +185,7 @@ const calculatorComponents: { [key: string]: React.ComponentType<any> } = {
   'distance-calculator': DistanceCalculator,
   'cost-of-living-calculator': CostOfLivingCalculator,
   'retirement-savings-calculator': RetirementSavingsCalculator,
+  'pension-calculator': PensionCalculator,
   'inflation-calculator': InflationCalculator,
   'income-tax-calculator': IncomeTaxCalculator,
   'salary-calculator': SalaryCalculator,
@@ -230,6 +237,7 @@ const calculatorComponents: { [key: string]: React.ComponentType<any> } = {
   'area-calculator': AreaCalculator,
   'volume-calculator': VolumeCalculator,
   'prime-number-calculator': PrimeNumberCalculator,
+  'p-value-calculator': PValueCalculator,
   'gcd-calculator': GcdCalculator,
   'lcm-calculator': LcmCalculator,
   'logarithm-calculator': LogarithmCalculator,
@@ -257,7 +265,7 @@ const calculatorComponents: { [key: string]: React.ComponentType<any> } = {
   'wallpaper-calculator': WallpaperCalculator,
   'dilution-calculator': DilutionCalculator,
   'ohms-law-calculator': OhmsLawCalculator,
-  'data-transfer-time-calculator': DataTransferTimeCalculator,
+  'bandwidth-calculator': BandwidthCalculator,
   'vo2-max-estimator': Vo2MaxEstimator,
   'ffmi-calculator': FfmiCalculator,
   'sleep-calculator': SleepCalculator,

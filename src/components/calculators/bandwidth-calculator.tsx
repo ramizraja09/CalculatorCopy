@@ -19,7 +19,7 @@ const formSchema = z.object({
 });
 type FormData = z.infer<typeof formSchema>;
 
-export default function DataTransferTimeCalculator() {
+export default function BandwidthCalculator() {
   const [result, setResult] = useState<string | null>(null);
 
   const { control, handleSubmit } = useForm<FormData>({
@@ -28,13 +28,13 @@ export default function DataTransferTimeCalculator() {
   });
 
   const calculateTime = (data: FormData) => {
-    const sizeBytes = data.fileSize * (1024 ** ['KB', 'MB', 'GB', 'TB'].indexOf(data.fileUnit));
-    const speedBps = data.speed * (1000 ** ['kbps', 'mbps', 'gbps'].indexOf(data.speedUnit)) / 8;
-    const totalSeconds = sizeBytes / speedBps;
+    const sizeInBits = data.fileSize * (1024 ** ['KB', 'MB', 'GB', 'TB'].indexOf(data.fileUnit)) * 8;
+    const speedInBps = data.speed * (1000 ** ['kbps', 'mbps', 'gbps'].indexOf(data.speedUnit));
+    const totalSeconds = sizeInBits / speedInBps;
 
     const h = Math.floor(totalSeconds / 3600);
     const m = Math.floor((totalSeconds % 3600) / 60);
-    const s = Math.floor(totalSeconds % 60);
+    const s = Math.round(totalSeconds % 60);
     setResult(`${h}h ${m}m ${s}s`);
   };
 
@@ -53,7 +53,7 @@ export default function DataTransferTimeCalculator() {
           </div>
         </div>
         <div>
-          <Label>Speed</Label>
+          <Label>Bandwidth (Speed)</Label>
           <div className="flex gap-2">
             <Controller name="speed" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
             <Controller name="speedUnit" control={control} render={({ field }) => (
@@ -66,11 +66,11 @@ export default function DataTransferTimeCalculator() {
 
       {/* Results */}
       <div className="space-y-4">
-        <h3 className="text-xl font-semibold">Estimated Time</h3>
+        <h3 className="text-xl font-semibold">Estimated Download Time</h3>
         {result ? (
             <Card><CardContent className="p-6 text-center"><p className="text-4xl font-bold">{result}</p></CardContent></Card>
         ) : (
-          <div className="flex items-center justify-center h-40 bg-muted/50 rounded-lg border border-dashed"><p>Enter file size and speed</p></div>
+          <div className="flex items-center justify-center h-40 bg-muted/50 rounded-lg border border-dashed"><p>Enter file size and bandwidth</p></div>
         )}
       </div>
     </form>

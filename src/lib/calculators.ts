@@ -1,6 +1,6 @@
 
 import type { ComponentType } from 'react';
-import { PiggyBank, Car, Utensils, HeartPulse, Percent, Home, BrainCircuit, GraduationCap, TrendingUp, Footprints, Scale, Calculator, Calendar, Repeat, Atom, FlaskConical, Beaker, Ruler, Clock, Landmark, FileText, Wallet, Receipt, CreditCard, Recycle, Banknote, CandlestickChart, Briefcase, DraftingCompass, Cigarette, Droplets, Sun, Shirt, Building, Shovel, Box, Weight, Map, BookOpen, Beer, Dna, Leaf, Zap, Sigma, Coins, Award, Baby, UserCheck, Plane, ShoppingCart, TestTube2, Wallpaper, Activity, Moon, Soup, ShieldCheck, Handshake, Target, PaintRoller, Ratio, FunctionSquare, Pilcrow, Infinity, Equal, GitCompareArrows, BookText, AreaChart, CircuitBoard, HardDrive, Network, Gauge, Move, Square, Telescope, Text, Asterisk, WalletCards, Hourglass, BarChart3, TrendingDown, Syringe, Wheat, Sparkles, User, Users, Stethoscope } from 'lucide-react';
+import { PiggyBank, Car, Utensils, HeartPulse, Percent, Home, BrainCircuit, GraduationCap, TrendingUp, Footprints, Scale, Calculator, Calendar, Repeat, Atom, FlaskConical, Beaker, Ruler, Clock, Landmark, FileText, Wallet, Receipt, CreditCard, Recycle, Banknote, CandlestickChart, Briefcase, DraftingCompass, Cigarette, Droplets, Sun, Shirt, Building, Shovel, Box, Weight, Map, BookOpen, Beer, Dna, Leaf, Zap, Sigma, Coins, Award, Baby, UserCheck, Plane, ShoppingCart, TestTube2, Wallpaper, Activity, Moon, Soup, ShieldCheck, Handshake, Target, PaintRoller, Ratio, FunctionSquare, Pilcrow, Infinity, Equal, GitCompareArrows, BookText, AreaChart, CircuitBoard, HardDrive, Network, Gauge, Move, Square, Telescope, Text, Asterisk, WalletCards, Hourglass, BarChart3, TrendingDown, Syringe, Wheat, Sparkles, User, Users, Stethoscope, Wifi } from 'lucide-react';
 
 export type Calculator = {
   name: string;
@@ -19,12 +19,26 @@ export const calculators: Calculator[] = [
     category: 'Finance',
     icon: Home,
   },
+   {
+    name: 'Mortgage Calculator (UK)',
+    slug: 'mortgage-calculator-uk',
+    description: 'Estimate mortgage payments for UK properties, including stamp duty considerations.',
+    category: 'Finance',
+    icon: Home,
+  },
   {
     name: 'Loan Calculator',
     slug: 'loan-calculator',
     description: 'Determine the repayment schedule for any type of fixed-rate loan.',
     category: 'Finance',
     icon: PiggyBank,
+  },
+  {
+    name: 'Student Loan Calculator',
+    slug: 'student-loan-calculator',
+    description: 'Estimate monthly payments and total interest for student loans.',
+    category: 'Finance',
+    icon: GraduationCap,
   },
   {
     name: 'Car Loan Calculator',
@@ -60,6 +74,13 @@ export const calculators: Calculator[] = [
     description: 'Evaluate the performance of an investment and see its growth.',
     category: 'Finance',
     icon: CandlestickChart,
+  },
+  {
+    name: 'Pension Calculator',
+    slug: 'pension-calculator',
+    description: 'Estimate your future pension pot and potential retirement income.',
+    category: 'Finance',
+    icon: Landmark,
   },
   {
     name: 'Retirement Savings Calculator',
@@ -454,6 +475,13 @@ export const calculators: Calculator[] = [
     description: 'A simple calculator for everyday arithmetic operations.',
     category: 'Math',
     icon: Calculator,
+  },
+  {
+    name: 'P-value Calculator',
+    slug: 'p-value-calculator',
+    description: 'Calculate the P-value from a Z-score for statistical analysis.',
+    category: 'Math',
+    icon: Sigma,
   },
   {
     name: 'Percentage Calculator',
@@ -882,11 +910,11 @@ export const calculators: Calculator[] = [
     icon: Network,
   },
   {
-    name: 'Data Transfer Time Calculator',
-    slug: 'data-transfer-time-calculator',
+    name: 'Bandwidth Calculator',
+    slug: 'bandwidth-calculator',
     description: 'Estimate how long it will take to transfer a file based on its size and speed.',
     category: 'Unit Converters',
-    icon: Clock,
+    icon: Wifi,
   },
   {
     name: 'Pressure Converter',
