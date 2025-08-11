@@ -151,9 +151,9 @@ import RaisePercentageCalculator from '@/components/calculators/raise-percentage
 import BloodSugarConverter from '@/components/calculators/blood-sugar-converter';
 import CarbCalculator from '@/components/calculators/carb-calculator';
 import WeightWatchersPointsCalculator from '@/components/calculators/weight-watchers-points-calculator';
-import ProteinIntakeCalculator from '@/components/calculators/protein-intake-calculator';
 import OvertimePayCalculator from '@/components/calculators/overtime-pay-calculator';
 import InterviewPrepCostCalculator from '@/components/calculators/interview-prep-cost-calculator';
+import ProteinIntakeCalculator from '@/components/calculators/protein-intake-calculator';
 
 
 type CalculatorClientPageProps = {

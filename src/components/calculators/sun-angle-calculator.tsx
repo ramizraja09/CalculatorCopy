@@ -51,6 +51,11 @@ type FormData = z.infer<typeof formSchema>;
 export default function SunAngleCalculator() {
   const [results, setResults] = useState<any>(null);
   const [currentTime, setCurrentTime] = useState<string | null>(null);
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   const { control, handleSubmit, getValues, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -71,10 +76,11 @@ export default function SunAngleCalculator() {
 
 
   useEffect(() => {
+    if (!isClient) return;
     updateSunPosition();
     const timer = setInterval(updateSunPosition, 1000); 
     return () => clearInterval(timer);
-  }, [updateSunPosition]);
+  }, [isClient, updateSunPosition]);
 
   const calculateSunAngle = (data: FormData) => {
     const { latitude, longitude } = data;
@@ -104,7 +110,7 @@ export default function SunAngleCalculator() {
          <Card className="mt-4">
             <CardContent className="p-4 text-center">
                  <p className="text-sm text-muted-foreground">Current UTC Time</p>
-                 <p className="font-mono">{currentTime || 'Loading...'}</p>
+                 <p className="font-mono">{isClient ? currentTime : 'Loading...'}</p>
             </CardContent>
          </Card>
       </div>
@@ -112,7 +118,7 @@ export default function SunAngleCalculator() {
       {/* Results Column */}
       <div className="space-y-4">
         <h3 className="text-xl font-semibold">Sun Position</h3>
-        {results ? (
+        {isClient && results ? (
             results.error ? (
                 <Card className="flex items-center justify-center h-60 bg-muted/50 border-dashed">
                     <p className="text-destructive">{results.error}</p>

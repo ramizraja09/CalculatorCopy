@@ -22,6 +22,11 @@ type FormData = z.infer<typeof formSchema>;
 
 export default function RandomNumberGenerator() {
   const [result, setResult] = useState<number | null>(null);
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   const { control, handleSubmit, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -29,9 +34,8 @@ export default function RandomNumberGenerator() {
   });
 
   const generateRandom = (data: FormData) => {
+    if (!isClient) return; // Ensure this only runs on the client
     const { min, max } = data;
-    // This calculation is safe to run on both server and client, but the state update
-    // will only happen on the client after the button click, avoiding hydration issues.
     const randomNumber = Math.floor(Math.random() * (max - min + 1)) + min;
     setResult(randomNumber);
   };
@@ -55,7 +59,7 @@ export default function RandomNumberGenerator() {
       {/* Results */}
       <div className="space-y-4">
         <h3 className="text-xl font-semibold">Result</h3>
-        {result !== null ? (
+        {isClient && result !== null ? (
             <Card>
                 <CardContent className="p-6 text-center">
                     <p className="text-6xl font-bold">{result}</p>

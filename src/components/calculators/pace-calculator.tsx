@@ -22,6 +22,12 @@ type FormData = z.infer<typeof formSchema>;
 
 export default function PaceCalculator() {
   const [results, setResults] = useState<any>(null);
+  const [isClient, setIsClient] = useState(false);
+  
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
   const { control, watch } = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: { distance: 5, distanceUnit: 'km', timeHours: 0, timeMinutes: 25, timeSeconds: 0 },
@@ -30,6 +36,9 @@ export default function PaceCalculator() {
   const formData = watch();
 
   useEffect(() => {
+    // Only run calculations on the client
+    if (!isClient) return;
+
     const { distance, distanceUnit, timeHours, timeMinutes, timeSeconds } = formData;
     if (distance > 0 && (timeHours > 0 || timeMinutes > 0 || timeSeconds > 0)) {
         const totalTimeSeconds = (timeHours * 3600) + (timeMinutes * 60) + timeSeconds;
@@ -51,7 +60,7 @@ export default function PaceCalculator() {
     } else {
         setResults(null);
     }
-  }, [formData]);
+  }, [formData, isClient]);
 
 
   return (
@@ -93,7 +102,7 @@ export default function PaceCalculator() {
       {/* Results */}
       <div className="space-y-4">
         <h3 className="text-xl font-semibold">Pace</h3>
-        {results ? (
+        {isClient && results ? (
             <div className="grid grid-cols-2 gap-4">
               <Card>
                 <CardContent className="p-4 text-center">
