@@ -152,6 +152,8 @@ import BloodSugarConverter from '@/components/calculators/blood-sugar-converter'
 import CarbCalculator from '@/components/calculators/carb-calculator';
 import WeightWatchersPointsCalculator from '@/components/calculators/weight-watchers-points-calculator';
 import ProteinIntakeCalculator from '@/components/calculators/protein-intake-calculator';
+import OvertimePayCalculator from '@/components/calculators/overtime-pay-calculator';
+import InterviewPrepCostCalculator from '@/components/calculators/interview-prep-cost-calculator';
 
 
 type CalculatorClientPageProps = {
@@ -300,6 +302,8 @@ const calculatorComponents: { [key: string]: React.ComponentType<any> } = {
   'bmi-weight-loss-calculator': BmiWeightLossCalculator,
   'carb-calculator': CarbCalculator,
   'weight-watchers-points-calculator': WeightWatchersPointsCalculator,
+  'overtime-pay-calculator': OvertimePayCalculator,
+  'interview-prep-cost-calculator': InterviewPrepCostCalculator,
 };
 
 const PageSkeleton = ({ calculator }: { calculator: Omit<Calculator, 'icon'> }) => {

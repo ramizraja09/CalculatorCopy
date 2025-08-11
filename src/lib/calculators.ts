@@ -766,6 +766,20 @@ export const calculators: Calculator[] = [
     category: 'Career',
     icon: BarChart3,
   },
+  {
+    name: 'Overtime Pay Calculator',
+    slug: 'overtime-pay-calculator',
+    description: 'Calculate your total pay including regular and overtime hours.',
+    category: 'Career',
+    icon: Hourglass,
+  },
+  {
+    name: 'Interview Prep Cost Calculator',
+    slug: 'interview-prep-cost-calculator',
+    description: 'Budget for expenses related to job interviews, such as travel and attire.',
+    category: 'Career',
+    icon: Briefcase,
+  },
 
   // Everyday Utilities
   {
