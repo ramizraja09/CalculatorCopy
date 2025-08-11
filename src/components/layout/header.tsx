@@ -11,6 +11,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet"
 import { Menu } from 'lucide-react';
+import { ModeToggle } from '@/components/mode-toggle';
 
 
 export default function Header() {
@@ -34,7 +35,8 @@ export default function Header() {
           </nav>
         </div>
 
-        <div className="flex flex-1 items-center justify-end md:hidden">
+        <div className="flex flex-1 items-center justify-end space-x-2">
+           <ModeToggle />
           <Sheet>
             <SheetTrigger asChild>
               <Button
