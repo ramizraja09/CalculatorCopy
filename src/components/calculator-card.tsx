@@ -38,7 +38,7 @@ export default function CalculatorCard({ calculator, isFavorite, onToggleFavorit
             <CardHeader className="flex-row items-start gap-4 pb-4">
                  {Icon && (
                     <div className="bg-muted/70 p-3 rounded-lg">
-                        <Icon className="h-6 w-6 text-primary" />
+                        <Icon className="h-6 w-6 text-primary transition-transform duration-300 ease-in-out group-hover:scale-110 group-hover:-rotate-12" />
                     </div>
                 )}
                 <div className="flex-1">
