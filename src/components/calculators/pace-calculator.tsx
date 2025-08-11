@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { useState, useEffect } from 'react';
@@ -102,7 +103,22 @@ export default function PaceCalculator() {
       {/* Results */}
       <div className="space-y-4">
         <h3 className="text-xl font-semibold">Pace</h3>
-        {isClient && results ? (
+        {!isClient ? (
+           <div className="grid grid-cols-2 gap-4">
+              <Card>
+                <CardContent className="p-4 text-center">
+                  <p className="text-sm text-muted-foreground">per Mile</p>
+                  <p className="text-3xl font-bold">--:--</p>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="p-4 text-center">
+                  <p className="text-sm text-muted-foreground">per KM</p>
+                  <p className="text-3xl font-bold">--:--</p>
+                </CardContent>
+              </Card>
+            </div>
+        ) : results ? (
             <div className="grid grid-cols-2 gap-4">
               <Card>
                 <CardContent className="p-4 text-center">

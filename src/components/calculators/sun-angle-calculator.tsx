@@ -66,13 +66,14 @@ export default function SunAngleCalculator() {
   });
 
   const updateSunPosition = useCallback(() => {
+    if (!isClient) return;
     const now = new Date();
     setCurrentTime(now.toUTCString());
     const { latitude, longitude } = getValues();
     if(latitude !== undefined && longitude !== undefined) {
       setResults(getSunPosition(now, latitude, longitude));
     }
-  }, [getValues]);
+  }, [getValues, isClient]);
 
 
   useEffect(() => {
@@ -83,6 +84,7 @@ export default function SunAngleCalculator() {
   }, [isClient, updateSunPosition]);
 
   const calculateSunAngle = (data: FormData) => {
+    if (!isClient) return;
     const { latitude, longitude } = data;
     const position = getSunPosition(new Date(), latitude, longitude);
     setResults(position);

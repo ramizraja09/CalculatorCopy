@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -19,7 +20,7 @@ export default function PrivacyPage() {
           <CardTitle className="font-headline text-3xl md:text-4xl">Privacy Policy</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4 text-muted-foreground">
-          <p><strong>Last Updated:</strong> {lastUpdated || 'Loading...'}</p>
+          <p><strong>Last Updated:</strong> {lastUpdated || 'Loading date...'}</p>
 
           <p>
             Your privacy is important to us. It is My Genius Calculator's policy to respect your privacy regarding any information we may collect from you across our website.

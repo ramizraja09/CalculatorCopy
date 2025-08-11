@@ -348,7 +348,7 @@ const PageSkeleton = ({ calculator }: { calculator: Omit<Calculator, 'icon'> }) 
 
 
 function CalculatorPageContent({ calculator }: CalculatorClientPageProps) {
-  const [lastUpdated, setLastUpdated] = useState('');
+  const [lastUpdated, setLastUpdated] = useState<string | null>(null);
 
   useEffect(() => {
     // This will only run on the client, after hydration
@@ -483,7 +483,7 @@ function CalculatorPageContent({ calculator }: CalculatorClientPageProps) {
 
             </CardContent>
             <CardFooter className="text-xs text-muted-foreground justify-end">
-              {lastUpdated ? <p>Last Updated: {lastUpdated} | Formula v1.0</p> : <p>Loading...</p>}
+              {lastUpdated ? <p>Last Updated: {lastUpdated} | Formula v1.0</p> : <p>Loading date...</p>}
             </CardFooter>
         </Card>
     </div>
