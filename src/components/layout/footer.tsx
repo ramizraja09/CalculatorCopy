@@ -16,7 +16,7 @@ export default function Footer() {
     <footer className="bg-muted/50 border-t mt-auto">
       <div className="container max-w-screen-2xl mx-auto p-4 md:p-8">
         <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-muted-foreground" suppressHydrationWarning={true}>
             &copy; {currentYear ? currentYear : new Date().getFullYear()} My Genius Calculator. All rights reserved.
           </p>
           <nav className="flex gap-4 md:gap-6">

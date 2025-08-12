@@ -444,7 +444,7 @@ export default function CalculatorClientPage({ calculator }: CalculatorClientPag
               </div>
 
             </CardContent>
-            <CardFooter className="text-xs text-muted-foreground justify-end">
+            <CardFooter className="text-xs text-muted-foreground justify-end" suppressHydrationWarning={true}>
               {lastUpdated ? <p>Last Updated: {lastUpdated} | Formula v1.0</p> : <p>Loading...</p>}
             </CardFooter>
         </Card>
