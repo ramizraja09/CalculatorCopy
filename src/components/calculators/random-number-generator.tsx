@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import { useState, useEffect } from 'react';
@@ -106,15 +105,15 @@ export default function RandomNumberGenerator() {
       {/* Results */}
       <div className="space-y-4">
         <h3 className="text-xl font-semibold">Result</h3>
-        {isClient && result !== null ? (
-            <Card>
-                <CardContent className="p-6 text-center">
-                    <p className="text-6xl font-bold">{result}</p>
-                </CardContent>
-            </Card>
-        ) : (
-          <div className="flex items-center justify-center h-40 bg-muted/50 rounded-lg border border-dashed"><p>Click "Generate" to get a random number</p></div>
-        )}
+        <Card className="flex items-center justify-center h-40">
+           <CardContent className="p-6 text-center">
+            {isClient && result !== null ? (
+                <p className="text-6xl font-bold">{result}</p>
+            ) : (
+                <p className="text-muted-foreground">Click "Generate"</p>
+            )}
+            </CardContent>
+        </Card>
       </div>
     </form>
   );
