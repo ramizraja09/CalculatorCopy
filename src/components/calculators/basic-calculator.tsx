@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -16,16 +16,13 @@ declare global {
   }
 }
 
-type BasicCalculatorProps = {
-  onCalculate?: (inputs: {[key: string]: any}, result: string) => void;
-}
-
-export default function BasicCalculator({ onCalculate }: BasicCalculatorProps) {
+export default function BasicCalculator() {
   const [display, setDisplay] = useState('0');
   const [expression, setExpression] = useState('');
   const [history, setHistory] = useState<string[]>([]);
   const [isListening, setIsListening] = useState(false);
-  const isAfterEquals = useRef(false);
+  const [showHistory, setShowHistory] = useState(false);
+  const [isAfterEquals, setIsAfterEquals] = useState(false);
 
   // Load history from localStorage on component mount (client-side only)
   useEffect(() => {
@@ -51,10 +48,10 @@ export default function BasicCalculator({ onCalculate }: BasicCalculatorProps) {
 
   const handleInput = (value: string) => {
     // If the current display is the result of a previous calculation, start a new expression
-    if (isAfterEquals.current) {
+    if (isAfterEquals) {
       setExpression(value);
       setDisplay(value);
-      isAfterEquals.current = false;
+      setIsAfterEquals(false);
     } else {
       setExpression(prev => (prev === '0' && value !== '.') ? value : prev + value);
       setDisplay(prev => (prev === '0' && value !== '.') ? value : prev + value);
@@ -62,7 +59,7 @@ export default function BasicCalculator({ onCalculate }: BasicCalculatorProps) {
   };
 
   const handleOperator = (op: string) => {
-    isAfterEquals.current = false;
+    setIsAfterEquals(false);
     // Avoid adding multiple operators in a row
     if (/[+\-*/]$/.test(expression)) {
       setExpression(prev => prev.slice(0, -1) + op);
@@ -80,11 +77,10 @@ export default function BasicCalculator({ onCalculate }: BasicCalculatorProps) {
       const resultString = String(result);
       const newHistoryEntry = `${expression} = ${resultString}`;
       
-      onCalculate?.({ Expression: expression}, resultString);
       setHistory(prev => [newHistoryEntry, ...prev].slice(0, 50)); // Keep last 50 entries
       setDisplay(resultString);
       setExpression(resultString);
-      isAfterEquals.current = true;
+      setIsAfterEquals(true);
     } catch (error) {
       setDisplay('Error');
       setExpression('');
@@ -94,11 +90,11 @@ export default function BasicCalculator({ onCalculate }: BasicCalculatorProps) {
   const clearAll = () => {
     setDisplay('0');
     setExpression('');
-    isAfterEquals.current = false;
+    setIsAfterEquals(false);
   };
 
   const backspace = () => {
-    if (isAfterEquals.current) return;
+    if (isAfterEquals) return;
     setDisplay(prev => prev.length > 1 ? prev.slice(0, -1) : '0');
     setExpression(prev => prev.length > 1 ? prev.slice(0, -1) : '0');
   };
@@ -108,6 +104,10 @@ export default function BasicCalculator({ onCalculate }: BasicCalculatorProps) {
     if (!currentOperand.includes('.')) {
       handleInput('.');
     }
+  };
+
+  const clearHistory = () => {
+    setHistory([]);
   };
 
   const copyToClipboard = () => {
@@ -160,7 +160,7 @@ export default function BasicCalculator({ onCalculate }: BasicCalculatorProps) {
 
 
   return (
-    <div data-results-container>
+    <div className="grid md:grid-cols-2 gap-8">
       {/* Calculator */}
       <Card className="w-full">
         <CardContent className="p-4">
@@ -168,6 +168,9 @@ export default function BasicCalculator({ onCalculate }: BasicCalculatorProps) {
             {display}
           </div>
           <div className="flex gap-2 mb-2">
+            <Button variant="ghost" size="icon" onClick={() => setShowHistory(!showHistory)} aria-label="Toggle History">
+              <History />
+            </Button>
             <Button variant="ghost" size="icon" onClick={handleVoiceInput} aria-label="Voice Input">
               <Mic className={isListening ? 'text-destructive animate-pulse' : ''} />
             </Button>
@@ -201,6 +204,30 @@ export default function BasicCalculator({ onCalculate }: BasicCalculatorProps) {
           </div>
         </CardContent>
       </Card>
+      
+      {/* History Panel */}
+      {showHistory && (
+        <Card className="flex flex-col">
+          <CardContent className="p-4 flex-grow flex flex-col">
+            <div className="flex justify-between items-center mb-2">
+                <h3 className="text-lg font-semibold">History</h3>
+                <div className="flex gap-1">
+                    <Button variant="ghost" size="icon" onClick={exportHistory} aria-label="Export History" disabled={history.length === 0}><Download /></Button>
+                    <Button variant="ghost" size="icon" onClick={clearHistory} aria-label="Clear History" disabled={history.length === 0}><Trash2 /></Button>
+                </div>
+            </div>
+            <ScrollArea className="flex-grow border rounded-md">
+                <div className="p-2 text-sm text-right">
+                    {history.length > 0 ? (
+                        history.map((item, index) => <p key={index} className="font-mono p-1 border-b">{item}</p>)
+                    ) : (
+                        <p className="p-4 text-center text-muted-foreground">No history yet.</p>
+                    )}
+                </div>
+            </ScrollArea>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }

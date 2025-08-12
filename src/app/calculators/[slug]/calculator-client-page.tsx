@@ -7,13 +7,10 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter }
 import FavoriteButton from '@/components/favorite-button';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
-import { ArrowLeft, Copy, History, Trash2 } from 'lucide-react';
+import { ArrowLeft, Copy } from 'lucide-react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Button } from '@/components/ui/button';
 import { useToast } from "@/hooks/use-toast"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { useCalculationHistory } from '@/hooks/use-calculation-history';
 import BmiWeightLossCalculator from '@/components/calculators/bmi-weight-loss-calculator';
 import MortgageCalculator from '@/components/calculators/mortgage-calculator';
 import LoanCalculator from '@/components/calculators/loan-calculator';
@@ -362,8 +359,6 @@ function CalculatorPageContent({ calculator }: CalculatorClientPageProps) {
   const [lastUpdated, setLastUpdated] = useState<string | null>(null);
   const { toast } = useToast();
   const formRef = useRef<HTMLDivElement>(null);
-  const { history, addHistoryEntry, clearHistory } = useCalculationHistory(calculator.slug);
-
 
   useEffect(() => {
     // This will only run on the client, after hydration
@@ -437,72 +432,24 @@ function CalculatorPageContent({ calculator }: CalculatorClientPageProps) {
             </div>
             </CardHeader>
             <CardContent>
-              <Tabs defaultValue="calculator" className="w-full">
-                <TabsList className="grid w-full grid-cols-2">
-                  <TabsTrigger value="calculator">Calculator</TabsTrigger>
-                  <TabsTrigger value="history">
-                      <History className="mr-2 h-4 w-4" /> History
-                  </TabsTrigger>
-                </TabsList>
-                <TabsContent value="calculator">
-                  <div ref={formRef} className="mt-6 border rounded-lg p-4 md:p-6">
-                    {CalculatorComponent ? <CalculatorComponent onCalculate={addHistoryEntry} /> : (
-                      <div className="grid md:grid-cols-2 gap-8">
-                        <div className="space-y-4">
-                            <h3 className="text-xl font-semibold">Inputs</h3>
-                            <div className="flex items-center justify-center h-60 bg-muted/50 rounded-lg border border-dashed">
-                              <p className="text-sm text-muted-foreground">Input fields coming soon</p>
-                            </div>
+              <div ref={formRef} className="mt-6 border rounded-lg p-4 md:p-6">
+                {CalculatorComponent ? <CalculatorComponent /> : (
+                  <div className="grid md:grid-cols-2 gap-8">
+                    <div className="space-y-4">
+                        <h3 className="text-xl font-semibold">Inputs</h3>
+                        <div className="flex items-center justify-center h-60 bg-muted/50 rounded-lg border border-dashed">
+                          <p className="text-sm text-muted-foreground">Input fields coming soon</p>
                         </div>
-                        <div className="space-y-4" data-results-container>
-                            <h3 className="text-xl font-semibold">Results</h3>
-                            <div className="flex items-center justify-center h-60 bg-muted/50 rounded-lg border border-dashed">
-                              <p className="text-sm text-muted-foreground">Results display coming soon</p>
-                            </div>
+                    </div>
+                    <div className="space-y-4" data-results-container>
+                        <h3 className="text-xl font-semibold">Results</h3>
+                        <div className="flex items-center justify-center h-60 bg-muted/50 rounded-lg border border-dashed">
+                          <p className="text-sm text-muted-foreground">Results display coming soon</p>
                         </div>
-                      </div>
-                    )}
+                    </div>
                   </div>
-                </TabsContent>
-                <TabsContent value="history">
-                    <Card className="mt-6">
-                      <CardHeader className="flex flex-row items-center justify-between pb-2">
-                         <CardTitle className="text-lg">Calculation History</CardTitle>
-                         <Button variant="ghost" size="icon" onClick={clearHistory} disabled={history.length === 0}>
-                           <Trash2 className="h-4 w-4" />
-                         </Button>
-                      </CardHeader>
-                      <CardContent>
-                          <ScrollArea className="h-96">
-                            {history.length > 0 ? (
-                              <div className="space-y-4 p-1">
-                                {history.map((entry) => (
-                                  <Card key={entry.id} className="bg-muted/50">
-                                    <CardContent className="p-4 text-sm">
-                                      <p className="font-mono text-xs text-muted-foreground mb-2">{new Date(entry.timestamp).toLocaleString()}</p>
-                                      <div className="grid grid-cols-2 gap-x-4 gap-y-1">
-                                        {Object.entries(entry.inputs).map(([key, value]) => (
-                                          <div key={key}><strong>{key}:</strong> {value}</div>
-                                        ))}
-                                      </div>
-                                      <div className="mt-2 pt-2 border-t">
-                                        <p className="font-semibold">Result:</p>
-                                        <p className="whitespace-pre-wrap">{entry.result}</p>
-                                      </div>
-                                    </CardContent>
-                                  </Card>
-                                ))}
-                              </div>
-                            ) : (
-                               <div className="flex items-center justify-center h-40">
-                                <p className="text-sm text-muted-foreground">No history for this calculator yet.</p>
-                              </div>
-                            )}
-                          </ScrollArea>
-                      </CardContent>
-                    </Card>
-                </TabsContent>
-              </Tabs>
+                )}
+              </div>
 
               {/* Accordion for additional details */}
               <div className="mt-8">

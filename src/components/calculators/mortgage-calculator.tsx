@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useMemo } from 'react';
+import { useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -13,10 +13,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { ScrollArea } from '@/components/ui/scroll-area';
-
-type MortgageCalculatorProps = {
-  onCalculate?: (inputs: {[key: string]: any}, result: string) => void;
-}
 
 const formSchema = z.object({
   homePrice: z.number().min(1, 'Home price must be greater than 0'),
@@ -31,7 +27,7 @@ const formSchema = z.object({
 
 type FormData = z.infer<typeof formSchema>;
 
-export default function MortgageCalculator({ onCalculate }: MortgageCalculatorProps) {
+export default function MortgageCalculator() {
   const [results, setResults] = useState<any>(null);
 
   const { control, watch, handleSubmit, formState: { errors } } = useForm<FormData>({
@@ -99,7 +95,7 @@ export default function MortgageCalculator({ onCalculate }: MortgageCalculatorPr
         });
     }
 
-    const newResults = {
+    setResults({
       monthlyPrincipalAndInterest,
       monthlyPropertyTax,
       monthlyHomeInsurance,
@@ -111,19 +107,7 @@ export default function MortgageCalculator({ onCalculate }: MortgageCalculatorPr
       principal,
       amortization,
       error: null,
-    };
-    setResults(newResults);
-
-    if (onCalculate) {
-      const inputs = {
-        "Home Price": formatCurrency(data.homePrice),
-        "Down Payment": formatCurrency(downPaymentAmount),
-        "Loan Term": `${data.loanTerm} years`,
-        "Interest Rate": `${data.interestRate}%`,
-      };
-      const resultText = `Monthly Payment: ${formatCurrency(newResults.monthlyTotal)}`;
-      onCalculate(inputs, resultText);
-    }
+    });
   };
   
   const formatCurrency = (value: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value);
