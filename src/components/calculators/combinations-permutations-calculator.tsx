@@ -9,6 +9,13 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { Download } from 'lucide-react';
 
 const formSchema = z.object({
   n: z.number().int().min(1, 'n must be at least 1'),
@@ -23,11 +30,18 @@ type FormData = z.infer<typeof formSchema>;
 const factorial = (num: number): number => {
   if (num < 0) return -1;
   if (num === 0) return 1;
-  return num * factorial(num - 1);
+  let result = 1;
+  for(let i=1; i<=num; i++) {
+    result *= i;
+  }
+  return result;
 };
+
 
 export default function CombinationsPermutationsCalculator() {
   const [results, setResults] = useState<any>(null);
+  const [formData, setFormData] = useState<FormData | null>(null);
+
   const { control, handleSubmit, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: { n: 10, r: 3 },
@@ -35,14 +49,46 @@ export default function CombinationsPermutationsCalculator() {
 
   const calculate = (data: FormData) => {
     const { n, r } = data;
-    const nFact = factorial(n);
-    const rFact = factorial(r);
-    const nMinusRFact = factorial(n - r);
+    try {
+        const nFact = factorial(n);
+        const rFact = factorial(r);
+        const nMinusRFact = factorial(n - r);
 
-    const permutations = nFact / nMinusRFact;
-    const combinations = nFact / (rFact * nMinusRFact);
-    setResults({ combinations, permutations });
+        const permutations = nFact / nMinusRFact;
+        const combinations = nFact / (rFact * nMinusRFact);
+        setResults({ combinations, permutations });
+        setFormData(data);
+    } catch(e) {
+        // Handle potential stack overflow for large numbers
+        setResults({combinations: "Too large", permutations: "Too large"})
+        setFormData(data);
+    }
   };
+  
+  const handleExport = (format: 'txt' | 'csv') => {
+    if (!results || !formData) return;
+    const { n, r } = formData;
+    
+    let content = '';
+    const filename = `combo-perm-result.${format}`;
+
+    if (format === 'txt') {
+      content = `Combinations & Permutations Calculation\n\nInputs:\nTotal items (n): ${n}\nItems to choose (r): ${r}\n\nResults:\nCombinations (nCr): ${results.combinations.toLocaleString()}\nPermutations (nPr): ${results.permutations.toLocaleString()}`;
+    } else {
+      content = `n,r,Combinations,Permutations\n${n},${r},${results.combinations},${results.permutations}`;
+    }
+
+    const blob = new Blob([content], { type: `text/${format}` });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
 
   return (
     <form onSubmit={handleSubmit(calculate)} className="grid md:grid-cols-2 gap-8">
@@ -58,7 +104,23 @@ export default function CombinationsPermutationsCalculator() {
 
       {/* Results */}
       <div className="space-y-4">
-        <h3 className="text-xl font-semibold">Results</h3>
+        <div className="flex justify-between items-center">
+            <h3 className="text-xl font-semibold">Result</h3>
+             {results && (
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon">
+                            <Download className="h-4 w-4" />
+                            <span className="sr-only">Export</span>
+                        </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent>
+                        <DropdownMenuItem onClick={() => handleExport('txt')}>Download as .txt</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleExport('csv')}>Download as .csv</DropdownMenuItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
+            )}
+        </div>
         {results ? (
             <div className="grid grid-cols-1 gap-4">
                 <Card><CardContent className="p-4 text-center"><p className="text-muted-foreground">Combinations (nCr)</p><p className="text-2xl font-bold">{results.combinations.toLocaleString()}</p></CardContent></Card>

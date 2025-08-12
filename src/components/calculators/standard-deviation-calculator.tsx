@@ -10,6 +10,14 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { Download } from 'lucide-react';
+
 
 const formSchema = z.object({
   numbers: z.string().refine(val => val.split(/[\s,]+/).filter(Boolean).length > 1, "Enter at least two numbers."),
@@ -20,6 +28,8 @@ type FormData = z.infer<typeof formSchema>;
 
 export default function StandardDeviationCalculator() {
   const [results, setResults] = useState<any>(null);
+  const [formData, setFormData] = useState<FormData | null>(null);
+
   const { control, handleSubmit } = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: { numbers: "600, 470, 170, 430, 300", type: 'sample' },
@@ -35,7 +45,41 @@ export default function StandardDeviationCalculator() {
     const stdDev = Math.sqrt(variance);
     
     setResults({ stdDev: stdDev.toFixed(4), mean: mean.toFixed(2), variance: variance.toFixed(2), count: n });
+    setFormData(data);
   };
+  
+  const handleExport = (format: 'txt' | 'csv') => {
+    if (!results || !formData) return;
+    const { numbers, type } = formData;
+    
+    let content = '';
+    const filename = `std-dev-result.${format}`;
+
+    if (format === 'txt') {
+      content = `Standard Deviation Calculation\n\n`;
+      content += `Data Set: ${numbers}\n`;
+      content += `Type: ${type}\n\n`;
+      content += `Results:\n`;
+      content += `Standard Deviation: ${results.stdDev}\n`;
+      content += `Mean: ${results.mean}\n`;
+      content += `Variance: ${results.variance}\n`;
+      content += `Count: ${results.count}`;
+    } else {
+      content = `Data Set,Type,Standard Deviation,Mean,Variance,Count\n`;
+      content += `"${numbers}",${type},${results.stdDev},${results.mean},${results.variance},${results.count}`;
+    }
+
+    const blob = new Blob([content], { type: `text/${format}` });
+    const url = URL.createObjectURL(blob);
+    const aEl = document.createElement('a');
+    aEl.href = url;
+    aEl.download = filename;
+    document.body.appendChild(aEl);
+    aEl.click();
+    document.body.removeChild(aEl);
+    URL.revokeObjectURL(url);
+  };
+
 
   return (
     <form onSubmit={handleSubmit(calculate)} className="grid md:grid-cols-2 gap-8">
@@ -57,7 +101,23 @@ export default function StandardDeviationCalculator() {
 
       {/* Results */}
       <div className="space-y-4">
-        <h3 className="text-xl font-semibold">Results</h3>
+        <div className="flex justify-between items-center">
+            <h3 className="text-xl font-semibold">Result</h3>
+             {results && (
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon">
+                            <Download className="h-4 w-4" />
+                            <span className="sr-only">Export</span>
+                        </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent>
+                        <DropdownMenuItem onClick={() => handleExport('txt')}>Download as .txt</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleExport('csv')}>Download as .csv</DropdownMenuItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
+            )}
+        </div>
         {results ? (
             <Card>
                 <CardContent className="p-4 grid grid-cols-2 gap-4 text-center">

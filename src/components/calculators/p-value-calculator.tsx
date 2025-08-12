@@ -10,6 +10,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { Download } from 'lucide-react';
 
 const formSchema = z.object({
   zScore: z.number(),
@@ -29,6 +36,8 @@ function standardNormalCdf(x: number) {
 
 export default function PValueCalculator() {
   const [result, setResult] = useState<number | null>(null);
+  const [formData, setFormData] = useState<FormData | null>(null);
+
 
   const { control, handleSubmit } = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -42,6 +51,31 @@ export default function PValueCalculator() {
     } else {
         setResult(pValueOneTail * 2);
     }
+    setFormData(data);
+  };
+  
+  const handleExport = (format: 'txt' | 'csv') => {
+    if (!result || !formData) return;
+    const { zScore, tail } = formData;
+    
+    let content = '';
+    const filename = `p-value-result.${format}`;
+
+    if (format === 'txt') {
+      content = `P-Value Calculation\n\nInputs:\nZ-Score: ${zScore}\nTail: ${tail}\n\nResult:\nP-Value: ${result.toFixed(4)}`;
+    } else {
+      content = `Z-Score,Tail,P-Value\n${zScore},${tail},${result.toFixed(4)}`;
+    }
+
+    const blob = new Blob([content], { type: `text/${format}` });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   };
 
   return (
@@ -63,7 +97,23 @@ export default function PValueCalculator() {
       </div>
       {/* Results */}
       <div className="space-y-4">
-        <h3 className="text-xl font-semibold">Result</h3>
+        <div className="flex justify-between items-center">
+            <h3 className="text-xl font-semibold">Result</h3>
+             {result !== null && (
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon">
+                            <Download className="h-4 w-4" />
+                            <span className="sr-only">Export</span>
+                        </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent>
+                        <DropdownMenuItem onClick={() => handleExport('txt')}>Download as .txt</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleExport('csv')}>Download as .csv</DropdownMenuItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
+            )}
+        </div>
         {result !== null ? (
             <Card>
                 <CardContent className="p-6 text-center">

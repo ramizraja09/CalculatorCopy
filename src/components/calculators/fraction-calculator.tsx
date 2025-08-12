@@ -9,6 +9,14 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { Download } from 'lucide-react';
+
 
 const formSchema = z.object({
   num1: z.number().int(),
@@ -24,6 +32,7 @@ const gcd = (a: number, b: number): number => b === 0 ? a : gcd(b, a % b);
 
 export default function FractionCalculator() {
   const [result, setResult] = useState<string | null>(null);
+  const [formData, setFormData] = useState<FormData | null>(null);
 
   const { control, handleSubmit } = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -52,6 +61,32 @@ export default function FractionCalculator() {
     }
     const commonDivisor = gcd(Math.abs(resNum), Math.abs(resDen));
     setResult(`${resNum / commonDivisor} / ${resDen / commonDivisor}`);
+    setFormData(data);
+  };
+  
+  const handleExport = (format: 'txt' | 'csv') => {
+    if (!result || !formData) return;
+    const { num1, den1, operator, num2, den2 } = formData;
+    
+    let content = '';
+    const filename = `fraction-result.${format}`;
+    const expression = `${num1}/${den1} ${operator} ${num2}/${den2}`;
+
+    if (format === 'txt') {
+      content = `Fraction Calculation\n\nExpression: ${expression}\nResult: ${result}`;
+    } else {
+      content = `Expression,Result\n"${expression}","${result}"`;
+    }
+
+    const blob = new Blob([content], { type: `text/${format}` });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   };
 
   return (
@@ -82,8 +117,22 @@ export default function FractionCalculator() {
         
         {result && (
           <Card className="mt-4">
-            <CardContent className="p-4 text-center">
-              <p className="text-muted-foreground">Result</p>
+             <CardContent className="p-4 text-center">
+              <div className="flex justify-end -mt-2 -mr-2">
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon">
+                            <Download className="h-4 w-4" />
+                            <span className="sr-only">Export</span>
+                        </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent>
+                        <DropdownMenuItem onClick={() => handleExport('txt')}>Download as .txt</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleExport('csv')}>Download as .csv</DropdownMenuItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+              <p className="text-muted-foreground -mt-4">Result</p>
               <p className="text-3xl font-bold">{result}</p>
             </CardContent>
           </Card>

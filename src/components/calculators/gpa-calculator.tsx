@@ -10,7 +10,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Trash } from 'lucide-react';
+import { Trash, Download } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 const courseSchema = z.object({
   credits: z.number().min(0.5, 'Credits must be positive'),
@@ -32,6 +38,7 @@ const gradePoints: { [key: string]: number } = {
 
 export default function GpaCalculator() {
   const [results, setResults] = useState<any>(null);
+  const [formData, setFormData] = useState<FormData | null>(null);
 
   const { control, handleSubmit, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -57,6 +64,38 @@ export default function GpaCalculator() {
     const gpa = totalCredits > 0 ? totalPoints / totalCredits : 0;
     
     setResults({ gpa, totalCredits, error: null });
+    setFormData(data);
+  };
+  
+  const handleExport = (format: 'txt' | 'csv') => {
+    if (!results || !formData) return;
+    
+    let content = '';
+    const filename = `gpa-result.${format}`;
+
+    if (format === 'txt') {
+      content = `GPA Calculation Result\n\n`;
+      formData.courses.forEach((course, index) => {
+        content += `Course ${index + 1}: ${course.credits} credits, Grade ${course.grade}\n`;
+      });
+      content += `\nTotal Credits: ${results.totalCredits}\nFinal GPA: ${results.gpa.toFixed(3)}`;
+    } else {
+      content = 'Credits,Grade\n';
+      formData.courses.forEach(course => {
+        content += `${course.credits},${course.grade}\n`;
+      });
+      content += `\nTotal Credits,${results.totalCredits}\nFinal GPA,${results.gpa.toFixed(3)}`;
+    }
+
+    const blob = new Blob([content], { type: `text/${format}` });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   };
 
   return (
@@ -94,7 +133,23 @@ export default function GpaCalculator() {
 
       {/* Results Column */}
       <div className="space-y-4">
-        <h3 className="text-xl font-semibold">Results</h3>
+         <div className="flex justify-between items-center">
+            <h3 className="text-xl font-semibold">Result</h3>
+             {results && (
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon">
+                            <Download className="h-4 w-4" />
+                            <span className="sr-only">Export</span>
+                        </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent>
+                        <DropdownMenuItem onClick={() => handleExport('txt')}>Download as .txt</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleExport('csv')}>Download as .csv</DropdownMenuItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
+            )}
+        </div>
         {results ? (
             results.error ? (
                 <Card className="flex items-center justify-center h-60 bg-muted/50 border-dashed">
