@@ -17,6 +17,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Separator } from '@/components/ui/separator';
+import { cn } from "@/lib/utils";
 
 const offerSchema = z.object({
   name: z.string().nonempty("Name is required"),
