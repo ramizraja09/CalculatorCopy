@@ -91,27 +91,24 @@ export default function PythagoreanTheoremCalculator() {
         <div><Label>a</Label><Controller name="a" control={control} render={({ field }) => <Input type="number" disabled={solveFor === 'a'} {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} /></div>
         <div><Label>b</Label><Controller name="b" control={control} render={({ field }) => <Input type="number" disabled={solveFor === 'b'} {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} /></div>
         <div><Label>c (hypotenuse)</Label><Controller name="c" control={control} render={({ field }) => <Input type="number" disabled={solveFor === 'c'} {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} /></div>
-        <Button type="submit" className="w-full">Calculate</Button>
+        <div className="flex gap-2">
+            <Button type="submit" className="flex-1">Calculate</Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" disabled={!result}>
+                  <Download className="mr-2 h-4 w-4" /> Export
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem onClick={() => handleExport('txt')}>Download as .txt</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleExport('csv')}>Download as .csv</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+        </div>
       </div>
       {/* Results */}
       <div className="space-y-4">
-         <div className="flex justify-between items-center">
-            <h3 className="text-xl font-semibold">Result</h3>
-             {result && (
-                <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon">
-                            <Download className="h-4 w-4" />
-                            <span className="sr-only">Export</span>
-                        </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent>
-                        <DropdownMenuItem onClick={() => handleExport('txt')}>Download as .txt</DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleExport('csv')}>Download as .csv</DropdownMenuItem>
-                    </DropdownMenuContent>
-                </DropdownMenu>
-            )}
-        </div>
+        <h3 className="text-xl font-semibold">Result</h3>
         {result ? (
             <Card><CardContent className="p-6 text-center"><p className="text-4xl font-bold">{solveFor} = {result}</p></CardContent></Card>
         ) : (

@@ -93,27 +93,24 @@ export default function PValueCalculator() {
                 <Label className="flex items-center justify-center rounded-md border-2 border-muted bg-popover p-4 peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary"><RadioGroupItem value="two-tailed" className="mr-2"/>Two-tailed</Label>
             </RadioGroup>
         )}/>
-        <Button type="submit" className="w-full">Calculate P-value</Button>
+        <div className="flex gap-2">
+            <Button type="submit" className="flex-1">Calculate P-value</Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" disabled={result === null}>
+                  <Download className="mr-2 h-4 w-4" /> Export
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem onClick={() => handleExport('txt')}>Download as .txt</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleExport('csv')}>Download as .csv</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+        </div>
       </div>
       {/* Results */}
       <div className="space-y-4">
-        <div className="flex justify-between items-center">
-            <h3 className="text-xl font-semibold">Result</h3>
-             {result !== null && (
-                <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon">
-                            <Download className="h-4 w-4" />
-                            <span className="sr-only">Export</span>
-                        </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent>
-                        <DropdownMenuItem onClick={() => handleExport('txt')}>Download as .txt</DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleExport('csv')}>Download as .csv</DropdownMenuItem>
-                    </DropdownMenuContent>
-                </DropdownMenu>
-            )}
-        </div>
+        <h3 className="text-xl font-semibold">Result</h3>
         {result !== null ? (
             <Card>
                 <CardContent className="p-6 text-center">

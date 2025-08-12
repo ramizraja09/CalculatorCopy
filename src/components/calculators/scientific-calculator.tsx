@@ -222,14 +222,14 @@ export default function ScientificCalculator() {
                 <div className="flex gap-1">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="sm" disabled={history.length === 0}><Download className="mr-2 h-4 w-4" /> Export</Button>
+                          <Button variant="outline" size="sm" disabled={history.length === 0}><Download className="mr-2 h-4 w-4" /> Export</Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent>
                           <DropdownMenuItem onClick={() => exportHistory('txt')}>Download as .txt</DropdownMenuItem>
                           <DropdownMenuItem onClick={() => exportHistory('csv')}>Download as .csv</DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
-                    <Button variant="ghost" size="sm" onClick={clearHistory} aria-label="Clear History" disabled={history.length === 0}><Trash2 className="mr-2 h-4 w-4" /> Clear</Button>
+                    <Button variant="outline" size="sm" onClick={clearHistory} aria-label="Clear History" disabled={history.length === 0}><Trash2 className="mr-2 h-4 w-4" /> Clear</Button>
                 </div>
             </div>
             <ScrollArea className="flex-grow border rounded-md h-96">

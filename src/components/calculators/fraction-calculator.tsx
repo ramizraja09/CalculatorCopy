@@ -113,26 +113,25 @@ export default function FractionCalculator() {
             <Controller name="den2" control={control} render={({ field }) => <Input className="w-20 text-center" type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value) || 0)} />} />
           </div>
         </div>
-        <Button type="submit" className="w-full">Calculate</Button>
+        <div className="flex justify-center gap-2">
+            <Button type="submit" className="flex-1 max-w-xs">Calculate</Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" disabled={!result}>
+                  <Download className="mr-2 h-4 w-4" /> Export
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem onClick={() => handleExport('txt')}>Download as .txt</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleExport('csv')}>Download as .csv</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+        </div>
         
         {result && (
           <Card className="mt-4">
              <CardContent className="p-4 text-center">
-              <div className="flex justify-end -mt-2 -mr-2">
-                <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon">
-                            <Download className="h-4 w-4" />
-                            <span className="sr-only">Export</span>
-                        </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent>
-                        <DropdownMenuItem onClick={() => handleExport('txt')}>Download as .txt</DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleExport('csv')}>Download as .csv</DropdownMenuItem>
-                    </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
-              <p className="text-muted-foreground -mt-4">Result</p>
+              <p className="text-muted-foreground">Result</p>
               <p className="text-3xl font-bold">{result}</p>
             </CardContent>
           </Card>

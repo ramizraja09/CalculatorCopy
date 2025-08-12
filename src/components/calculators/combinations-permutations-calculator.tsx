@@ -99,28 +99,25 @@ export default function CombinationsPermutationsCalculator() {
         {errors.n && <p className="text-destructive text-sm mt-1">{errors.n.message}</p>}</div>
         <div><Label>Number of items to choose (r)</Label><Controller name="r" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value) || 0)} />} />
         {errors.r && <p className="text-destructive text-sm mt-1">{errors.r.message}</p>}</div>
-        <Button type="submit" className="w-full">Calculate</Button>
+        <div className="flex gap-2">
+            <Button type="submit" className="flex-1">Calculate</Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" disabled={!results}>
+                  <Download className="mr-2 h-4 w-4" /> Export
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem onClick={() => handleExport('txt')}>Download as .txt</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleExport('csv')}>Download as .csv</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+        </div>
       </div>
 
       {/* Results */}
       <div className="space-y-4">
-        <div className="flex justify-between items-center">
-            <h3 className="text-xl font-semibold">Result</h3>
-             {results && (
-                <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon">
-                            <Download className="h-4 w-4" />
-                            <span className="sr-only">Export</span>
-                        </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent>
-                        <DropdownMenuItem onClick={() => handleExport('txt')}>Download as .txt</DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleExport('csv')}>Download as .csv</DropdownMenuItem>
-                    </DropdownMenuContent>
-                </DropdownMenu>
-            )}
-        </div>
+        <h3 className="text-xl font-semibold">Result</h3>
         {results ? (
             <div className="grid grid-cols-1 gap-4">
                 <Card><CardContent className="p-4 text-center"><p className="text-muted-foreground">Combinations (nCr)</p><p className="text-2xl font-bold">{results.combinations.toLocaleString()}</p></CardContent></Card>
