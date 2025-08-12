@@ -1,16 +1,15 @@
 
 "use client";
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import type { Calculator } from '@/lib/calculators';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
 import FavoriteButton from '@/components/favorite-button';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
-import { ArrowLeft, Copy } from 'lucide-react';
+import { ArrowLeft, Share2 } from 'lucide-react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Button } from '@/components/ui/button';
-import { useToast } from "@/hooks/use-toast"
 import BmiWeightLossCalculator from '@/components/calculators/bmi-weight-loss-calculator';
 import MortgageCalculator from '@/components/calculators/mortgage-calculator';
 import LoanCalculator from '@/components/calculators/loan-calculator';
@@ -314,100 +313,14 @@ const calculatorComponents: { [key: string]: React.ComponentType<any> } = {
   'interview-prep-cost-calculator': InterviewPrepCostCalculator,
 };
 
-const PageSkeleton = ({ calculator }: { calculator: Omit<Calculator, 'icon'> }) => {
-  return (
-    <div className="container max-w-4xl mx-auto p-4 md:p-8 space-y-6">
-        <Link href="/" className="flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors">
-            <ArrowLeft className="h-4 w-4" />
-            Back to all calculators
-        </Link>
-        <Card>
-            <CardHeader>
-                <div className="flex justify-between items-start">
-                    <div>
-                      <div className="flex items-center gap-2 mb-2">
-                          <Badge variant="secondary">{calculator.category}</Badge>
-                      </div>
-                      <CardTitle className="font-headline text-3xl md:text-4xl">{calculator.name}</CardTitle>
-                      <CardDescription className="mt-2 text-lg">{calculator.description}</CardDescription>
-                    </div>
-                     <div className="flex items-center gap-2">
-                        <FavoriteButton slug={calculator.slug} />
-                        <Button variant="outline" size="icon" aria-label="Share">
-                            <Copy className="h-5 w-5" />
-                        </Button>
-                    </div>
-                </div>
-            </CardHeader>
-            <CardContent>
-                <div className="mt-6 border rounded-lg p-4 md:p-6">
-                    <div className="flex items-center justify-center h-60 bg-muted/50 rounded-lg border border-dashed">
-                        <p className="text-sm text-muted-foreground">Loading Calculator...</p>
-                    </div>
-                </div>
-            </CardContent>
-            <CardFooter className="text-xs text-muted-foreground justify-end">
-              <p>Loading...</p>
-            </CardFooter>
-        </Card>
-    </div>
-  );
-};
-
-
-function CalculatorPageContent({ calculator }: CalculatorClientPageProps) {
+export default function CalculatorClientPage({ calculator }: CalculatorClientPageProps) {
   const [lastUpdated, setLastUpdated] = useState<string | null>(null);
-  const { toast } = useToast();
-  const formRef = useRef<HTMLDivElement>(null);
+  const CalculatorComponent = calculatorComponents[calculator.slug];
 
   useEffect(() => {
     // This will only run on the client, after hydration
     setLastUpdated(new Date().toISOString().split('T')[0]);
   }, []);
-  
-  const CalculatorComponent = calculatorComponents[calculator.slug];
-
-  const handleCopyToClipboard = () => {
-    if (!formRef.current) return;
-
-    const inputs = formRef.current.querySelectorAll('input, select, textarea');
-    let report = `Calculator: ${calculator.name}\n\n--- Inputs ---\n`;
-    
-    inputs.forEach(input => {
-      const inputElement = input as HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement;
-      if (inputElement.id && !inputElement.disabled) {
-        const label = document.querySelector(`label[for="${inputElement.id}"]`);
-        const key = label?.textContent || inputElement.id;
-        let value = inputElement.value;
-        if (inputElement.tagName.toLowerCase() === 'select') {
-          const select = inputElement as HTMLSelectElement;
-          if (select.selectedIndex >= 0) {
-            value = select.options[select.selectedIndex].text;
-          }
-        }
-        if (value) {
-          report += `${key}: ${value}\n`;
-        }
-      }
-    });
-
-    // Attempt to find results in a more robust way
-    const resultsContainer = document.querySelector('[data-results-container]');
-    if (resultsContainer) {
-        report += "\n--- Results ---\n";
-        const textContent = (resultsContainer as HTMLElement).innerText;
-        // Clean up the text content a bit
-        const cleanedText = textContent.replace(/^Results\s*/, '').replace(/\n+/g, '\n').trim();
-        report += cleanedText;
-    }
-    
-    navigator.clipboard.writeText(report);
-
-    toast({
-      title: "Copied to Clipboard",
-      description: "The calculator inputs and results have been copied.",
-    })
-  }
   
   return (
     <div className="container max-w-4xl mx-auto p-4 md:p-8 space-y-6">
@@ -428,14 +341,14 @@ function CalculatorPageContent({ calculator }: CalculatorClientPageProps) {
                 </div>
                 <div className="flex items-center gap-2">
                   <FavoriteButton slug={calculator.slug} />
-                  <Button variant="outline" size="icon" aria-label="Copy Results" onClick={handleCopyToClipboard}>
-                    <Copy className="h-5 w-5" />
+                  <Button variant="outline" size="icon" aria-label="Share">
+                    <Share2 className="h-5 w-5" />
                   </Button>
                 </div>
             </div>
             </CardHeader>
             <CardContent>
-              <div ref={formRef} className="mt-6 border rounded-lg p-4 md:p-6">
+              <div className="mt-6 border rounded-lg p-4 md:p-6">
                 {CalculatorComponent ? <CalculatorComponent /> : (
                   <div className="grid md:grid-cols-2 gap-8">
                     <div className="space-y-4">
@@ -444,7 +357,7 @@ function CalculatorPageContent({ calculator }: CalculatorClientPageProps) {
                           <p className="text-sm text-muted-foreground">Input fields coming soon</p>
                         </div>
                     </div>
-                    <div className="space-y-4" data-results-container>
+                    <div className="space-y-4">
                         <h3 className="text-xl font-semibold">Results</h3>
                         <div className="flex items-center justify-center h-60 bg-muted/50 rounded-lg border border-dashed">
                           <p className="text-sm text-muted-foreground">Results display coming soon</p>
@@ -503,7 +416,7 @@ function CalculatorPageContent({ calculator }: CalculatorClientPageProps) {
                             </div>
                             <div>
                                 <h4 className="font-semibold text-foreground mb-2">Key Outputs:</h4>
-                                <ul className="list-disc pl-6 space-y-1" data-results-container>
+                                <ul className="list-disc pl-6 space-y-1">
                                     <li><strong>Scheduled Payment:</strong> The fixed amount you will need to pay on a regular basis (e.g., monthly).</li>
                                     <li><strong>Total Interest Paid:</strong> The cumulative amount of interest you will pay over the full term of the loan.</li>
                                     <li><strong>Total Amount Paid:</strong> The sum of the principal and all interest paid over the life of the loan.</li>
@@ -537,17 +450,4 @@ function CalculatorPageContent({ calculator }: CalculatorClientPageProps) {
         </Card>
     </div>
   );
-}
-
-export default function CalculatorClientPage({ calculator }: CalculatorClientPageProps) {
-  const [isClient, setIsClient] = useState(false);
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
-
-  if (!isClient) {
-    return <PageSkeleton calculator={calculator} />;
-  }
-  
-  return <CalculatorPageContent calculator={calculator} />;
 }
