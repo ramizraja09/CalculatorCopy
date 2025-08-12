@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -191,7 +191,7 @@ export default function BasicCalculator() {
         </CardContent>
       </Card>
       {/* History */}
-       <div className="space-y-4">
+       <div className="space-y-4" data-results-container>
             <div className="flex justify-between items-center">
                 <h3 className="text-xl font-semibold flex items-center gap-2"><History/> History</h3>
                 <div className="flex items-center gap-2">

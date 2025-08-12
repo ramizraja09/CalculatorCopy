@@ -312,11 +312,6 @@ const calculatorComponents: { [key: string]: React.ComponentType<any> } = {
   'weight-watchers-points-calculator': WeightWatchersPointsCalculator,
   'overtime-pay-calculator': OvertimePayCalculator,
   'interview-prep-cost-calculator': InterviewPrepCostCalculator,
-  'protein-intake-calculator': ProteinIntakeCalculator,
-  'student-loan-calculator': StudentLoanCalculator,
-  'pension-calculator': PensionCalculator,
-  'mortgage-calculator-uk': MortgageCalculatorUK,
-  'p-value-calculator': PValueCalculator,
 };
 
 const PageSkeleton = ({ calculator }: { calculator: Omit<Calculator, 'icon'> }) => {
@@ -393,10 +388,11 @@ function CalculatorPageContent({ calculator }: CalculatorClientPageProps) {
       }
     });
 
-    const resultsNode = formRef.current.nextElementSibling;
-    if (resultsNode) {
+    // Attempt to find results in a more robust way
+    const resultsContainer = document.querySelector('[data-results-container]');
+    if (resultsContainer) {
         report += "\n--- Results ---\n";
-        const textContent = (resultsNode as HTMLElement).innerText;
+        const textContent = (resultsContainer as HTMLElement).innerText;
         // Clean up the text content a bit
         const cleanedText = textContent.replace(/^Results\s*/, '').replace(/\n+/g, '\n').trim();
         report += cleanedText;
@@ -448,7 +444,7 @@ function CalculatorPageContent({ calculator }: CalculatorClientPageProps) {
                           </div>
                       </div>
                       {/* Results */}
-                      <div className="space-y-4">
+                      <div className="space-y-4" data-results-container>
                           <h3 className="text-xl font-semibold">Results</h3>
                            <div className="flex items-center justify-center h-60 bg-muted/50 rounded-lg border border-dashed">
                             <p className="text-sm text-muted-foreground">Results display coming soon</p>
@@ -505,7 +501,7 @@ function CalculatorPageContent({ calculator }: CalculatorClientPageProps) {
                                     <li><strong>Additional Costs (if applicable):</strong> For calculators like the mortgage tool, this may include property taxes, insurance, and HOA fees.</li>
                                 </ul>
                             </div>
-                            <div>
+                            <div data-results-container>
                                 <h4 className="font-semibold text-foreground mb-2">Key Outputs:</h4>
                                 <ul className="list-disc pl-6 space-y-1">
                                     <li><strong>Scheduled Payment:</strong> The fixed amount you will need to pay on a regular basis (e.g., monthly).</li>
@@ -555,5 +551,3 @@ export default function CalculatorClientPage({ calculator }: CalculatorClientPag
   
   return <CalculatorPageContent calculator={calculator} />;
 }
-
-    

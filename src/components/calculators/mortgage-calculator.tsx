@@ -200,7 +200,7 @@ export default function MortgageCalculator() {
       </div>
 
       {/* Results Column */}
-      <div className="space-y-4">
+      <div className="space-y-4" data-results-container>
         <h3 className="text-xl font-semibold">Results</h3>
         {results ? (
             results.error ? (
