@@ -139,7 +139,7 @@ export default function AreaCalculator() {
                 <CardContent className="p-6 text-center">
                     <p className="text-sm text-muted-foreground">Area</p>
                     <p className="text-4xl font-bold my-2">{results.area.toFixed(2)}</p>
-                    <p className="text-muted-foreground">square units</p>
+                    <p className="text-muted-foreground">cubic units</p>
                 </CardContent>
             </Card>
         ) : (
