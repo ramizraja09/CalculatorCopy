@@ -8,6 +8,9 @@ import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/com
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { Badge } from './ui/badge';
+import { useFavorites } from '@/hooks/use-favorites';
+import { Skeleton } from './ui/skeleton';
+import { useEffect, useState } from 'react';
 
 type CalculatorCardProps = {
   calculator: Calculator;
@@ -31,6 +34,15 @@ const categoryColors: { [key: string]: string } = {
 export default function CalculatorCard({ calculator, isFavorite, onToggleFavorite }: CalculatorCardProps) {
   const Icon = calculator.icon;
   const categoryColorClass = categoryColors[calculator.category] || categoryColors['Other'];
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  if (!isClient) {
+    return <Skeleton className="h-64 w-full" />;
+  }
 
   return (
     <Link href={`/calculators/${calculator.slug}`} className="group block h-full">

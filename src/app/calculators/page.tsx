@@ -1,8 +1,7 @@
 
-
 "use client";
 
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Input } from '@/components/ui/input';
 import { calculators } from '@/lib/calculators';
@@ -34,8 +33,6 @@ function CalculatorsPageContent() {
     const { favorites, toggleFavorite, isLoaded } = useFavorites();
   
     useEffect(() => {
-        // We only set the search term from the category on initial load or when the category changes.
-        // This allows the user to clear the search bar and see all calculators again.
         if (initialCategory) {
             setSearchTerm(initialCategory);
         } else {
@@ -52,15 +49,12 @@ function CalculatorsPageContent() {
         }
         let results = calculators;
         
-        // If an initial category is set, we start with that subset
         if (initialCategory) {
             results = results.filter(c => c.category === initialCategory);
         }
 
-        // Then, we filter by the live search term if it's different from the initial category or if there's no initial category
         if (searchTerm && searchTerm.toLowerCase() !== (initialCategory || '').toLowerCase()) {
             const lowerCaseSearchTerm = searchTerm.toLowerCase();
-            // If there was an initial category, we search within that. Otherwise, we search all calculators.
             const sourceToFilter = initialCategory ? results : calculators;
             results = sourceToFilter.filter(calculator => 
                 calculator.name.toLowerCase().includes(lowerCaseSearchTerm) ||
@@ -160,14 +154,9 @@ const PageSkeleton = () => (
 
 
 export default function CalculatorsPage() {
-  const [isClient, setIsClient] = useState(false);
-  useEffect(() => {
-      setIsClient(true);
-  }, []);
-
-  if (!isClient) {
-    return <PageSkeleton />;
-  }
-
-  return <CalculatorsPageContent />;
+    return (
+        <Suspense fallback={<PageSkeleton />}>
+            <CalculatorsPageContent />
+        </Suspense>
+    )
 }
