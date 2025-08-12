@@ -104,20 +104,7 @@ export default function PaceCalculator() {
       <div className="space-y-4">
         <h3 className="text-xl font-semibold">Pace</h3>
         {!isClient ? (
-           <div className="grid grid-cols-2 gap-4">
-              <Card>
-                <CardContent className="p-4 text-center">
-                  <p className="text-sm text-muted-foreground">per Mile</p>
-                  <p className="text-3xl font-bold">--:--</p>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardContent className="p-4 text-center">
-                  <p className="text-sm text-muted-foreground">per KM</p>
-                  <p className="text-3xl font-bold">--:--</p>
-                </CardContent>
-              </Card>
-            </div>
+           <div className="flex items-center justify-center h-40 bg-muted/50 rounded-lg border border-dashed"><p>Enter distance and time to see your pace</p></div>
         ) : results ? (
             <div className="grid grid-cols-2 gap-4">
               <Card>
