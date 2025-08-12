@@ -12,6 +12,13 @@ import { Label } from '@/components/ui/label';
 import { CheckCircle2, Trash, Download } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { cn } from "@/lib/utils";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+
 
 const offerSchema = z.object({
   name: z.string().nonempty("Name is required"),
@@ -102,6 +109,53 @@ export default function JobOfferComparisonCalculator() {
     append({ name: `Job Offer ${String.fromCharCode(65 + fields.length)}`, salary: 0, bonus: 0, benefitsValue: 0, vacationDays: 15, otherPerks: 0, costOfLivingIndex: 100, workingHours: 40 });
   };
   
+  const handleExport = (format: 'txt' | 'csv') => {
+    if (results.length === 0) return;
+    
+    let content = '';
+    const filename = `job-offer-comparison.${format}`;
+
+    if (format === 'txt') {
+      results.forEach(offer => {
+        content += `Offer: ${offer.name}\n`;
+        content += `-------------------------\n`;
+        content += `Base Salary: ${formatCurrency(offer.salary)}\n`;
+        content += `Bonus: ${formatCurrency(offer.bonus)}\n`;
+        content += `Benefits Value: ${formatCurrency(offer.benefitsValue)}\n`;
+        content += `Vacation Value: ${formatCurrency(offer.vacationValue)}\n`;
+        content += `Total Compensation: ${formatCurrency(offer.totalCompensation)}\n`;
+        content += `Adj. Compensation (COL): ${formatCurrency(offer.costAdjustedSalary)}\n`;
+        content += `Effective Hourly Rate: ${formatCurrency(offer.hourlyRate)}\n\n`;
+      });
+    } else {
+      const headers = ['Offer Name', 'Base Salary', 'Bonus', 'Benefits Value', 'Vacation Value', 'Total Comp.', 'Adj. Comp.', 'Hourly Rate'];
+      content += headers.join(',') + '\n';
+      results.forEach(offer => {
+        const row = [
+          `"${offer.name}"`,
+          offer.salary,
+          offer.bonus,
+          offer.benefitsValue,
+          offer.vacationValue.toFixed(2),
+          offer.totalCompensation.toFixed(2),
+          offer.costAdjustedSalary.toFixed(2),
+          offer.hourlyRate.toFixed(2)
+        ];
+        content += row.join(',') + '\n';
+      });
+    }
+
+    const blob = new Blob([content], { type: `text/${format}` });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <form onSubmit={(e) => e.preventDefault()} className="space-y-8">
       <div className="grid md:grid-cols-2 gap-8">
@@ -132,8 +186,19 @@ export default function JobOfferComparisonCalculator() {
         ))}
       </div>
       
-      <div className="flex justify-center">
+      <div className="flex justify-center gap-4">
         <Button type="button" variant="outline" onClick={handleAddNewOffer}>Add Another Offer</Button>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" disabled={results.length === 0}>
+              <Download className="mr-2 h-4 w-4" /> Export
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent>
+            <DropdownMenuItem onClick={() => handleExport('txt')}>Download as .txt</DropdownMenuItem>
+            <DropdownMenuItem onClick={() => handleExport('csv')}>Download as .csv</DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
 
       {results.length > 0 && (
