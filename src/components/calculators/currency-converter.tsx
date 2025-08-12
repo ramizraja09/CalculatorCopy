@@ -42,7 +42,7 @@ type FormData = z.infer<typeof formSchema>;
 
 export default function CurrencyConverter() {
   const [result, setResult] = useState<string | null>(null);
-  const [isCalculated, setIsCalculated] = useState(false);
+  const [formData, setFormData] = useState<FormData | null>(null);
 
 
   const { control, handleSubmit, watch, setValue } = useForm<FormData>({
@@ -54,11 +54,7 @@ export default function CurrencyConverter() {
     },
   });
 
-  const formData = watch();
-
-  useEffect(() => {
-    convertCurrency(formData);
-  }, [formData]);
+  const currentFormData = watch();
   
   const convertCurrency = (data: FormData) => {
     const { amount, fromCurrency, toCurrency } = data;
@@ -70,13 +66,13 @@ export default function CurrencyConverter() {
         minimumFractionDigits: 2,
         maximumFractionDigits: 2,
       }));
-       setIsCalculated(true);
+       setFormData(data);
     }
   }
 
   const swapCurrencies = () => {
-    const from = formData.fromCurrency;
-    const to = formData.toCurrency;
+    const from = currentFormData.fromCurrency;
+    const to = currentFormData.toCurrency;
     setValue('fromCurrency', to);
     setValue('toCurrency', from);
   };
@@ -106,7 +102,7 @@ export default function CurrencyConverter() {
   };
 
   return (
-    <form onSubmit={(e) => { e.preventDefault(); convertCurrency(formData) }} className="space-y-4">
+    <form onSubmit={handleSubmit(convertCurrency)} className="space-y-4">
         <Card>
             <CardHeader><CardTitle>Currency Conversion</CardTitle></CardHeader>
             <CardContent className="space-y-4">
@@ -135,25 +131,28 @@ export default function CurrencyConverter() {
                         )} />
                     </div>
                 </div>
-                 <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="outline" disabled={!isCalculated}>
-                      <Download className="mr-2 h-4 w-4" /> Export
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent>
-                    <DropdownMenuItem onClick={() => handleExport('txt')}>Download as .txt</DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => handleExport('csv')}>Download as .csv</DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
+                <div className="flex gap-2">
+                  <Button type="submit" className="flex-1">Convert</Button>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="outline" disabled={!result}>
+                        <Download className="mr-2 h-4 w-4" /> Export
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent>
+                      <DropdownMenuItem onClick={() => handleExport('txt')}>Download as .txt</DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleExport('csv')}>Download as .csv</DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
             </CardContent>
         </Card>
 
         {result !== null && (
             <Card>
                 <CardContent className="p-4 text-center">
-                    <p className="text-sm text-muted-foreground">{formData.amount.toLocaleString()} {formData.fromCurrency} =</p>
-                    <p className="text-3xl font-bold">{result} {formData.toCurrency}</p>
+                    <p className="text-sm text-muted-foreground">{currentFormData.amount.toLocaleString()} {currentFormData.fromCurrency} =</p>
+                    <p className="text-3xl font-bold">{result} {currentFormData.toCurrency}</p>
                     <p className="text-xs text-muted-foreground mt-2">*Rates are for demonstration purposes only.</p>
                 </CardContent>
             </Card>

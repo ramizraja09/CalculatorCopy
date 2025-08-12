@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -10,6 +10,14 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Download } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+
 
 const conversionFactors: { [key: string]: { [key: string]: number } } = {
   length: {
@@ -43,6 +51,7 @@ type FormData = z.infer<typeof formSchema>;
 
 export default function UnitConverter() {
   const [result, setResult] = useState<string | null>(null);
+  const [formData, setFormData] = useState<FormData | null>(null);
 
   const { control, handleSubmit, watch, setValue, trigger } = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -54,17 +63,15 @@ export default function UnitConverter() {
     },
   });
 
-  const formData = watch();
-
-  useEffect(() => {
-    convertUnits(formData);
-  }, [formData]);
+  const currentFormData = watch();
 
   const handleCategoryChange = (newCategory: string) => {
     setValue('category', newCategory);
     const units = Object.keys(conversionFactors[newCategory]);
     setValue('fromUnit', units[0]);
     setValue('toUnit', units[1] || units[0]);
+    setResult(null);
+    setFormData(null);
     trigger();
   }
 
@@ -97,6 +104,31 @@ export default function UnitConverter() {
     }
     
     setResult(convertedValue.toLocaleString(undefined, { maximumFractionDigits: 4 }));
+    setFormData(data);
+  };
+  
+   const handleExport = (format: 'txt' | 'csv') => {
+    if (!result || !formData) return;
+    
+    let content = '';
+    const filename = `${formData.category}-conversion.${format}`;
+    const { value, fromUnit, toUnit } = formData;
+
+    if (format === 'txt') {
+      content = `Unit Conversion\n\nInputs:\n- Value: ${value}\n- From: ${fromUnit}\n- To: ${toUnit}\n\nResult:\n- Converted Value: ${result}`;
+    } else {
+       content = `Value,From Unit,To Unit,Result\n${value},${fromUnit},${toUnit},${result}`;
+    }
+
+    const blob = new Blob([content], { type: `text/${format}` });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   };
 
   return (
@@ -106,7 +138,7 @@ export default function UnitConverter() {
         <CardContent className="space-y-4">
           <div>
             <Label>Category</Label>
-            <Select onValueChange={handleCategoryChange} value={formData.category}>
+            <Select onValueChange={handleCategoryChange} value={currentFormData.category}>
                 <SelectTrigger><SelectValue/></SelectTrigger>
                 <SelectContent>
                   {Object.keys(conversionFactors).map(cat => <SelectItem key={cat} value={cat} className="capitalize">{cat}</SelectItem>)}
@@ -120,7 +152,7 @@ export default function UnitConverter() {
                 <Select onValueChange={field.onChange} value={field.value}>
                     <SelectTrigger><SelectValue/></SelectTrigger>
                     <SelectContent>
-                      {Object.keys(conversionFactors[formData.category]).map(unit => <SelectItem key={unit} value={unit} className="capitalize">{unit}</SelectItem>)}
+                      {Object.keys(conversionFactors[currentFormData.category]).map(unit => <SelectItem key={unit} value={unit} className="capitalize">{unit}</SelectItem>)}
                     </SelectContent>
                 </Select>
               )} />
@@ -131,7 +163,7 @@ export default function UnitConverter() {
                 <Select onValueChange={field.onChange} value={field.value}>
                     <SelectTrigger><SelectValue/></SelectTrigger>
                     <SelectContent>
-                      {Object.keys(conversionFactors[formData.category]).map(unit => <SelectItem key={unit} value={unit} className="capitalize">{unit}</SelectItem>)}
+                      {Object.keys(conversionFactors[currentFormData.category]).map(unit => <SelectItem key={unit} value={unit} className="capitalize">{unit}</SelectItem>)}
                     </SelectContent>
                 </Select>
               )} />
@@ -141,6 +173,20 @@ export default function UnitConverter() {
             <Label>Value</Label>
             <Controller name="value" control={control} render={({ field }) => <Input type="number" step="any" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
           </div>
+           <div className="flex gap-2">
+              <Button type="submit" className="flex-1">Convert</Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" disabled={!result}>
+                    <Download className="mr-2 h-4 w-4" /> Export
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent>
+                  <DropdownMenuItem onClick={() => handleExport('txt')}>Download as .txt</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleExport('csv')}>Download as .csv</DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
         </CardContent>
       </Card>
 
