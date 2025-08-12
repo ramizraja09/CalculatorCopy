@@ -7,6 +7,13 @@ import { Card, CardContent } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Mic, Copy, Trash2, History, Download } from 'lucide-react';
 import { evaluate } from 'mathjs';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+
 
 // Type for the Web Speech Recognition API
 declare global {
@@ -114,13 +121,27 @@ export default function BasicCalculator() {
     navigator.clipboard.writeText(display);
   };
 
-  const exportHistory = () => {
-    const historyText = history.join('\n');
-    const blob = new Blob([historyText], { type: 'text/plain' });
+  const exportHistory = (format: 'txt' | 'csv') => {
+    if (history.length === 0) return;
+
+    let content = '';
+    const filename = `calculator-history.${format}`;
+
+    if (format === 'csv') {
+      content = 'Expression,Result\n';
+       history.forEach(entry => {
+        const parts = entry.split(' = ');
+        content += `"${parts[0]}",${parts[1]}\n`;
+      });
+    } else {
+       content = history.join('\n');
+    }
+
+    const blob = new Blob([content], { type: `text/${format}` });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'calculator-history.txt';
+    a.download = filename;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -212,8 +233,16 @@ export default function BasicCalculator() {
             <div className="flex justify-between items-center mb-2">
                 <h3 className="text-lg font-semibold">History</h3>
                 <div className="flex gap-1">
-                    <Button variant="ghost" size="icon" onClick={exportHistory} aria-label="Export History" disabled={history.length === 0}><Download /></Button>
-                    <Button variant="ghost" size="icon" onClick={clearHistory} aria-label="Clear History" disabled={history.length === 0}><Trash2 /></Button>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                          <Button variant="outline" size="sm" disabled={history.length === 0}><Download className="mr-2 h-4 w-4" /> Export</Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent>
+                          <DropdownMenuItem onClick={() => exportHistory('txt')}>Download as .txt</DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => exportHistory('csv')}>Download as .csv</DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                    <Button variant="outline" size="sm" onClick={clearHistory} aria-label="Clear History" disabled={history.length === 0}><Trash2 className="mr-2 h-4 w-4" /> Clear</Button>
                 </div>
             </div>
             <ScrollArea className="flex-grow border rounded-md">
