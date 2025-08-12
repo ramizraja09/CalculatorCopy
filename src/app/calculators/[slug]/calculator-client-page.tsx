@@ -166,6 +166,9 @@ import SubscriptionSavingsCalculator from '@/components/calculators/subscription
 import PetCostCalculator from '@/components/calculators/pet-cost-calculator';
 import WeddingBudgetCalculator from '@/components/calculators/wedding-budget-calculator';
 import ChildcareCostCalculator from '@/components/calculators/childcare-cost-calculator';
+import SleepDebtCalculator from '@/components/calculators/sleep-debt-calculator';
+import TripFuelCostCalculator from '@/components/calculators/trip-fuel-cost-calculator';
+import SubscriptionProfitabilityCalculator from '@/components/calculators/subscription-profitability-calculator';
 
 
 type CalculatorClientPageProps = {
@@ -329,6 +332,9 @@ const calculatorComponents: { [key: string]: React.ComponentType<any> } = {
   'pet-cost-calculator': PetCostCalculator,
   'wedding-budget-calculator': WeddingBudgetCalculator,
   'childcare-cost-calculator': ChildcareCostCalculator,
+  'sleep-debt-calculator': SleepDebtCalculator,
+  'trip-fuel-cost-calculator': TripFuelCostCalculator,
+  'subscription-profitability-calculator': SubscriptionProfitabilityCalculator,
 };
 
 export default function CalculatorClientPage({ calculator }: CalculatorClientPageProps) {

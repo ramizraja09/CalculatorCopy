@@ -1,6 +1,6 @@
 
 import type { ComponentType } from 'react';
-import { PiggyBank, Car, Utensils, HeartPulse, Percent, Home, BrainCircuit, GraduationCap, TrendingUp, Footprints, Scale, Calculator, Calendar, Repeat, Atom, FlaskConical, Beaker, Ruler, Clock, Landmark, FileText, Wallet, Receipt, CreditCard, Recycle, Banknote, CandlestickChart, Briefcase, DraftingCompass, Cigarette, Droplets, Sun, Shirt, Building, Shovel, Box, Weight, Map, BookOpen, Beer, Dna, Leaf, Zap, Sigma, Coins, Award, Baby, UserCheck, Plane, ShoppingCart, TestTube2, Wallpaper, Activity, Moon, Soup, ShieldCheck, Handshake, Target, PaintRoller, Ratio, FunctionSquare, Pilcrow, Infinity, Equal, GitCompareArrows, BookText, AreaChart, CircuitBoard, HardDrive, Network, Gauge, Move, Square, Telescope, Text, Asterisk, WalletCards, Hourglass, BarChart3, TrendingDown, Syringe, Wheat, Sparkles, User, Users, Stethoscope, Wifi, Factory, PartyPopper, Dog } from 'lucide-react';
+import { PiggyBank, Car, Utensils, HeartPulse, Percent, Home, BrainCircuit, GraduationCap, TrendingUp, Footprints, Scale, Calculator, Calendar, Repeat, Atom, FlaskConical, Beaker, Ruler, Clock, Landmark, FileText, Wallet, Receipt, CreditCard, Recycle, Banknote, CandlestickChart, Briefcase, DraftingCompass, Cigarette, Droplets, Sun, Shirt, Building, Shovel, Box, Weight, Map, BookOpen, Beer, Dna, Leaf, Zap, Sigma, Coins, Award, Baby, UserCheck, Plane, ShoppingCart, TestTube2, Wallpaper, Activity, Moon, Soup, ShieldCheck, Handshake, Target, PaintRoller, Ratio, FunctionSquare, Pilcrow, Infinity, Equal, GitCompareArrows, BookText, AreaChart, CircuitBoard, HardDrive, Network, Gauge, Move, Square, Telescope, Text, Asterisk, WalletCards, Hourglass, BarChart3, TrendingDown, Syringe, Wheat, Sparkles, User, Users, Stethoscope, Wifi, Factory, PartyPopper, Dog, BedDouble } from 'lucide-react';
 
 export type Calculator = {
   name: string;
@@ -264,6 +264,13 @@ export const calculators: Calculator[] = [
     category: 'Finance',
     icon: Plane,
   },
+  {
+    name: 'Subscription Profitability Calculator',
+    slug: 'subscription-profitability-calculator',
+    description: 'Analyze the profitability of a subscription model based on key metrics.',
+    category: 'Finance',
+    icon: AreaChart,
+  },
   // Health & Fitness (29 -> 44)
   {
     name: 'BMI Calculator',
@@ -453,6 +460,13 @@ export const calculators: Calculator[] = [
     description: 'Determine the best time to wake up or go to sleep based on sleep cycles.',
     category: 'Health & Fitness',
     icon: Moon,
+  },
+  {
+    name: 'Sleep Debt Calculator',
+    slug: 'sleep-debt-calculator',
+    description: 'Calculate your sleep deficit over a period and estimate recovery time.',
+    category: 'Health & Fitness',
+    icon: BedDouble,
   },
   {
     name: 'Protein Intake Calculator',
@@ -942,6 +956,13 @@ export const calculators: Calculator[] = [
     description: 'Estimate the total cost of childcare over multiple years.',
     category: 'Everyday Utilities',
     icon: Baby,
+  },
+  {
+    name: 'Trip Fuel Cost Calculator',
+    slug: 'trip-fuel-cost-calculator',
+    description: 'Estimate the fuel cost for a trip based on metric units (km, L).',
+    category: 'Everyday Utilities',
+    icon: Car,
   },
   // Unit Converters
   {
