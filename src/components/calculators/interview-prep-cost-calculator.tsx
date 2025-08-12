@@ -1,7 +1,6 @@
-
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm, useFieldArray, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -51,8 +50,8 @@ export default function InterviewPrepCostCalculator() {
   
   // Recalculate on any change
   const watchedItems = watch('items');
-  React.useEffect(() => {
-    const total = watchedItems.reduce((acc, item) => acc + item.cost, 0);
+  useEffect(() => {
+    const total = watchedItems.reduce((acc, item) => acc + (item.cost || 0), 0);
     setTotalCost(total);
   }, [watchedItems]);
 
