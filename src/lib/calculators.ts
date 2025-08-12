@@ -1,6 +1,6 @@
 
 import type { ComponentType } from 'react';
-import { PiggyBank, Car, Utensils, HeartPulse, Percent, Home, BrainCircuit, GraduationCap, TrendingUp, Footprints, Scale, Calculator, Calendar, Repeat, Atom, FlaskConical, Beaker, Ruler, Clock, Landmark, FileText, Wallet, Receipt, CreditCard, Recycle, Banknote, CandlestickChart, Briefcase, DraftingCompass, Cigarette, Droplets, Sun, Shirt, Building, Shovel, Box, Weight, Map, BookOpen, Beer, Dna, Leaf, Zap, Sigma, Coins, Award, Baby, UserCheck, Plane, ShoppingCart, TestTube2, Wallpaper, Activity, Moon, Soup, ShieldCheck, Handshake, Target, PaintRoller, Ratio, FunctionSquare, Pilcrow, Infinity, Equal, GitCompareArrows, BookText, AreaChart, CircuitBoard, HardDrive, Network, Gauge, Move, Square, Telescope, Text, Asterisk, WalletCards, Hourglass, BarChart3, TrendingDown, Syringe, Wheat, Sparkles, User, Users, Stethoscope, Wifi, Factory, PartyPopper, Dog, BedDouble } from 'lucide-react';
+import { PiggyBank, Car, Utensils, HeartPulse, Percent, Home, BrainCircuit, GraduationCap, TrendingUp, Footprints, Scale, Calculator, Calendar, Repeat, Atom, FlaskConical, Beaker, Ruler, Clock, Landmark, FileText, Wallet, Receipt, CreditCard, Recycle, Banknote, CandlestickChart, Briefcase, DraftingCompass, Cigarette, Droplets, Sun, Shirt, Building, Shovel, Box, Weight, Map, BookOpen, Beer, Dna, Leaf, Zap, Sigma, Coins, Award, Baby, UserCheck, Plane, ShoppingCart, TestTube2, Wallpaper, Activity, Moon, Soup, ShieldCheck, Handshake, Target, PaintRoller, Ratio, FunctionSquare, Pilcrow, Infinity, Equal, GitCompareArrows, BookText, AreaChart, CircuitBoard, HardDrive, Network, Gauge, Move, Square, Telescope, Text, Asterisk, WalletCards, Hourglass, BarChart3, TrendingDown, Syringe, Wheat, Sparkles, User, Users, Stethoscope, Wifi, Factory, PartyPopper, Dog, BedDouble, Thermometer, Gem, BatteryFull } from 'lucide-react';
 
 export type Calculator = {
   name: string;
@@ -707,6 +707,13 @@ export const calculators: Calculator[] = [
     category: 'Math',
     icon: Box,
   },
+  {
+    name: 'Earthquake Energy Converter',
+    slug: 'earthquake-energy-calculator',
+    description: 'Convert Richter scale magnitude to equivalent energy released.',
+    category: 'Math',
+    icon: Gem,
+  },
   // Time & Date
   {
     name: 'Age Calculator',
@@ -963,6 +970,20 @@ export const calculators: Calculator[] = [
     description: 'Estimate the fuel cost for a trip based on metric units (km, L).',
     category: 'Everyday Utilities',
     icon: Car,
+  },
+  {
+    name: 'Heat Index Calculator',
+    slug: 'heat-index-calculator',
+    description: 'Calculate the "feels like" temperature based on heat and humidity.',
+    category: 'Everyday Utilities',
+    icon: Thermometer,
+  },
+  {
+    name: 'Battery Life Calculator',
+    slug: 'battery-life-calculator',
+    description: 'Estimate how long a battery will last based on its capacity and device consumption.',
+    category: 'Everyday Utilities',
+    icon: BatteryFull,
   },
   // Unit Converters
   {
