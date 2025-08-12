@@ -9,6 +9,13 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
+import { Download } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 const formSchema = z.object({
   lat1: z.number().min(-90).max(90),
@@ -36,6 +43,7 @@ function getDistance(lat1: number, lon1: number, lat2: number, lon2: number) {
 
 export default function DistanceCalculator() {
   const [results, setResults] = useState<any>(null);
+  const [formData, setFormData] = useState<FormData | null>(null);
 
   const { control, handleSubmit, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -49,6 +57,31 @@ export default function DistanceCalculator() {
     const { lat1, lon1, lat2, lon2 } = data;
     const distances = getDistance(lat1, lon1, lat2, lon2);
     setResults(distances);
+    setFormData(data);
+  };
+  
+  const handleExport = (format: 'txt' | 'csv') => {
+    if (!results || !formData) return;
+
+    let content = '';
+    const filename = `distance-calculation.${format}`;
+    const { lat1, lon1, lat2, lon2 } = formData;
+
+    if (format === 'txt') {
+      content = `Distance Calculation\n\nInputs:\n- Point 1: ${lat1}, ${lon1}\n- Point 2: ${lat2}, ${lon2}\n\nResult:\n- Distance (km): ${results.distanceKm.toFixed(2)}\n- Distance (miles): ${results.distanceMiles.toFixed(2)}`;
+    } else {
+      content = `Category,Value\nLatitude 1,${lat1}\nLongitude 1,${lon1}\nLatitude 2,${lat2}\nLongitude 2,${lon2}\nDistance (km),${results.distanceKm.toFixed(2)}\nDistance (miles),${results.distanceMiles.toFixed(2)}`;
+    }
+
+    const blob = new Blob([content], { type: `text/${format}` });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   };
 
   return (
@@ -81,7 +114,20 @@ export default function DistanceCalculator() {
         </div>
         {(errors.lat2 || errors.lon2) && <p className="text-destructive text-sm mt-1">Please enter valid coordinates for Point 2.</p>}
         
-        <Button type="submit" className="w-full">Calculate Distance</Button>
+        <div className="flex gap-2">
+            <Button type="submit" className="flex-1">Calculate Distance</Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" disabled={!results}>
+                  <Download className="mr-2 h-4 w-4" /> Export
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem onClick={() => handleExport('txt')}>Download as .txt</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleExport('csv')}>Download as .csv</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+        </div>
       </div>
 
       {/* Results Column */}

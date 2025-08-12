@@ -10,6 +10,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Download } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 // Mock data for city cost of living indices. In a real app, this would come from an API.
 const cityIndices: { [key: string]: { name: string; index: number } } = {
@@ -33,6 +40,7 @@ type FormData = z.infer<typeof formSchema>;
 
 export default function CostOfLivingCalculator() {
   const [results, setResults] = useState<any>(null);
+  const [formData, setFormData] = useState<FormData | null>(null);
 
   const { control, handleSubmit, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -58,6 +66,31 @@ export default function CostOfLivingCalculator() {
       newCityName: cityIndices[newCity].name,
       error: null,
     });
+    setFormData(data);
+  };
+  
+  const handleExport = (format: 'txt' | 'csv') => {
+    if (!results || !formData) return;
+
+    let content = '';
+    const filename = `cost-of-living-calculation.${format}`;
+    const { currentCity, newCity, currentSalary } = formData;
+
+    if (format === 'txt') {
+      content = `Cost of Living Calculation\n\nInputs:\n- Current City: ${cityIndices[currentCity].name}\n- Current Salary: ${formatCurrency(currentSalary)}\n- New City: ${cityIndices[newCity].name}\n\nResult:\n- Equivalent Salary in New City: ${formatCurrency(results.equivalentSalary)}\n- Difference: ${formatCurrency(results.difference)}`;
+    } else {
+      content = `Category,Value\nCurrent City,${cityIndices[currentCity].name}\nCurrent Salary,${currentSalary}\nNew City,${cityIndices[newCity].name}\nEquivalent Salary,${results.equivalentSalary.toFixed(2)}\nDifference,${results.difference.toFixed(2)}`;
+    }
+
+    const blob = new Blob([content], { type: `text/${format}` });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   };
 
   const formatCurrency = (value: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value);
@@ -98,7 +131,20 @@ export default function CostOfLivingCalculator() {
           )} />
         </div>
         
-        <Button type="submit" className="w-full">Compare</Button>
+        <div className="flex gap-2">
+            <Button type="submit" className="flex-1">Compare</Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" disabled={!results}>
+                  <Download className="mr-2 h-4 w-4" /> Export
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem onClick={() => handleExport('txt')}>Download as .txt</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleExport('csv')}>Download as .csv</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+        </div>
       </div>
 
       {/* Results Column */}

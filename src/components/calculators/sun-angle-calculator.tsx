@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import { useState, useEffect, useCallback } from 'react';
@@ -10,6 +9,13 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
+import { Download } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 // Basic sun position calculation (simplified, does not account for all orbital complexities)
 function getSunPosition(date: Date, latitude: number, longitude: number) {
@@ -50,6 +56,7 @@ type FormData = z.infer<typeof formSchema>;
 
 export default function SunAngleCalculator() {
   const [results, setResults] = useState<any>(null);
+  const [formData, setFormData] = useState<FormData | null>(null);
   const [currentTime, setCurrentTime] = useState<string | null>(null);
   const [isClient, setIsClient] = useState(false);
 
@@ -71,6 +78,7 @@ export default function SunAngleCalculator() {
     const { latitude, longitude } = getValues();
     if(latitude !== undefined && longitude !== undefined) {
       setResults(getSunPosition(now, latitude, longitude));
+      setFormData({latitude, longitude});
     }
   }, [getValues]);
 
@@ -86,8 +94,33 @@ export default function SunAngleCalculator() {
     const { latitude, longitude } = data;
     const position = getSunPosition(new Date(), latitude, longitude);
     setResults(position);
+    setFormData(data);
   };
   
+  const handleExport = (format: 'txt' | 'csv') => {
+    if (!results || !formData) return;
+
+    let content = '';
+    const filename = `sun-angle-calculation.${format}`;
+    const { latitude, longitude } = formData;
+
+    if (format === 'txt') {
+      content = `Sun Angle Calculation\n\nInputs:\n- Latitude: ${latitude}\n- Longitude: ${longitude}\n- Time (UTC): ${currentTime}\n\nResult:\n- Elevation: ${results.elevation.toFixed(2)}°\n- Azimuth: ${results.azimuth.toFixed(2)}°`;
+    } else {
+      content = `Category,Value\nLatitude,${latitude}\nLongitude,${longitude}\nTime (UTC),${currentTime}\nElevation (°),${results.elevation.toFixed(2)}\nAzimuth (°),${results.azimuth.toFixed(2)}`;
+    }
+
+    const blob = new Blob([content], { type: `text/${format}` });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <form onSubmit={handleSubmit(calculateSunAngle)} className="grid md:grid-cols-2 gap-8">
       {/* Inputs Column */}
@@ -106,7 +139,20 @@ export default function SunAngleCalculator() {
           {errors.longitude && <p className="text-destructive text-sm mt-1">{errors.longitude.message}</p>}
         </div>
 
-        <Button type="submit" className="w-full">Get Current Sun Position</Button>
+        <div className="flex gap-2">
+            <Button type="submit" className="flex-1">Get Current Sun Position</Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" disabled={!results}>
+                  <Download className="mr-2 h-4 w-4" /> Export
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem onClick={() => handleExport('txt')}>Download as .txt</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleExport('csv')}>Download as .csv</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+        </div>
          <Card className="mt-4">
             <CardContent className="p-4 text-center">
                  <p className="text-sm text-muted-foreground">Current UTC Time</p>
