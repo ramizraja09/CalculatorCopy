@@ -83,39 +83,41 @@ export default function TvmCalculator() {
   const isInputDisabled = (field: keyof FormData) => solveFor === field;
 
   return (
-    <form onSubmit={handleSubmit(calculateTvm)} className="space-y-4">
-      <Card>
-        <CardContent className="p-4">
-          <Label>What do you want to solve for?</Label>
-          <Controller name="solveFor" control={control} render={({ field }) => (
-            <RadioGroup onValueChange={field.onChange} defaultValue={field.value} className="grid grid-cols-2 md:grid-cols-5 gap-2 mt-2">
-              <Label className={`p-3 border rounded-md text-center ${field.value === 'pv' ? 'border-primary' : ''}`}><RadioGroupItem value="pv" className="sr-only"/>PV</Label>
-              <Label className={`p-3 border rounded-md text-center ${field.value === 'fv' ? 'border-primary' : ''}`}><RadioGroupItem value="fv" className="sr-only"/>FV</Label>
-              <Label className={`p-3 border rounded-md text-center ${field.value === 'pmt' ? 'border-primary' : ''}`}><RadioGroupItem value="pmt" className="sr-only"/>Payment</Label>
-              <Label className={`p-3 border rounded-md text-center ${field.value === 'nper' ? 'border-primary' : ''}`}><RadioGroupItem value="nper" className="sr-only"/>Periods</Label>
-              <Label className={`p-3 border rounded-md text-center ${field.value === 'rate' ? 'border-primary' : ''}`}><RadioGroupItem value="rate" className="sr-only"/>Rate</Label>
-            </RadioGroup>
-          )} />
-        </CardContent>
-      </Card>
-      
-      <div className="grid md:grid-cols-2 gap-4">
-        <div><Label>Present Value (PV)</Label><Controller name="pv" control={control} render={({ field }) => <Input type="number" {...field} disabled={isInputDisabled('pv')} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} /></div>
-        <div><Label>Future Value (FV)</Label><Controller name="fv" control={control} render={({ field }) => <Input type="number" {...field} disabled={isInputDisabled('fv')} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} /></div>
-        <div><Label>Payment (PMT)</Label><Controller name="pmt" control={control} render={({ field }) => <Input type="number" {...field} disabled={isInputDisabled('pmt')} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} /></div>
-        <div><Label>Number of Periods (Months)</Label><Controller name="nper" control={control} render={({ field }) => <Input type="number" {...field} disabled={isInputDisabled('nper')} onChange={e => field.onChange(parseInt(e.target.value) || 0)} />} /></div>
-        <div><Label>Annual Rate (%)</Label><Controller name="rate" control={control} render={({ field }) => <Input type="number" step="0.01" {...field} disabled={isInputDisabled('rate')} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} /></div>
-      </div>
-      
-      <Button type="submit" className="w-full">Calculate</Button>
-
-      {result && (
-        <Card className="mt-4">
-          <CardContent className="p-6 text-center">
-            <p className="text-2xl font-bold">{result}</p>
+    <div data-results-container>
+      <form onSubmit={handleSubmit(calculateTvm)} className="space-y-4">
+        <Card>
+          <CardContent className="p-4">
+            <Label>What do you want to solve for?</Label>
+            <Controller name="solveFor" control={control} render={({ field }) => (
+              <RadioGroup onValueChange={field.onChange} defaultValue={field.value} className="grid grid-cols-2 md:grid-cols-5 gap-2 mt-2">
+                <Label className={`p-3 border rounded-md text-center ${field.value === 'pv' ? 'border-primary' : ''}`}><RadioGroupItem value="pv" className="sr-only"/>PV</Label>
+                <Label className={`p-3 border rounded-md text-center ${field.value === 'fv' ? 'border-primary' : ''}`}><RadioGroupItem value="fv" className="sr-only"/>FV</Label>
+                <Label className={`p-3 border rounded-md text-center ${field.value === 'pmt' ? 'border-primary' : ''}`}><RadioGroupItem value="pmt" className="sr-only"/>Payment</Label>
+                <Label className={`p-3 border rounded-md text-center ${field.value === 'nper' ? 'border-primary' : ''}`}><RadioGroupItem value="nper" className="sr-only"/>Periods</Label>
+                <Label className={`p-3 border rounded-md text-center ${field.value === 'rate' ? 'border-primary' : ''}`}><RadioGroupItem value="rate" className="sr-only"/>Rate</Label>
+              </RadioGroup>
+            )} />
           </CardContent>
         </Card>
-      )}
-    </form>
+        
+        <div className="grid md:grid-cols-2 gap-4">
+          <div><Label htmlFor="pv">Present Value (PV)</Label><Controller name="pv" control={control} render={({ field }) => <Input id="pv" type="number" {...field} disabled={isInputDisabled('pv')} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} /></div>
+          <div><Label htmlFor="fv">Future Value (FV)</Label><Controller name="fv" control={control} render={({ field }) => <Input id="fv" type="number" {...field} disabled={isInputDisabled('fv')} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} /></div>
+          <div><Label htmlFor="pmt">Payment (PMT)</Label><Controller name="pmt" control={control} render={({ field }) => <Input id="pmt" type="number" {...field} disabled={isInputDisabled('pmt')} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} /></div>
+          <div><Label htmlFor="nper">Number of Periods (Months)</Label><Controller name="nper" control={control} render={({ field }) => <Input id="nper" type="number" {...field} disabled={isInputDisabled('nper')} onChange={e => field.onChange(parseInt(e.target.value) || 0)} />} /></div>
+          <div><Label htmlFor="rate">Annual Rate (%)</Label><Controller name="rate" control={control} render={({ field }) => <Input id="rate" type="number" step="0.01" {...field} disabled={isInputDisabled('rate')} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} /></div>
+        </div>
+        
+        <Button type="submit" className="w-full">Calculate</Button>
+
+        {result && (
+          <Card className="mt-4">
+            <CardContent className="p-6 text-center">
+              <p className="text-2xl font-bold">{result}</p>
+            </CardContent>
+          </Card>
+        )}
+      </form>
+    </div>
   );
 }

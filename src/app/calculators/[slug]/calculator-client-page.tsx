@@ -374,17 +374,20 @@ function CalculatorPageContent({ calculator }: CalculatorClientPageProps) {
     let report = `Calculator: ${calculator.name}\n\n--- Inputs ---\n`;
     
     inputs.forEach(input => {
-      const label = document.querySelector(`label[for="${input.id}"]`);
-      if(label && input.id) {
-          const key = label.textContent || input.id;
-          let value = (input as HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement).value;
-          if (input.tagName.toLowerCase() === 'select') {
-              const select = input as HTMLSelectElement;
-              value = select.options[select.selectedIndex].text;
+      const inputElement = input as HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement;
+      if (inputElement.id && !inputElement.disabled) {
+        const label = document.querySelector(`label[for="${inputElement.id}"]`);
+        const key = label?.textContent || inputElement.id;
+        let value = inputElement.value;
+        if (inputElement.tagName.toLowerCase() === 'select') {
+          const select = inputElement as HTMLSelectElement;
+          if (select.selectedIndex >= 0) {
+            value = select.options[select.selectedIndex].text;
           }
-          if (value) {
-            report += `${key}: ${value}\n`;
-          }
+        }
+        if (value) {
+          report += `${key}: ${value}\n`;
+        }
       }
     });
 
@@ -498,9 +501,9 @@ function CalculatorPageContent({ calculator }: CalculatorClientPageProps) {
                                     <li><strong>Additional Costs (if applicable):</strong> For calculators like the mortgage tool, this may include property taxes, insurance, and HOA fees.</li>
                                 </ul>
                             </div>
-                            <div data-results-container>
+                            <div>
                                 <h4 className="font-semibold text-foreground mb-2">Key Outputs:</h4>
-                                <ul className="list-disc pl-6 space-y-1">
+                                <ul className="list-disc pl-6 space-y-1" data-results-container>
                                     <li><strong>Scheduled Payment:</strong> The fixed amount you will need to pay on a regular basis (e.g., monthly).</li>
                                     <li><strong>Total Interest Paid:</strong> The cumulative amount of interest you will pay over the full term of the loan.</li>
                                     <li><strong>Total Amount Paid:</strong> The sum of the principal and all interest paid over the life of the loan.</li>

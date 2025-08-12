@@ -115,37 +115,39 @@ export default function ScientificCalculator() {
   ];
 
   return (
-    <Card className="max-w-md mx-auto">
-      <CardContent className="p-4">
-        <div className="bg-muted p-2 rounded-md mb-4 text-right space-y-1">
-          <div className="h-6 text-sm text-muted-foreground truncate">{expression || ' '}</div>
-          <div className="h-8 text-2xl font-bold font-mono" aria-live="polite">
-            {result}
-          </div>
-        </div>
-        
-        <div className="grid grid-cols-5 gap-2">
-            <div className="col-span-5 flex justify-end">
-                <RadioGroup value={angleMode} onValueChange={(val) => setAngleMode(val as 'deg' | 'rad')} className="flex gap-4">
-                    <Label className="flex items-center gap-2 text-xs"><RadioGroupItem value="deg" /> Deg</Label>
-                    <Label className="flex items-center gap-2 text-xs"><RadioGroupItem value="rad" /> Rad</Label>
-                </RadioGroup>
+    <div data-results-container>
+      <Card className="max-w-md mx-auto">
+        <CardContent className="p-4">
+          <div className="bg-muted p-2 rounded-md mb-4 text-right space-y-1">
+            <div className="h-6 text-sm text-muted-foreground truncate">{expression || ' '}</div>
+            <div className="h-8 text-2xl font-bold font-mono" aria-live="polite">
+              {result}
             </div>
-          {buttons.flat().map((btn) => (
-            <Button
-              key={btn}
-              variant={
-                ['=', 'AC', 'Back'].includes(btn) ? 'destructive' :
-                ['/', '*', '-', '+'].includes(btn) ? 'secondary' : 'outline'
-              }
-              className="text-md h-12"
-              onClick={() => handleButtonClick(btn)}
-            >
-              {btn.replace('asin(', 'sin⁻¹').replace('acos(', 'cos⁻¹').replace('atan(','tan⁻¹').replace('xʸ','xʸ')}
-            </Button>
-          ))}
-        </div>
-      </CardContent>
-    </Card>
+          </div>
+          
+          <div className="grid grid-cols-5 gap-2">
+              <div className="col-span-5 flex justify-end">
+                  <RadioGroup value={angleMode} onValueChange={(val) => setAngleMode(val as 'deg' | 'rad')} className="flex gap-4">
+                      <Label className="flex items-center gap-2 text-xs"><RadioGroupItem value="deg" /> Deg</Label>
+                      <Label className="flex items-center gap-2 text-xs"><RadioGroupItem value="rad" /> Rad</Label>
+                  </RadioGroup>
+              </div>
+            {buttons.flat().map((btn) => (
+              <Button
+                key={btn}
+                variant={
+                  ['=', 'AC', 'Back'].includes(btn) ? 'destructive' :
+                  ['/', '*', '-', '+'].includes(btn) ? 'secondary' : 'outline'
+                }
+                className="text-md h-12"
+                onClick={() => handleButtonClick(btn)}
+              >
+                {btn.replace('asin(', 'sin⁻¹').replace('acos(', 'cos⁻¹').replace('atan(','tan⁻¹').replace('xʸ','xʸ')}
+              </Button>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+    </div>
   );
 }

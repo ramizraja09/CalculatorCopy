@@ -102,15 +102,15 @@ export default function BmiCalculator() {
           <div className="grid grid-cols-2 gap-4">
             <div>
                 <Label htmlFor="heightFt">Height (ft)</Label>
-                <Controller name="heightFt" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value) || 0)} />} />
+                <Controller name="heightFt" control={control} render={({ field }) => <Input id="heightFt" type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value) || 0)} />} />
             </div>
              <div>
                 <Label htmlFor="heightIn">Height (in)</Label>
-                <Controller name="heightIn" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value) || 0)} />} />
+                <Controller name="heightIn" control={control} render={({ field }) => <Input id="heightIn" type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value) || 0)} />} />
             </div>
              <div className="col-span-2">
                 <Label htmlFor="weightLbs">Weight (lbs)</Label>
-                <Controller name="weightLbs" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
+                <Controller name="weightLbs" control={control} render={({ field }) => <Input id="weightLbs" type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
             </div>
           </div>
         )}
@@ -119,11 +119,11 @@ export default function BmiCalculator() {
            <div className="space-y-4">
             <div>
                 <Label htmlFor="heightCm">Height (cm)</Label>
-                <Controller name="heightCm" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
+                <Controller name="heightCm" control={control} render={({ field }) => <Input id="heightCm" type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
             </div>
             <div>
                 <Label htmlFor="weightKg">Weight (kg)</Label>
-                <Controller name="weightKg" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
+                <Controller name="weightKg" control={control} render={({ field }) => <Input id="weightKg" type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
             </div>
           </div>
         )}
@@ -133,7 +133,7 @@ export default function BmiCalculator() {
       </div>
 
       {/* Results Column */}
-      <div className="space-y-4">
+      <div className="space-y-4" data-results-container>
         <h3 className="text-xl font-semibold">Results</h3>
         {results ? (
             <Card>

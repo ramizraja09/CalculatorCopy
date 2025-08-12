@@ -55,38 +55,40 @@ export default function FractionCalculator() {
   };
 
   return (
-    <form onSubmit={handleSubmit(calculateFractions)} className="space-y-4">
-      <div className="flex items-center justify-center gap-4">
-        {/* Fraction 1 */}
-        <div className="flex flex-col items-center gap-1">
-          <Controller name="num1" control={control} render={({ field }) => <Input className="w-20 text-center" type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value) || 0)} />} />
-          <div className="h-px w-20 bg-foreground"></div>
-          <Controller name="den1" control={control} render={({ field }) => <Input className="w-20 text-center" type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value) || 0)} />} />
+    <div data-results-container>
+      <form onSubmit={handleSubmit(calculateFractions)} className="space-y-4">
+        <div className="flex items-center justify-center gap-4">
+          {/* Fraction 1 */}
+          <div className="flex flex-col items-center gap-1">
+            <Controller name="num1" control={control} render={({ field }) => <Input className="w-20 text-center" type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value) || 0)} />} />
+            <div className="h-px w-20 bg-foreground"></div>
+            <Controller name="den1" control={control} render={({ field }) => <Input className="w-20 text-center" type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value) || 0)} />} />
+          </div>
+          {/* Operator */}
+          <Controller name="operator" control={control} render={({ field }) => (
+              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <SelectTrigger className="w-20"><SelectValue /></SelectTrigger>
+                  <SelectContent><SelectItem value="+">+</SelectItem><SelectItem value="-">-</SelectItem><SelectItem value="*">*</SelectItem><SelectItem value="/">/</SelectItem></SelectContent>
+              </Select>
+          )} />
+          {/* Fraction 2 */}
+          <div className="flex flex-col items-center gap-1">
+            <Controller name="num2" control={control} render={({ field }) => <Input className="w-20 text-center" type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value) || 0)} />} />
+            <div className="h-px w-20 bg-foreground"></div>
+            <Controller name="den2" control={control} render={({ field }) => <Input className="w-20 text-center" type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value) || 0)} />} />
+          </div>
         </div>
-        {/* Operator */}
-        <Controller name="operator" control={control} render={({ field }) => (
-            <Select onValueChange={field.onChange} defaultValue={field.value}>
-                <SelectTrigger className="w-20"><SelectValue /></SelectTrigger>
-                <SelectContent><SelectItem value="+">+</SelectItem><SelectItem value="-">-</SelectItem><SelectItem value="*">*</SelectItem><SelectItem value="/">/</SelectItem></SelectContent>
-            </Select>
-        )} />
-        {/* Fraction 2 */}
-        <div className="flex flex-col items-center gap-1">
-          <Controller name="num2" control={control} render={({ field }) => <Input className="w-20 text-center" type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value) || 0)} />} />
-          <div className="h-px w-20 bg-foreground"></div>
-          <Controller name="den2" control={control} render={({ field }) => <Input className="w-20 text-center" type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value) || 0)} />} />
-        </div>
-      </div>
-      <Button type="submit" className="w-full">Calculate</Button>
-      
-      {result && (
-        <Card className="mt-4">
-          <CardContent className="p-4 text-center">
-            <p className="text-muted-foreground">Result</p>
-            <p className="text-3xl font-bold">{result}</p>
-          </CardContent>
-        </Card>
-      )}
-    </form>
+        <Button type="submit" className="w-full">Calculate</Button>
+        
+        {result && (
+          <Card className="mt-4">
+            <CardContent className="p-4 text-center">
+              <p className="text-muted-foreground">Result</p>
+              <p className="text-3xl font-bold">{result}</p>
+            </CardContent>
+          </Card>
+        )}
+      </form>
+    </div>
   );
 }

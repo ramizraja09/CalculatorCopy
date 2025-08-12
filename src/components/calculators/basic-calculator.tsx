@@ -160,7 +160,7 @@ export default function BasicCalculator() {
 
 
   return (
-    <div className="grid md:grid-cols-2 gap-8">
+    <div className="grid md:grid-cols-2 gap-8" data-results-container>
       {/* Calculator */}
       <Card className="w-full">
         <CardContent className="p-4">
