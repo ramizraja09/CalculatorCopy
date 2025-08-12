@@ -9,6 +9,13 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
+import { Download } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 const formSchema = z.object({
   msrp: z.number().min(1, 'MSRP is required'),
@@ -24,6 +31,7 @@ type FormData = z.infer<typeof formSchema>;
 
 export default function LeaseCalculator() {
   const [results, setResults] = useState<any>(null);
+  const [formData, setFormData] = useState<FormData | null>(null);
 
   const { control, handleSubmit, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -71,6 +79,38 @@ export default function LeaseCalculator() {
         financeFee,
         totalLeaseCost,
     });
+    setFormData(data);
+  };
+  
+  const handleExport = (format: 'txt' | 'csv') => {
+    if (!results || !formData) return;
+    
+    let content = '';
+    const filename = `lease-calculation.${format}`;
+    const { msrp, negotiatedPrice, leaseTerm, residualValuePercent, moneyFactor, downPayment, salesTaxRate } = formData;
+
+    if (format === 'txt') {
+      content = `Lease Calculation\n\nInputs:\n`;
+      content += `- MSRP: ${formatCurrency(msrp)}\n- Negotiated Price: ${formatCurrency(negotiatedPrice)}\n- Lease Term: ${leaseTerm} months\n`;
+      content += `- Residual Value: ${residualValuePercent}%\n- Money Factor: ${moneyFactor}\n- Down Payment: ${formatCurrency(downPayment)}\n- Sales Tax Rate: ${salesTaxRate}%\n\n`;
+      content += `Results:\n- Estimated Monthly Payment: ${formatCurrency(results.totalMonthlyPayment)}\n- Total Lease Cost: ${formatCurrency(results.totalLeaseCost)}\n`;
+    } else {
+      content = 'Category,Value\n';
+      content += `MSRP,${msrp}\nNegotiated Price,${negotiatedPrice}\nLease Term (months),${leaseTerm}\n`;
+      content += `Residual Value (%),${residualValuePercent}\nMoney Factor,${moneyFactor}\nDown Payment,${downPayment}\nSales Tax Rate (%),${salesTaxRate}\n\n`;
+      content += 'Result Category,Value\n';
+      content += `Estimated Monthly Payment,${results.totalMonthlyPayment.toFixed(2)}\nTotal Lease Cost,${results.totalLeaseCost.toFixed(2)}\n`;
+    }
+
+    const blob = new Blob([content], { type: `text/${format}` });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   };
 
   return (
@@ -94,7 +134,20 @@ export default function LeaseCalculator() {
                 <div><Label>Sales Tax Rate (%)</Label><Controller name="salesTaxRate" control={control} render={({ field }) => <Input type="number" step="0.1" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} /></div>
              </CardContent>
           </Card>
-        <Button type="submit" className="w-full">Calculate Lease Payment</Button>
+        <div className="flex gap-2">
+            <Button type="submit" className="flex-1">Calculate Lease Payment</Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" disabled={!results}>
+                  <Download className="mr-2 h-4 w-4" /> Export
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem onClick={() => handleExport('txt')}>Download as .txt</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleExport('csv')}>Download as .csv</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+        </div>
       </div>
       {/* Results */}
       <div className="space-y-4">

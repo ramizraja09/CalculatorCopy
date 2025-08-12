@@ -11,6 +11,13 @@ import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Download } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 const formSchema = z.object({
   loanAmount: z.number().min(1, 'Loan amount must be greater than 0'),
@@ -22,6 +29,8 @@ type FormData = z.infer<typeof formSchema>;
 
 export default function AmortizationCalculator() {
   const [results, setResults] = useState<any>(null);
+  const [formData, setFormData] = useState<FormData | null>(null);
+
 
   const { control, handleSubmit, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -81,9 +90,45 @@ export default function AmortizationCalculator() {
       yearlyData: Object.entries(yearlyData).map(([year, data]) => ({ year: parseInt(year), ...data })),
       error: null,
     });
+    setFormData(data);
   };
   
   const formatCurrency = (value: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value);
+
+  const handleExport = (format: 'txt' | 'csv') => {
+    if (!results || !formData) return;
+    
+    let content = '';
+    const filename = `amortization-calculation.${format}`;
+    const { loanAmount, loanTerm, interestRate } = formData;
+
+    if (format === 'txt') {
+      content = `Amortization Calculation\n\nInputs:\n`;
+      content += `- Loan Amount: ${formatCurrency(loanAmount)}\n- Loan Term: ${loanTerm} years\n- Interest Rate: ${interestRate}%\n\n`;
+      content += `Results:\n- Monthly Payment: ${formatCurrency(results.monthlyPayment)}\n- Total Interest Paid: ${formatCurrency(results.totalInterestPaid)}\n- Total Paid: ${formatCurrency(results.totalPaid)}\n\n`;
+      content += `Schedule:\nYear,Principal Paid,Interest Paid\n`;
+      results.yearlyData.forEach((row: any) => {
+        content += `${row.year},${formatCurrency(row.principal)},${formatCurrency(row.interest)}\n`;
+      });
+    } else {
+      content = 'Category,Value\nLoan Amount,' + loanAmount + '\nLoan Term (years),' + loanTerm + '\nInterest Rate (%),' + interestRate + '\n\n';
+      content += 'Result Category,Value\nMonthly Payment,' + results.monthlyPayment.toFixed(2) + '\nTotal Interest Paid,' + results.totalInterestPaid.toFixed(2) + '\nTotal Paid,' + results.totalPaid.toFixed(2) + '\n\n';
+      content += 'Year,Principal Paid,Interest Paid\n';
+      results.yearlyData.forEach((row: any) => {
+        content += `${row.year},${row.principal.toFixed(2)},${row.interest.toFixed(2)}\n`;
+      });
+    }
+
+    const blob = new Blob([content], { type: `text/${format}` });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
 
   return (
     <form onSubmit={handleSubmit(calculateAmortization)} className="grid md:grid-cols-2 gap-8">
@@ -109,7 +154,20 @@ export default function AmortizationCalculator() {
           {errors.interestRate && <p className="text-destructive text-sm mt-1">{errors.interestRate.message}</p>}
         </div>
         
-        <Button type="submit" className="w-full">Calculate Schedule</Button>
+        <div className="flex gap-2">
+            <Button type="submit" className="flex-1">Calculate Schedule</Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" disabled={!results}>
+                  <Download className="mr-2 h-4 w-4" /> Export
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem onClick={() => handleExport('txt')}>Download as .txt</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleExport('csv')}>Download as .csv</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+        </div>
       </div>
 
       {/* Results Column */}

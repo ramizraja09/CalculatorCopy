@@ -10,7 +10,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
-import { Info } from 'lucide-react';
+import { Info, Download } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 const formSchema = z.object({
   propertyPrice: z.number().min(1, 'Property price must be greater than 0'),
@@ -43,6 +49,7 @@ const calculateStampDuty = (price: number) => {
 
 export default function MortgageCalculatorUK() {
   const [results, setResults] = useState<any>(null);
+  const [formData, setFormData] = useState<FormData | null>(null);
 
   const { control, handleSubmit, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -85,9 +92,38 @@ export default function MortgageCalculatorUK() {
       stampDuty,
       error: null,
     });
+    setFormData(data);
   };
   
   const formatCurrency = (value: number) => new Intl.NumberFormat('en-GB', { style: 'currency', currency: 'GBP' }).format(value);
+  
+  const handleExport = (format: 'txt' | 'csv') => {
+    if (!results || !formData) return;
+    
+    let content = '';
+    const filename = `uk-mortgage-calculation.${format}`;
+    const { propertyPrice, deposit, loanTerm, interestRate } = formData;
+
+    if (format === 'txt') {
+      content = `UK Mortgage Calculation\n\nInputs:\n- Property Price: ${formatCurrency(propertyPrice)}\n- Deposit: ${formatCurrency(deposit)}\n- Loan Term: ${loanTerm} years\n- Interest Rate: ${interestRate}%\n\n`;
+      content += `Results:\n- Monthly Payment: ${formatCurrency(results.monthlyPayment)}\n- Loan Amount: ${formatCurrency(results.principal)}\n- Total Interest Paid: ${formatCurrency(results.totalInterestPaid)}\n- Stamp Duty (Est.): ${formatCurrency(results.stampDuty)}\n`;
+    } else {
+      content = 'Category,Value\n';
+      content += `Property Price,${propertyPrice}\nDeposit,${deposit}\nLoan Term (years),${loanTerm}\nInterest Rate (%),${interestRate}\n\n`;
+      content += 'Result Category,Value\n';
+      content += `Monthly Payment,${results.monthlyPayment.toFixed(2)}\nLoan Amount,${results.principal.toFixed(2)}\nTotal Interest Paid,${results.totalInterestPaid.toFixed(2)}\nStamp Duty (Est.),${results.stampDuty.toFixed(2)}\n`;
+    }
+
+    const blob = new Blob([content], { type: `text/${format}` });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
 
   return (
     <form onSubmit={handleSubmit(calculateMortgage)} className="grid md:grid-cols-2 gap-8">
@@ -119,7 +155,20 @@ export default function MortgageCalculatorUK() {
           {errors.interestRate && <p className="text-destructive text-sm mt-1">{errors.interestRate.message}</p>}
         </div>
         
-        <Button type="submit" className="w-full">Calculate</Button>
+        <div className="flex gap-2">
+            <Button type="submit" className="flex-1">Calculate</Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" disabled={!results}>
+                  <Download className="mr-2 h-4 w-4" /> Export
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem onClick={() => handleExport('txt')}>Download as .txt</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleExport('csv')}>Download as .csv</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+        </div>
       </div>
 
       {/* Results Column */}
@@ -143,7 +192,7 @@ export default function MortgageCalculatorUK() {
                         <CardContent className="p-4 grid grid-cols-2 gap-2 text-sm">
                             <div><p className="text-muted-foreground">Loan Amount</p><p className="font-semibold">{formatCurrency(results.principal)}</p></div>
                             <div><p className="text-muted-foreground">Total Interest Paid</p><p className="font-semibold">{formatCurrency(results.totalInterestPaid)}</p></div>
-                            <div><p className="text-muted-foreground">Total Paid</p><p className="font-semibold">{formatCurrency(results.totalPaid + data.deposit)}</p></div>
+                            <div><p className="text-muted-foreground">Total Paid</p><p className="font-semibold">{formatCurrency(results.totalPaid + (formData?.deposit || 0))}</p></div>
                             <div><p className="text-muted-foreground">Stamp Duty (Est.)</p><p className="font-semibold">{formatCurrency(results.stampDuty)}</p></div>
                         </CardContent>
                     </Card>

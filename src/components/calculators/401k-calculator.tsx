@@ -10,6 +10,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { Download } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 const formSchema = z.object({
   currentAge: z.number().int().min(18),
@@ -29,6 +36,7 @@ type FormData = z.infer<typeof formSchema>;
 
 export default function Four01kCalculator() {
   const [results, setResults] = useState<any>(null);
+  const [formData, setFormData] = useState<FormData | null>(null);
 
   const { control, handleSubmit, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -74,9 +82,38 @@ export default function Four01kCalculator() {
       schedule,
       error: null,
     });
+    setFormData(data);
   };
   
   const formatCurrency = (value: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value);
+
+  const handleExport = (format: 'txt' | 'csv') => {
+    if (!results || !formData) return;
+    
+    let content = '';
+    const filename = `401k-calculation.${format}`;
+    const { currentAge, retirementAge, currentBalance, annualSalary, contributionPercent, employerMatchPercent, matchUpToPercent, annualReturn } = formData;
+
+    if (format === 'txt') {
+      content = `401k Calculation\n\nInputs:\n`;
+      content += `- Current Age: ${currentAge}\n- Retirement Age: ${retirementAge}\n- Current Balance: ${formatCurrency(currentBalance)}\n`;
+      content += `- Annual Salary: ${formatCurrency(annualSalary)}\n- Your Contribution: ${contributionPercent}%\n- Employer Match: ${employerMatchPercent}%\n- Match Up To: ${matchUpToPercent}%\n- Annual Return: ${annualReturn}%\n\n`;
+      content += `Result:\n- Balance at Retirement: ${formatCurrency(results.finalBalance)}`;
+    } else {
+      content = 'Category,Value\nCurrent Age,' + currentAge + '\nRetirement Age,' + retirementAge + '\nCurrent Balance,' + currentBalance + '\nAnnual Salary,' + annualSalary + '\nContribution (%),' + contributionPercent + '\nEmployer Match (%),' + employerMatchPercent + '\nMatch Up To (%),' + matchUpToPercent + '\nAnnual Return (%),' + annualReturn + '\n\nResult - Balance at Retirement,' + results.finalBalance;
+    }
+
+    const blob = new Blob([content], { type: `text/${format}` });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
 
   return (
     <form onSubmit={handleSubmit(calculate401k)} className="grid md:grid-cols-2 gap-8">
@@ -103,7 +140,20 @@ export default function Four01kCalculator() {
                 <div><Label>Estimated Annual Return (%)</Label><Controller name="annualReturn" control={control} render={({ field }) => <Input type="number" step="0.1" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} /></div>
             </CardContent>
         </Card>
-        <Button type="submit" className="w-full">Calculate</Button>
+        <div className="flex gap-2">
+            <Button type="submit" className="flex-1">Calculate</Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" disabled={!results}>
+                  <Download className="mr-2 h-4 w-4" /> Export
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem onClick={() => handleExport('txt')}>Download as .txt</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleExport('csv')}>Download as .csv</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+        </div>
       </div>
 
       {/* Results Column */}

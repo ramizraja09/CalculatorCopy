@@ -9,8 +9,14 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
-import { Trash } from 'lucide-react';
+import { Trash, Download } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 const expenseSchema = z.object({
   name: z.string().nonempty('Expense name is required'),
@@ -36,6 +42,7 @@ const PIE_COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#ffc
 
 export default function BudgetCalculator() {
   const [results, setResults] = useState<any>(null);
+  const [formData, setFormData] = useState<FormData | null>(null);
 
   const { control, handleSubmit, watch } = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -61,7 +68,48 @@ export default function BudgetCalculator() {
         remainingBalance,
         pieData: data.expenses.filter(e => e.amount > 0).map(e => ({ name: e.name, value: e.amount })),
     });
+    setFormData(data);
   };
+  
+  const handleExport = (format: 'txt' | 'csv') => {
+    if (!results || !formData) return;
+    
+    let content = '';
+    const filename = `budget-calculation.${format}`;
+
+    if (format === 'txt') {
+      content = `Budget Calculation\n\n`;
+      content += `Monthly Income: ${formatCurrency(formData.monthlyIncome)}\n\n`;
+      content += `Expenses:\n`;
+      formData.expenses.forEach(item => {
+        content += `- ${item.name}: ${formatCurrency(item.amount)}\n`;
+      });
+      content += `\nResults:\n`;
+      content += `- Total Expenses: ${formatCurrency(results.totalExpenses)}\n`;
+      content += `- Remaining Balance: ${formatCurrency(results.remainingBalance)}\n`;
+    } else {
+      content = 'Category,Value\n';
+      content += `Monthly Income,${formData.monthlyIncome}\n\n`;
+      content += `Expense,Amount\n`;
+       formData.expenses.forEach(item => {
+        content += `"${item.name}",${item.amount}\n`;
+      });
+      content += `\nResult Category,Value\n`;
+      content += `Total Expenses,${results.totalExpenses}\n`;
+      content += `Remaining Balance,${results.remainingBalance}\n`;
+    }
+
+    const blob = new Blob([content], { type: `text/${format}` });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
 
   return (
     <form onSubmit={handleSubmit(processSubmit)} className="grid md:grid-cols-2 gap-8">
@@ -87,7 +135,20 @@ export default function BudgetCalculator() {
                 <Button type="button" variant="outline" size="sm" onClick={() => append({ name: '', amount: 0 })}>Add Expense</Button>
             </CardContent>
         </Card>
-        <Button type="submit" className="w-full">Calculate Budget</Button>
+        <div className="flex gap-2">
+            <Button type="submit" className="flex-1">Calculate Budget</Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" disabled={!results}>
+                  <Download className="mr-2 h-4 w-4" /> Export
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem onClick={() => handleExport('txt')}>Download as .txt</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleExport('csv')}>Download as .csv</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+        </div>
       </div>
 
       {/* Results Column */}

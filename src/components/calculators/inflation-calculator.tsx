@@ -10,6 +10,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Download } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 // Simplified Consumer Price Index (CPI) data for demonstration.
 // In a real application, this would be fetched from an API or a more extensive database.
@@ -46,6 +53,7 @@ type FormData = z.infer<typeof formSchema>;
 
 export default function InflationCalculator() {
   const [results, setResults] = useState<any>(null);
+  const [formData, setFormData] = useState<FormData | null>(null);
 
   const { control, handleSubmit, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -77,9 +85,34 @@ export default function InflationCalculator() {
       endYear,
       error: null,
     });
+    setFormData(data);
   };
 
   const formatCurrency = (value: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value);
+  
+  const handleExport = (format: 'txt' | 'csv') => {
+    if (!results || !formData) return;
+    
+    let content = '';
+    const filename = `inflation-calculation.${format}`;
+    const { initialAmount, startYear, endYear } = formData;
+
+    if (format === 'txt') {
+      content = `Inflation Calculation\n\nInputs:\n- Amount: ${formatCurrency(initialAmount)}\n- From Year: ${startYear}\n- To Year: ${endYear}\n\nResult:\n- Equivalent Amount: ${formatCurrency(results.finalAmount)}\n- Total Inflation: ${results.totalInflation.toFixed(2)}%`;
+    } else {
+       content = `Category,Value\nInitial Amount,${initialAmount}\nStart Year,${startYear}\nEnd Year,${endYear}\n\nResult Category,Value\nFinal Amount,${results.finalAmount.toFixed(2)}\nTotal Inflation (%),${results.totalInflation.toFixed(2)}`;
+    }
+
+    const blob = new Blob([content], { type: `text/${format}` });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
 
   return (
     <form onSubmit={handleSubmit(calculateInflation)} className="grid md:grid-cols-2 gap-8">
@@ -126,7 +159,20 @@ export default function InflationCalculator() {
            {errors.endYear && <p className="text-destructive text-sm mt-1">{errors.endYear.message}</p>}
         </div>
         
-        <Button type="submit" className="w-full">Calculate</Button>
+        <div className="flex gap-2">
+            <Button type="submit" className="flex-1">Calculate</Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" disabled={!results}>
+                  <Download className="mr-2 h-4 w-4" /> Export
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem onClick={() => handleExport('txt')}>Download as .txt</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleExport('csv')}>Download as .csv</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+        </div>
       </div>
 
       {/* Results Column */}

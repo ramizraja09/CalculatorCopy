@@ -10,6 +10,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { Download } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 const formSchema = z.object({
   currentAge: z.number().int().min(18, "Must be at least 18"),
@@ -27,6 +34,7 @@ type FormData = z.infer<typeof formSchema>;
 
 export default function PensionCalculator() {
   const [results, setResults] = useState<any>(null);
+  const [formData, setFormData] = useState<FormData | null>(null);
 
   const { control, handleSubmit, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -76,9 +84,42 @@ export default function PensionCalculator() {
       estimatedAnnualIncome,
       schedule,
     });
+    setFormData(data);
   };
 
   const formatCurrency = (value: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value);
+  
+  const handleExport = (format: 'txt' | 'csv') => {
+    if (!results || !formData) return;
+    
+    let content = '';
+    const filename = `pension-calculation.${format}`;
+    const { currentAge, retirementAge, currentPensionPot, monthlyContribution, annualGrowthRate, annuityRate } = formData;
+
+    if (format === 'txt') {
+      content = `Pension Calculation\n\nInputs:\n`;
+      content += `- Current Age: ${currentAge}\n- Retirement Age: ${retirementAge}\n- Current Pension Pot: ${formatCurrency(currentPensionPot)}\n`;
+      content += `- Monthly Contribution: ${formatCurrency(monthlyContribution)}\n- Annual Growth Rate: ${annualGrowthRate}%\n- Annuity Rate: ${annuityRate}%\n\n`;
+      content += `Results:\n- Projected Pension Pot: ${formatCurrency(results.projectedPensionPot)}\n- Estimated Annual Income: ${formatCurrency(results.estimatedAnnualIncome)}\n`;
+    } else {
+      content = 'Category,Value\n';
+      content += `Current Age,${currentAge}\nRetirement Age,${retirementAge}\nCurrent Pension Pot,${currentPensionPot}\n`;
+      content += `Monthly Contribution,${monthlyContribution}\nAnnual Growth Rate (%),${annualGrowthRate}\nAnnuity Rate (%),${annuityRate}\n\n`;
+      content += 'Result Category,Value\n';
+      content += `Projected Pension Pot,${results.projectedPensionPot.toFixed(2)}\nEstimated Annual Income,${results.estimatedAnnualIncome.toFixed(2)}\n`;
+    }
+
+    const blob = new Blob([content], { type: `text/${format}` });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
 
   return (
     <form onSubmit={handleSubmit(calculatePension)} className="grid md:grid-cols-2 gap-8">
@@ -99,7 +140,20 @@ export default function PensionCalculator() {
         <div><Label>Annual Growth Rate (%)</Label><Controller name="annualGrowthRate" control={control} render={({ field }) => <Input type="number" step="0.1" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} /></div>
         <div><Label>Annuity Rate at Retirement (%)</Label><Controller name="annuityRate" control={control} render={({ field }) => <Input type="number" step="0.1" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} /></div>
         
-        <Button type="submit" className="w-full">Calculate</Button>
+        <div className="flex gap-2">
+            <Button type="submit" className="flex-1">Calculate</Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" disabled={!results}>
+                  <Download className="mr-2 h-4 w-4" /> Export
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem onClick={() => handleExport('txt')}>Download as .txt</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleExport('csv')}>Download as .csv</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+        </div>
       </div>
 
       {/* Results Column */}

@@ -11,6 +11,13 @@ import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Download } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 const formSchema = z.object({
   principal: z.number().min(0.01, 'Principal must be positive'),
@@ -25,6 +32,7 @@ type FormData = z.infer<typeof formSchema>;
 
 export default function InterestCalculator() {
   const [results, setResults] = useState<any>(null);
+  const [formData, setFormData] = useState<FormData | null>(null);
 
   const { control, handleSubmit, watch, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -71,9 +79,42 @@ export default function InterestCalculator() {
       totalAmount,
       error: null
     });
+    setFormData(data);
   };
 
   const formatCurrency = (value: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value);
+  
+  const handleExport = (format: 'txt' | 'csv') => {
+    if (!results || !formData) return;
+    
+    let content = '';
+    const filename = `interest-calculation.${format}`;
+    const { principal, rate, term, termUnit, interestType, compoundFrequency } = formData;
+
+    if (format === 'txt') {
+      content = `Interest Calculation\n\nInputs:\n- Principal: ${formatCurrency(principal)}\n- Rate: ${rate}%\n- Term: ${term} ${termUnit}\n- Type: ${interestType}\n`;
+      if(interestType === 'compound') {
+        content += `- Compound Frequency: ${compoundFrequency}\n`;
+      }
+      content += `\nResult:\n- Final Amount: ${formatCurrency(results.totalAmount)}\n- Total Interest: ${formatCurrency(results.totalInterest)}`;
+    } else {
+       content = `Category,Value\nPrincipal,${principal}\nRate (%),${rate}\nTerm,${term}\nTerm Unit,${termUnit}\nInterest Type,${interestType}\n`;
+       if(interestType === 'compound') {
+         content += `Compound Frequency,${compoundFrequency}\n`;
+       }
+       content += `\nResult Category,Value\nFinal Amount,${results.totalAmount}\nTotal Interest,${results.totalInterest}`;
+    }
+
+    const blob = new Blob([content], { type: `text/${format}` });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
 
   return (
     <form onSubmit={handleSubmit(calculateInterest)} className="grid md:grid-cols-2 gap-8">
@@ -147,7 +188,20 @@ export default function InterestCalculator() {
           </div>
         )}
         
-        <Button type="submit" className="w-full">Calculate</Button>
+        <div className="flex gap-2">
+            <Button type="submit" className="flex-1">Calculate</Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" disabled={!results}>
+                  <Download className="mr-2 h-4 w-4" /> Export
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem onClick={() => handleExport('txt')}>Download as .txt</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleExport('csv')}>Download as .csv</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+        </div>
       </div>
 
       {/* Results Column */}

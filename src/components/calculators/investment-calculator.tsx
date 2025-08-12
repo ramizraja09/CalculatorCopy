@@ -13,6 +13,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { Download } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 const formSchema = z.object({
   initialPrincipal: z.number().min(0, 'Initial principal must be non-negative'),
@@ -26,6 +33,7 @@ type FormData = z.infer<typeof formSchema>;
 
 export default function InvestmentCalculator() {
   const [results, setResults] = useState<any>(null);
+  const [formData, setFormData] = useState<FormData | null>(null);
 
   const { control, handleSubmit, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -88,9 +96,41 @@ export default function InvestmentCalculator() {
       schedule,
       error: null,
     });
+    setFormData(data);
   };
 
   const formatCurrency = (value: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value);
+  
+  const handleExport = (format: 'txt' | 'csv') => {
+    if (!results || !formData) return;
+    
+    let content = '';
+    const filename = `investment-calculation.${format}`;
+    const { initialPrincipal, monthlyContribution, interestRate, years, compoundFrequency } = formData;
+
+    if (format === 'txt') {
+      content = `Investment Calculation\n\nInputs:\n`;
+      content += `- Initial Principal: ${formatCurrency(initialPrincipal)}\n- Monthly Contribution: ${formatCurrency(monthlyContribution)}\n- Annual Interest Rate: ${interestRate}%\n`;
+      content += `- Length of Time: ${years} years\n- Compound Frequency: ${compoundFrequency}\n\n`;
+      content += `Results:\n- Future Value: ${formatCurrency(results.finalBalance)}\n- Total Contributions: ${formatCurrency(results.totalContributions)}\n- Total Interest: ${formatCurrency(results.totalInterest)}\n`;
+    } else {
+      content = 'Category,Value\n';
+      content += `Initial Principal,${initialPrincipal}\nMonthly Contribution,${monthlyContribution}\nAnnual Interest Rate (%),${interestRate}\n`;
+      content += `Length of Time (years),${years}\nCompound Frequency,${compoundFrequency}\n\n`;
+      content += 'Result Category,Value\n';
+      content += `Future Value,${results.finalBalance.toFixed(2)}\nTotal Contributions,${results.totalContributions.toFixed(2)}\nTotal Interest,${results.totalInterest.toFixed(2)}\n`;
+    }
+
+    const blob = new Blob([content], { type: `text/${format}` });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
 
   return (
     <form onSubmit={handleSubmit(calculateCompoundInterest)} className="grid md:grid-cols-2 gap-8">
@@ -137,7 +177,20 @@ export default function InvestmentCalculator() {
           )} />
         </div>
         
-        <Button type="submit" className="w-full">Calculate</Button>
+        <div className="flex gap-2">
+            <Button type="submit" className="flex-1">Calculate</Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" disabled={!results}>
+                  <Download className="mr-2 h-4 w-4" /> Export
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem onClick={() => handleExport('txt')}>Download as .txt</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleExport('csv')}>Download as .csv</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+        </div>
       </div>
 
       {/* Results Column */}

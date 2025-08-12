@@ -10,6 +10,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { Download } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 const formSchema = z.object({
   initialInvestment: z.number().min(0.01, 'Initial investment must be positive'),
@@ -21,6 +28,7 @@ type FormData = z.infer<typeof formSchema>;
 
 export default function InvestmentReturnCalculator() {
   const [results, setResults] = useState<any>(null);
+  const [formData, setFormData] = useState<FormData | null>(null);
 
   const { control, handleSubmit, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -54,10 +62,40 @@ export default function InvestmentReturnCalculator() {
       ],
       error: null,
     });
+    setFormData(data);
   };
 
   const formatCurrency = (value: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value);
   const formatPercent = (value: number) => `${value.toFixed(2)}%`;
+  
+  const handleExport = (format: 'txt' | 'csv') => {
+    if (!results || !formData) return;
+    
+    let content = '';
+    const filename = `investment-return-calculation.${format}`;
+    const { initialInvestment, finalValue, investmentLength } = formData;
+
+    if (format === 'txt') {
+      content = `Investment Return Calculation\n\nInputs:\n`;
+      content += `- Initial Investment: ${formatCurrency(initialInvestment)}\n- Final Value: ${formatCurrency(finalValue)}\n- Investment Length: ${investmentLength} years\n\n`;
+      content += `Results:\n- Total Return: ${formatCurrency(results.totalReturn)}\n- ROI: ${formatPercent(results.roi)}\n- CAGR: ${formatPercent(results.cagr)}\n`;
+    } else {
+      content = 'Category,Value\n';
+      content += `Initial Investment,${initialInvestment}\nFinal Value,${finalValue}\nInvestment Length (years),${investmentLength}\n\n`;
+      content += 'Result Category,Value\n';
+      content += `Total Return,${results.totalReturn.toFixed(2)}\nROI (%),${results.roi.toFixed(2)}\nCAGR (%),${results.cagr.toFixed(2)}\n`;
+    }
+
+    const blob = new Blob([content], { type: `text/${format}` });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
 
   return (
     <form onSubmit={handleSubmit(calculateReturn)} className="grid md:grid-cols-2 gap-8">
@@ -83,7 +121,20 @@ export default function InvestmentReturnCalculator() {
           {errors.investmentLength && <p className="text-destructive text-sm mt-1">{errors.investmentLength.message}</p>}
         </div>
         
-        <Button type="submit" className="w-full">Calculate Return</Button>
+        <div className="flex gap-2">
+            <Button type="submit" className="flex-1">Calculate Return</Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" disabled={!results}>
+                  <Download className="mr-2 h-4 w-4" /> Export
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem onClick={() => handleExport('txt')}>Download as .txt</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleExport('csv')}>Download as .csv</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+        </div>
       </div>
 
       {/* Results Column */}

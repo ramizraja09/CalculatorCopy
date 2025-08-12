@@ -10,7 +10,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ArrowRightLeft } from 'lucide-react';
+import { ArrowRightLeft, Download } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 // Mock exchange rates. In a real app, this would be fetched from an API.
 const exchangeRates: { [key: string]: number } = {
@@ -36,6 +42,8 @@ type FormData = z.infer<typeof formSchema>;
 
 export default function CurrencyConverter() {
   const [result, setResult] = useState<string | null>(null);
+  const [isCalculated, setIsCalculated] = useState(false);
+
 
   const { control, handleSubmit, watch, setValue } = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -49,7 +57,11 @@ export default function CurrencyConverter() {
   const formData = watch();
 
   useEffect(() => {
-    const { amount, fromCurrency, toCurrency } = formData;
+    convertCurrency(formData);
+  }, [formData]);
+  
+  const convertCurrency = (data: FormData) => {
+    const { amount, fromCurrency, toCurrency } = data;
     if (amount >= 0 && fromCurrency && toCurrency) {
       const rateFrom = exchangeRates[fromCurrency];
       const rateTo = exchangeRates[toCurrency];
@@ -58,18 +70,43 @@ export default function CurrencyConverter() {
         minimumFractionDigits: 2,
         maximumFractionDigits: 2,
       }));
+       setIsCalculated(true);
     }
-  }, [formData]);
-  
+  }
+
   const swapCurrencies = () => {
     const from = formData.fromCurrency;
     const to = formData.toCurrency;
     setValue('fromCurrency', to);
     setValue('toCurrency', from);
   };
+  
+  const handleExport = (format: 'txt' | 'csv') => {
+    if (!result || !formData) return;
+    
+    let content = '';
+    const filename = `currency-conversion.${format}`;
+    const { amount, fromCurrency, toCurrency } = formData;
+
+    if (format === 'txt') {
+      content = `Currency Conversion\n\n- Amount: ${amount} ${fromCurrency}\n- From: ${fromCurrency}\n- To: ${toCurrency}\n\nResult: ${result} ${toCurrency}`;
+    } else {
+      content = `Amount,From,To,Result\n${amount},${fromCurrency},${toCurrency},${result}`;
+    }
+
+    const blob = new Blob([content], { type: `text/${format}` });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
 
   return (
-    <form onSubmit={handleSubmit(() => {})} className="space-y-4">
+    <form onSubmit={(e) => { e.preventDefault(); convertCurrency(formData) }} className="space-y-4">
         <Card>
             <CardHeader><CardTitle>Currency Conversion</CardTitle></CardHeader>
             <CardContent className="space-y-4">
@@ -98,6 +135,17 @@ export default function CurrencyConverter() {
                         )} />
                     </div>
                 </div>
+                 <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" disabled={!isCalculated}>
+                      <Download className="mr-2 h-4 w-4" /> Export
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent>
+                    <DropdownMenuItem onClick={() => handleExport('txt')}>Download as .txt</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => handleExport('csv')}>Download as .csv</DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
             </CardContent>
         </Card>
 

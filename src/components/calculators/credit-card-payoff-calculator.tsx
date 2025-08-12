@@ -12,6 +12,13 @@ import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Download } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 const formSchema = z.object({
   balance: z.number().min(1, 'Balance must be greater than 0'),
@@ -37,6 +44,7 @@ type FormData = z.infer<typeof formSchema>;
 
 export default function CreditCardPayoffCalculator() {
   const [results, setResults] = useState<any>(null);
+  const [formData, setFormData] = useState<FormData | null>(null);
 
   const { control, handleSubmit, watch, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -123,9 +131,47 @@ export default function CreditCardPayoffCalculator() {
       schedule,
       error: null,
     });
+    setFormData(data);
   };
 
   const formatCurrency = (value: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value);
+  
+  const handleExport = (format: 'txt' | 'csv') => {
+    if (!results || !formData) return;
+    
+    let content = '';
+    const filename = `cc-payoff-calculation.${format}`;
+    const { balance, apr, payoffStrategy, monthlyPayment, payoffMonths } = formData;
+    const payoffTime = `${results.payoffTimeYears > 0 ? `${results.payoffTimeYears}y ` : ''}${results.payoffTimeMonths > 0 ? `${results.payoffTimeMonths}m` : ''}`.trim();
+
+    if (format === 'txt') {
+      content = `Credit Card Payoff Calculation\n\nInputs:\n`;
+      content += `- Card Balance: ${formatCurrency(balance)}\n- APR: ${apr}%\n- Strategy: ${payoffStrategy}\n`;
+      if (payoffStrategy === 'fixedPayment') content += `- Monthly Payment: ${formatCurrency(monthlyPayment!)}\n`;
+      if (payoffStrategy === 'targetDate') content += `- Payoff in: ${payoffMonths} months\n`;
+      
+      content += `\nResults:\n- Payoff Time: ${payoffTime}\n- Final Payoff Date: ${results.finalPayoffDate}\n`;
+      content += `- Your Monthly Payment: ${formatCurrency(results.monthlyPayment)}\n- Total Interest Paid: ${formatCurrency(results.totalInterest)}\n`;
+    } else {
+      content = 'Category,Value\n';
+      content += `Card Balance,${balance}\nAPR (%),${apr}\nStrategy,${payoffStrategy}\n`;
+      if (payoffStrategy === 'fixedPayment') content += `Input Monthly Payment,${monthlyPayment}\n`;
+      if (payoffStrategy === 'targetDate') content += `Input Payoff Months,${payoffMonths}\n`;
+      
+      content += '\nResult Category,Value\n';
+      content += `Payoff Time,${payoffTime}\nFinal Payoff Date,${results.finalPayoffDate}\nCalculated Monthly Payment,${results.monthlyPayment.toFixed(2)}\nTotal Interest Paid,${results.totalInterest.toFixed(2)}\n`;
+    }
+
+    const blob = new Blob([content], { type: `text/${format}` });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
 
   return (
     <form onSubmit={handleSubmit(calculatePayoff)} className="grid md:grid-cols-2 gap-8">
@@ -179,7 +225,20 @@ export default function CreditCardPayoffCalculator() {
             </div>
         )}
         
-        <Button type="submit" className="w-full">Calculate Payoff</Button>
+        <div className="flex gap-2">
+            <Button type="submit" className="flex-1">Calculate Payoff</Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" disabled={!results}>
+                  <Download className="mr-2 h-4 w-4" /> Export
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem onClick={() => handleExport('txt')}>Download as .txt</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleExport('csv')}>Download as .csv</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+        </div>
       </div>
 
       {/* Results */}

@@ -9,7 +9,13 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { Download } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 const formSchema = z.object({
   currentAge: z.number().int().min(0).max(17, 'Child must be under 18'),
@@ -25,6 +31,7 @@ type FormData = z.infer<typeof formSchema>;
 
 export default function CollegeSavingsCalculator() {
   const [results, setResults] = useState<any>(null);
+  const [formData, setFormData] = useState<FormData | null>(null);
 
   const { control, handleSubmit, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -57,7 +64,40 @@ export default function CollegeSavingsCalculator() {
     }
 
     setResults({ totalFutureCost, fvOfCurrentSavings, shortfall, monthlyContribution: Math.max(0, monthlyContribution) });
+    setFormData(data);
   };
+  
+  const handleExport = (format: 'txt' | 'csv') => {
+    if (!results || !formData) return;
+    
+    let content = '';
+    const filename = `college-savings-calculation.${format}`;
+    const { currentAge, collegeAge, annualCost, yearsInCollege, currentSavings, annualReturn, costIncreaseRate } = formData;
+
+    if (format === 'txt') {
+      content = `College Savings Calculation\n\nInputs:\n`;
+      content += `- Child's Current Age: ${currentAge}\n- Age at College: ${collegeAge}\n- Annual College Cost (today): ${formatCurrency(annualCost)}\n`;
+      content += `- Years in College: ${yearsInCollege}\n- Current Savings: ${formatCurrency(currentSavings)}\n- Annual Return: ${annualReturn}%\n- Cost Inflation Rate: ${costIncreaseRate}%\n\n`;
+      content += `Results:\n- Monthly Contribution Needed: ${formatCurrency(results.monthlyContribution)}\n- Projected Total Cost: ${formatCurrency(results.totalFutureCost)}\n- Projected Savings Growth: ${formatCurrency(results.fvOfCurrentSavings)}\n- Shortfall: ${formatCurrency(results.shortfall)}\n`;
+    } else {
+      content = 'Category,Value\n';
+      content += `Child's Current Age,${currentAge}\nAge at College,${collegeAge}\nAnnual College Cost (today),${annualCost}\n`;
+      content += `Years in College,${yearsInCollege}\nCurrent Savings,${currentSavings}\nAnnual Return (%),${annualReturn}\nCost Inflation Rate (%),${costIncreaseRate}\n\n`;
+      content += 'Result Category,Value\n';
+      content += `Monthly Contribution Needed,${results.monthlyContribution.toFixed(2)}\nProjected Total Cost,${results.totalFutureCost.toFixed(2)}\nProjected Savings Growth,${results.fvOfCurrentSavings.toFixed(2)}\nShortfall,${results.shortfall.toFixed(2)}\n`;
+    }
+
+    const blob = new Blob([content], { type: `text/${format}` });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
 
   return (
     <form onSubmit={handleSubmit(calculateSavings)} className="grid md:grid-cols-2 gap-8">
@@ -80,7 +120,20 @@ export default function CollegeSavingsCalculator() {
                 <div><Label>College Cost Inflation Rate (%)</Label><Controller name="costIncreaseRate" control={control} render={({ field }) => <Input type="number" step="0.1" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} /></div>
             </CardContent>
         </Card>
-        <Button type="submit" className="w-full">Calculate</Button>
+        <div className="flex gap-2">
+            <Button type="submit" className="flex-1">Calculate</Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" disabled={!results}>
+                  <Download className="mr-2 h-4 w-4" /> Export
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem onClick={() => handleExport('txt')}>Download as .txt</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleExport('csv')}>Download as .csv</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+        </div>
       </div>
 
       {/* Results Column */}

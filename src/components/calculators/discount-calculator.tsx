@@ -9,6 +9,13 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
+import { Download } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 const formSchema = z.object({
   originalPrice: z.number().min(0.01, 'Original price must be positive'),
@@ -19,6 +26,7 @@ type FormData = z.infer<typeof formSchema>;
 
 export default function DiscountCalculator() {
   const [results, setResults] = useState<any>(null);
+  const [formData, setFormData] = useState<FormData | null>(null);
 
   const { control, handleSubmit, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -38,9 +46,34 @@ export default function DiscountCalculator() {
       amountSaved,
       error: null,
     });
+    setFormData(data);
   };
 
   const formatCurrency = (value: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value);
+  
+  const handleExport = (format: 'txt' | 'csv') => {
+    if (!results || !formData) return;
+    
+    let content = '';
+    const filename = `discount-calculation.${format}`;
+    const { originalPrice, discountPercentage } = formData;
+
+    if (format === 'txt') {
+      content = `Discount Calculation\n\nInputs:\n- Original Price: ${formatCurrency(originalPrice)}\n- Discount: ${discountPercentage}%\n\nResult:\n- Final Price: ${formatCurrency(results.finalPrice)}\n- You Saved: ${formatCurrency(results.amountSaved)}`;
+    } else {
+       content = `Category,Value\nOriginal Price,${originalPrice}\nDiscount (%),${discountPercentage}\nFinal Price,${results.finalPrice}\nAmount Saved,${results.amountSaved}`;
+    }
+
+    const blob = new Blob([content], { type: `text/${format}` });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
 
   return (
     <form onSubmit={handleSubmit(calculateDiscount)} className="grid md:grid-cols-2 gap-8">
@@ -60,7 +93,20 @@ export default function DiscountCalculator() {
           {errors.discountPercentage && <p className="text-destructive text-sm mt-1">{errors.discountPercentage.message}</p>}
         </div>
         
-        <Button type="submit" className="w-full">Calculate</Button>
+        <div className="flex gap-2">
+            <Button type="submit" className="flex-1">Calculate</Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" disabled={!results}>
+                  <Download className="mr-2 h-4 w-4" /> Export
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem onClick={() => handleExport('txt')}>Download as .txt</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleExport('csv')}>Download as .csv</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+        </div>
       </div>
 
       {/* Results Column */}

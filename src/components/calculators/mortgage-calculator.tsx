@@ -13,6 +13,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Download } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 const formSchema = z.object({
   homePrice: z.number().min(1, 'Home price must be greater than 0'),
@@ -29,6 +36,8 @@ type FormData = z.infer<typeof formSchema>;
 
 export default function MortgageCalculator() {
   const [results, setResults] = useState<any>(null);
+  const [formData, setFormData] = useState<FormData | null>(null);
+
 
   const { control, watch, handleSubmit, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -108,6 +117,7 @@ export default function MortgageCalculator() {
       amortization,
       error: null,
     });
+    setFormData(data);
   };
   
   const formatCurrency = (value: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value);
@@ -122,6 +132,37 @@ export default function MortgageCalculator() {
     : [];
 
   const PIE_COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
+  
+  const handleExport = (format: 'txt' | 'csv') => {
+    if (!results || !formData) return;
+    
+    let content = '';
+    const filename = `mortgage-calculation.${format}`;
+    const { homePrice, downPayment, downPaymentType, loanTerm, interestRate, propertyTax, homeInsurance, hoaFees } = formData;
+
+    if (format === 'txt') {
+      content = `Mortgage Calculation\n\nInputs:\n`;
+      content += `- Home Price: ${formatCurrency(homePrice)}\n- Down Payment: ${downPayment} ${downPaymentType === 'percent' ? '%' : '$'}\n- Loan Term: ${loanTerm} years\n- Interest Rate: ${interestRate}%\n`;
+      content += `- Annual Property Tax: ${formatCurrency(propertyTax)}\n- Annual Home Insurance: ${formatCurrency(homeInsurance)}\n- Monthly HOA: ${formatCurrency(hoaFees)}\n\n`;
+      content += `Results:\n- Monthly Payment: ${formatCurrency(results.monthlyTotal)}\n- Loan Amount: ${formatCurrency(results.principal)}\n- Total Interest Paid: ${formatCurrency(results.totalInterestPaid)}\n`;
+    } else {
+      content = 'Category,Value\n';
+      content += `Home Price,${homePrice}\nDown Payment,${downPayment}\nDown Payment Type,${downPaymentType}\nLoan Term (years),${loanTerm}\nInterest Rate (%),${interestRate}\n`;
+      content += `Annual Property Tax,${propertyTax}\nAnnual Home Insurance,${homeInsurance}\nMonthly HOA,${hoaFees}\n\n`;
+      content += 'Result Category,Value\n';
+      content += `Monthly Payment,${results.monthlyTotal.toFixed(2)}\nLoan Amount,${results.principal.toFixed(2)}\nTotal Interest Paid,${results.totalInterestPaid.toFixed(2)}\n`;
+    }
+
+    const blob = new Blob([content], { type: `text/${format}` });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
 
   return (
     <form onSubmit={handleSubmit(calculateMortgage)} className="grid md:grid-cols-2 gap-8">
@@ -196,7 +237,20 @@ export default function MortgageCalculator() {
             </div>
         </div>
 
-        <Button type="submit" className="w-full">Calculate</Button>
+        <div className="flex gap-2">
+            <Button type="submit" className="flex-1">Calculate</Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" disabled={!results}>
+                  <Download className="mr-2 h-4 w-4" /> Export
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem onClick={() => handleExport('txt')}>Download as .txt</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleExport('csv')}>Download as .csv</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+        </div>
       </div>
 
       {/* Results Column */}

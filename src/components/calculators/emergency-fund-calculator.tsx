@@ -9,8 +9,14 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
-import { Trash } from 'lucide-react';
+import { Trash, Download } from 'lucide-react';
 import { Slider } from '@/components/ui/slider';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 const expenseSchema = z.object({
   name: z.string().nonempty('Expense name is required'),
@@ -28,6 +34,7 @@ const defaultExpenses = [ { name: 'Rent/Mortgage', amount: 1500 }, { name: 'Util
 
 export default function EmergencyFundCalculator() {
   const [results, setResults] = useState<any>(null);
+  const [formData, setFormData] = useState<FormData | null>(null);
 
   const { control, handleSubmit, watch } = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -51,6 +58,42 @@ export default function EmergencyFundCalculator() {
         fundGoal,
         monthsToCover: data.monthsToCover,
     });
+    setFormData(data);
+  };
+  
+  const handleExport = (format: 'txt' | 'csv') => {
+    if (!results || !formData) return;
+    
+    let content = '';
+    const filename = `emergency-fund-calculation.${format}`;
+
+    if (format === 'txt') {
+      content = `Emergency Fund Calculation\n\nExpenses:\n`;
+      formData.expenses.forEach(item => {
+        content += `- ${item.name}: ${formatCurrency(item.amount)}\n`;
+      });
+      content += `Months to Cover: ${formData.monthsToCover}\n\n`;
+      content += `Results:\n- Total Monthly Expenses: ${formatCurrency(results.totalMonthlyExpenses)}\n- Emergency Fund Goal: ${formatCurrency(results.fundGoal)}\n`;
+    } else {
+      content = 'Expense,Amount\n';
+      formData.expenses.forEach(item => {
+        content += `"${item.name}",${item.amount}\n`;
+      });
+      content += `\nMonths to Cover,${formData.monthsToCover}\n\n`;
+      content += 'Result Category,Value\n';
+      content += `Total Monthly Expenses,${results.totalMonthlyExpenses}\n`;
+      content += `Emergency Fund Goal,${results.fundGoal}\n`;
+    }
+
+    const blob = new Blob([content], { type: `text/${format}` });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   };
 
   return (
@@ -83,7 +126,20 @@ export default function EmergencyFundCalculator() {
                 )}/>
             </CardContent>
         </Card>
-        <Button type="submit" className="w-full">Calculate Emergency Fund</Button>
+        <div className="flex gap-2">
+            <Button type="submit" className="flex-1">Calculate Emergency Fund</Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" disabled={!results}>
+                  <Download className="mr-2 h-4 w-4" /> Export
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem onClick={() => handleExport('txt')}>Download as .txt</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleExport('csv')}>Download as .csv</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+        </div>
       </div>
 
       {/* Results Column */}

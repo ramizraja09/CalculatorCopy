@@ -11,7 +11,13 @@ import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Trash } from 'lucide-react';
+import { Trash, Download } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 const debtSchema = z.object({
   name: z.string().nonempty('Debt name is required'),
@@ -29,6 +35,7 @@ type FormData = z.infer<typeof formSchema>;
 
 export default function DebtSnowballCalculator() {
   const [results, setResults] = useState<any>(null);
+  const [formData, setFormData] = useState<FormData | null>(null);
 
   const { control, handleSubmit, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -50,7 +57,6 @@ export default function DebtSnowballCalculator() {
   const calculateSnowball = (data: FormData) => {
     let { debts, extraPayment } = data;
     
-    // Sort debts by balance for snowball method
     let sortedDebts = [...debts].map(d => ({ ...d, currentBalance: d.balance })).sort((a, b) => a.balance - b.balance);
     
     const schedule = [];
@@ -65,7 +71,6 @@ export default function DebtSnowballCalculator() {
         let totalMonthPayment = 0;
         let currentSnowball = snowball;
 
-        // Pay minimums and calculate interest
         sortedDebts.forEach(debt => {
             if (debt.currentBalance > 0) {
                 const monthlyRate = debt.apr / 100 / 12;
@@ -76,7 +81,6 @@ export default function DebtSnowballCalculator() {
             }
         });
         
-        // Apply payments
         sortedDebts.forEach(debt => {
             if (debt.currentBalance > 0) {
                 const payment = Math.min(debt.currentBalance, debt.minPayment);
@@ -86,12 +90,11 @@ export default function DebtSnowballCalculator() {
             }
         });
 
-        // Apply snowball
         for (const debt of sortedDebts) {
             if (debt.currentBalance > 0 && currentSnowball > 0) {
                 const payment = Math.min(debt.currentBalance, currentSnowball);
                 debt.currentBalance -= payment;
-                monthPayments[debt.name] += payment;
+                monthPayments[debt.name] = (monthPayments[debt.name] || 0) + payment;
                 totalMonthPayment += payment;
                 currentSnowball -= payment;
             }
@@ -99,7 +102,6 @@ export default function DebtSnowballCalculator() {
         
         schedule.push({ month: months, payments: monthPayments, interests: monthInterest, totalPayment: totalMonthPayment, balances: sortedDebts.map(d=> ({name: d.name, balance: d.currentBalance})) });
 
-        // Add paid-off amounts to snowball
         snowball = extraPayment;
         sortedDebts.forEach(debt => {
             if(debt.currentBalance <= 0) {
@@ -107,13 +109,49 @@ export default function DebtSnowballCalculator() {
             }
         });
 
-        if (months > 480) break; // safety break for 40 years
+        if (months > 480) break; 
     }
     
     setResults({ schedule, totalInterestPaid, totalMonths: months, debts: data.debts });
+    setFormData(data);
   };
   
   const formatCurrency = (value: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value);
+
+  const handleExport = (format: 'txt' | 'csv') => {
+    if (!results || !formData) return;
+    
+    let content = '';
+    const filename = `debt-snowball-plan.${format}`;
+    const payoffTime = `${Math.floor(results.totalMonths/12)} years, ${results.totalMonths % 12} months`;
+
+    if (format === 'txt') {
+      content = `Debt Snowball Payoff Plan\n\nInputs:\n`;
+      formData.debts.forEach(debt => {
+        content += `- ${debt.name}: ${formatCurrency(debt.balance)} @ ${debt.apr}% (Min: ${formatCurrency(debt.minPayment)})\n`;
+      });
+      content += `Extra Monthly Payment: ${formatCurrency(formData.extraPayment)}\n\n`;
+      content += `Results:\n- Debt-Free In: ${payoffTime}\n- Total Interest Paid: ${formatCurrency(results.totalInterestPaid)}\n`;
+    } else {
+      content = 'Debt Name,Balance,APR,Min Payment\n';
+      formData.debts.forEach(debt => {
+        content += `"${debt.name}",${debt.balance},${debt.apr},${debt.minPayment}\n`;
+      });
+      content += `\nExtra Payment,${formData.extraPayment}\n\n`;
+      content += 'Result,Value\n';
+      content += `Debt-Free In,"${payoffTime}"\nTotal Interest Paid,${results.totalInterestPaid.toFixed(2)}\n`;
+    }
+
+    const blob = new Blob([content], { type: `text/${format}` });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
 
   return (
     <form onSubmit={handleSubmit(calculateSnowball)} className="grid md:grid-cols-2 gap-8">
@@ -139,7 +177,20 @@ export default function DebtSnowballCalculator() {
           <Label>Amount ($)</Label>
           <Controller name="extraPayment" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
         </div>
-        <Button type="submit" className="w-full">Create Payoff Plan</Button>
+        <div className="flex gap-2">
+            <Button type="submit" className="flex-1">Create Payoff Plan</Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" disabled={!results}>
+                  <Download className="mr-2 h-4 w-4" /> Export
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem onClick={() => handleExport('txt')}>Download as .txt</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleExport('csv')}>Download as .csv</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+        </div>
       </div>
 
       {/* Results Column */}

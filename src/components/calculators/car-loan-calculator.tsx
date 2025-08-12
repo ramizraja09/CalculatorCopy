@@ -12,6 +12,13 @@ import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
+import { Download } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 const formSchema = z.object({
   vehiclePrice: z.number().min(1, 'Vehicle price must be greater than 0'),
@@ -26,6 +33,8 @@ type FormData = z.infer<typeof formSchema>;
 
 export default function CarLoanCalculator() {
   const [results, setResults] = useState<any>(null);
+  const [formData, setFormData] = useState<FormData | null>(null);
+
 
   const { control, handleSubmit, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -98,6 +107,7 @@ export default function CarLoanCalculator() {
       amortization,
       error: null,
     });
+    setFormData(data);
   };
   
   const formatCurrency = (value: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value);
@@ -111,6 +121,39 @@ export default function CarLoanCalculator() {
     : [];
 
   const PIE_COLORS = ['#0088FE', '#FF8042', '#00C49F'];
+  
+  const handleExport = (format: 'txt' | 'csv') => {
+    if (!results || !formData) return;
+    
+    let content = '';
+    const filename = `car-loan-calculation.${format}`;
+    const { vehiclePrice, loanTerm, interestRate, downPayment, tradeInValue, salesTaxRate } = formData;
+
+    if (format === 'txt') {
+      content = `Car Loan Calculation\n\nInputs:\n`;
+      content += `- Vehicle Price: ${formatCurrency(vehiclePrice)}\n- Loan Term: ${loanTerm} years\n- Interest Rate: ${interestRate}%\n`;
+      content += `- Down Payment: ${formatCurrency(downPayment)}\n- Trade-in Value: ${formatCurrency(tradeInValue)}\n- Sales Tax Rate: ${salesTaxRate}%\n\n`;
+      content += `Results:\n- Monthly Payment: ${formatCurrency(results.monthlyPayment)}\n- Total Loan Amount: ${formatCurrency(results.principal)}\n`;
+      content += `- Sales Tax: ${formatCurrency(results.salesTaxAmount)}\n- Total Interest Paid: ${formatCurrency(results.totalInterestPaid)}\n`;
+    } else {
+      content = 'Category,Value\n';
+      content += `Vehicle Price,${vehiclePrice}\nLoan Term (years),${loanTerm}\nInterest Rate (%),${interestRate}\n`;
+      content += `Down Payment,${downPayment}\nTrade-in Value,${tradeInValue}\nSales Tax Rate (%),${salesTaxRate}\n\n`;
+      content += 'Result Category,Value\n';
+      content += `Monthly Payment,${results.monthlyPayment.toFixed(2)}\nTotal Loan Amount,${results.principal.toFixed(2)}\nSales Tax,${results.salesTaxAmount.toFixed(2)}\nTotal Interest Paid,${results.totalInterestPaid.toFixed(2)}\n`;
+    }
+
+    const blob = new Blob([content], { type: `text/${format}` });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
 
   return (
     <form onSubmit={handleSubmit(calculateLoan)} className="grid md:grid-cols-2 gap-8">
@@ -157,7 +200,20 @@ export default function CarLoanCalculator() {
           </div>
         </div>
         
-        <Button type="submit" className="w-full">Calculate</Button>
+        <div className="flex gap-2">
+            <Button type="submit" className="flex-1">Calculate</Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" disabled={!results}>
+                  <Download className="mr-2 h-4 w-4" /> Export
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem onClick={() => handleExport('txt')}>Download as .txt</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleExport('csv')}>Download as .csv</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+        </div>
       </div>
 
       {/* Results Column */}

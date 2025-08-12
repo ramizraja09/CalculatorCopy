@@ -8,9 +8,14 @@ import * as z from 'zod';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Trash } from 'lucide-react';
+import { Trash, Download } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 const itemSchema = z.object({
   name: z.string().nonempty('Name is required'),
@@ -29,6 +34,7 @@ const defaultLiabilities = [ { name: 'Credit Card Debt', amount: 3000 }, { name:
 
 export default function NetWorthCalculator() {
   const [results, setResults] = useState<any>(null);
+  const [formData, setFormData] = useState<FormData | null>(null);
 
   const { control, handleSubmit } = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -52,6 +58,48 @@ export default function NetWorthCalculator() {
             { name: 'Net Worth', assets: totalAssets, liabilities: -totalLiabilities }
         ]
     });
+    setFormData(data);
+  };
+  
+  const handleExport = (format: 'txt' | 'csv') => {
+    if (!results || !formData) return;
+    
+    let content = '';
+    const filename = `net-worth-calculation.${format}`;
+
+    if (format === 'txt') {
+      content = `Net Worth Calculation\n\nAssets:\n`;
+      formData.assets.forEach(item => {
+        content += `- ${item.name}: ${formatCurrency(item.amount)}\n`;
+      });
+      content += `\nLiabilities:\n`;
+      formData.liabilities.forEach(item => {
+        content += `- ${item.name}: ${formatCurrency(item.amount)}\n`;
+      });
+      content += `\nResults:\n- Total Assets: ${formatCurrency(results.totalAssets)}\n- Total Liabilities: ${formatCurrency(results.totalLiabilities)}\n- Net Worth: ${formatCurrency(results.netWorth)}\n`;
+    } else {
+      content = 'Type,Name,Amount\n';
+      formData.assets.forEach(item => {
+        content += `Asset,"${item.name}",${item.amount}\n`;
+      });
+      formData.liabilities.forEach(item => {
+        content += `Liability,"${item.name}",${item.amount}\n`;
+      });
+      content += `\nResult Category,Value\n`;
+      content += `Total Assets,${results.totalAssets}\n`;
+      content += `Total Liabilities,${results.totalLiabilities}\n`;
+      content += `Net Worth,${results.netWorth}\n`;
+    }
+
+    const blob = new Blob([content], { type: `text/${format}` });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   };
 
   return (
@@ -84,7 +132,20 @@ export default function NetWorthCalculator() {
                 <Button type="button" variant="outline" size="sm" onClick={() => appendLiability({ name: '', amount: 0 })}>Add Liability</Button>
             </CardContent>
         </Card>
-        <Button type="submit" className="w-full">Calculate Net Worth</Button>
+        <div className="flex gap-2">
+            <Button type="submit" className="flex-1">Calculate Net Worth</Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" disabled={!results}>
+                  <Download className="mr-2 h-4 w-4" /> Export
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem onClick={() => handleExport('txt')}>Download as .txt</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleExport('csv')}>Download as .csv</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+        </div>
       </div>
 
       {/* Results Column */}

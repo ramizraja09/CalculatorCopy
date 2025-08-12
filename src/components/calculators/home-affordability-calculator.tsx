@@ -10,7 +10,14 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import { Info } from 'lucide-react';
+import { Info, Download } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+
 
 const formSchema = z.object({
   annualIncome: z.number().min(1, 'Annual income must be positive'),
@@ -26,6 +33,7 @@ type FormData = z.infer<typeof formSchema>;
 
 export default function HomeAffordabilityCalculator() {
   const [results, setResults] = useState<any>(null);
+  const [formData, setFormData] = useState<FormData | null>(null);
 
   const { control, handleSubmit, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -53,37 +61,16 @@ export default function HomeAffordabilityCalculator() {
     
     const grossMonthlyIncome = annualIncome / 12;
     
-    // Rule 1: Max housing payment (28% of GMI)
     const maxHousingPayment28 = grossMonthlyIncome * 0.28;
-    
-    // Rule 2: Max total debt payment (36% of GMI)
     const maxTotalDebtPayment36 = grossMonthlyIncome * 0.36;
     const maxHousingPayment36 = maxTotalDebtPayment36 - monthlyDebts;
 
-    // Use the more conservative (lower) of the two as the max PITI
     const maxPITI = Math.min(maxHousingPayment28, maxHousingPayment36);
-
     const monthlyInterestRate = interestRate / 100 / 12;
     const numberOfPayments = loanTerm * 12;
     
-    // Estimate a portion of payment for taxes and insurance
-    // This is an iterative problem, so we'll approximate. A simple way is to estimate T&I as a percentage of the monthly payment.
-    const estimatedTaxesAndInsurancePercent = (propertyTaxRate + homeInsuranceRate) / 100 / 12;
-    
-    // Back-calculate the loan amount from the max Principal & Interest payment
-    // P&I = maxPITI - (LoanAmount * estimatedTaxesAndInsurancePercent)
-    // This is complex. Let's simplify by calculating the max loan based on PITI, then adjusting the home price.
-    // Loan = P * ( (1+r)^n - 1 ) / ( r * (1+r)^n )
-    // We need to solve for P (Principal) based on the monthly payment (M).
-    // P = M * [ (1+r)^n - 1 ] / [ r(1+r)^n ]
-    
-    // Let's assume taxes and insurance are a percentage of the home price, not the payment.
     const monthlyRate = interestRate / 100 / 12;
     const monthlyTaxesAndInsuranceFactor = (propertyTaxRate / 100 / 12) + (homeInsuranceRate / 100 / 12);
-
-    // M = P * [r(1+r)^n] / [(1+r)^n - 1] + P * monthlyTaxesAndInsuranceFactor
-    // M = P * ( [r(1+r)^n] / [(1+r)^n - 1] + monthlyTaxesAndInsuranceFactor )
-    // P = M / ( [r(1+r)^n] / [(1+r)^n - 1] + monthlyTaxesAndInsuranceFactor )
     
     const loanPaymentFactor = (monthlyRate * Math.pow(1 + monthlyRate, numberOfPayments)) / (Math.pow(1 + monthlyRate, numberOfPayments) - 1);
     const totalDivisor = loanPaymentFactor + monthlyTaxesAndInsuranceFactor;
@@ -106,9 +93,41 @@ export default function HomeAffordabilityCalculator() {
         maxPITI,
         error: null,
     });
+    setFormData(data);
   };
 
   const formatCurrency = (value: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value);
+
+  const handleExport = (format: 'txt' | 'csv') => {
+    if (!results || !formData) return;
+    
+    let content = '';
+    const filename = `home-affordability-calculation.${format}`;
+    const { annualIncome, monthlyDebts, downPayment, interestRate, loanTerm, propertyTaxRate, homeInsuranceRate } = formData;
+
+    if (format === 'txt') {
+      content = `Home Affordability Calculation\n\nInputs:\n`;
+      content += `- Annual Income: ${formatCurrency(annualIncome)}\n- Monthly Debts: ${formatCurrency(monthlyDebts)}\n- Down Payment: ${formatCurrency(downPayment)}\n`;
+      content += `- Interest Rate: ${interestRate}%\n- Loan Term: ${loanTerm} years\n- Property Tax Rate: ${propertyTaxRate}%\n- Home Insurance Rate: ${homeInsuranceRate}%\n\n`;
+      content += `Results:\n- Affordable Home Price: ${formatCurrency(results.affordableHomePrice)}\n- Max Loan Amount: ${formatCurrency(results.maxLoanAmount)}\n- Estimated Monthly Payment: ${formatCurrency(results.estimatedMonthlyPayment)}\n`;
+    } else {
+      content = 'Category,Value\n';
+      content += `Annual Income,${annualIncome}\nMonthly Debts,${monthlyDebts}\nDown Payment,${downPayment}\n`;
+      content += `Interest Rate (%),${interestRate}\nLoan Term (years),${loanTerm}\nProperty Tax Rate (%),${propertyTaxRate}\nHome Insurance Rate (%),${homeInsuranceRate}\n\n`;
+      content += 'Result Category,Value\n';
+      content += `Affordable Home Price,${results.affordableHomePrice.toFixed(2)}\nMax Loan Amount,${results.maxLoanAmount.toFixed(2)}\nEstimated Monthly Payment,${results.estimatedMonthlyPayment.toFixed(2)}\n`;
+    }
+
+    const blob = new Blob([content], { type: `text/${format}` });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
 
   return (
     <form onSubmit={handleSubmit(calculateAffordability)} className="grid md:grid-cols-2 gap-8">
@@ -160,7 +179,20 @@ export default function HomeAffordabilityCalculator() {
           {errors.homeInsuranceRate && <p className="text-destructive text-sm mt-1">{errors.homeInsuranceRate.message}</p>}
         </div>
 
-        <Button type="submit" className="w-full">Calculate Affordability</Button>
+        <div className="flex gap-2">
+            <Button type="submit" className="flex-1">Calculate Affordability</Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" disabled={!results}>
+                  <Download className="mr-2 h-4 w-4" /> Export
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem onClick={() => handleExport('txt')}>Download as .txt</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleExport('csv')}>Download as .csv</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+        </div>
       </div>
 
       {/* Results Column */}

@@ -11,6 +11,13 @@ import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Download } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 const compoundFrequencies: { [key: string]: number } = {
   annually: 1,
@@ -24,15 +31,20 @@ const aprToApySchema = z.object({
   apr: z.number().min(0, "APR must be non-negative"),
   compounding: z.string(),
 });
+type AprFormData = z.infer<typeof aprToApySchema>;
 
 const apyToAprSchema = z.object({
   apy: z.number().min(0, "APY must be non-negative"),
   compounding: z.string(),
 });
+type ApyFormData = z.infer<typeof apyToAprSchema>;
 
 export default function AprApyCalculator() {
   const [apyResult, setApyResult] = useState<number | null>(null);
   const [aprResult, setAprResult] = useState<number | null>(null);
+  const [aprFormData, setAprFormData] = useState<AprFormData | null>(null);
+  const [apyFormData, setApyFormData] = useState<ApyFormData | null>(null);
+
 
   const { control: aprControl, handleSubmit: handleAprSubmit } = useForm({
     resolver: zodResolver(aprToApySchema),
@@ -44,19 +56,52 @@ export default function AprApyCalculator() {
     defaultValues: { apy: 5.116, compounding: 'monthly' },
   });
 
-  const calculateApy = (data: z.infer<typeof aprToApySchema>) => {
+  const calculateApy = (data: AprFormData) => {
     const n = compoundFrequencies[data.compounding];
     const apr = data.apr / 100;
     const apy = (Math.pow(1 + apr / n, n) - 1) * 100;
     setApyResult(apy);
+    setAprFormData(data);
   };
 
-  const calculateApr = (data: z.infer<typeof apyToAprSchema>) => {
+  const calculateApr = (data: ApyFormData) => {
     const n = compoundFrequencies[data.compounding];
     const apy = data.apy / 100;
     const apr = n * (Math.pow(1 + apy, 1 / n) - 1) * 100;
     setAprResult(apr);
+    setApyFormData(data);
   };
+  
+  const handleExport = (type: 'apr' | 'apy') => {
+    const isApr = type === 'apr';
+    const data = isApr ? aprFormData : apyFormData;
+    const result = isApr ? apyResult : aprResult;
+
+    if (!data || result === null) return;
+    
+    let content = '';
+    const filename = `apr-apy-conversion.${isApr ? 'txt' : 'csv'}`;
+    const initialKey = isApr ? 'APR' : 'APY';
+    const resultKey = isApr ? 'APY' : 'APR';
+    const initialValue = isApr ? data.apr : data.apy;
+
+    if (isApr) { // Just making simple txt for both for now
+      content = `APR to APY Calculation\n\nInputs:\n- ${initialKey}: ${initialValue}%\n- Compounding: ${data.compounding}\n\nResult:\n- Calculated ${resultKey}: ${result.toFixed(4)}%`;
+    } else {
+       content = `APY to APR Calculation\n\nInputs:\n- ${initialKey}: ${initialValue}%\n- Compounding: ${data.compounding}\n\nResult:\n- Calculated ${resultKey}: ${result.toFixed(4)}%`;
+    }
+
+    const blob = new Blob([content], { type: `text/plain` });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
 
   return (
     <Tabs defaultValue="apr-to-apy" className="w-full">
@@ -88,7 +133,20 @@ export default function AprApyCalculator() {
                   </Select>
                 )} />
               </div>
-              <Button type="submit" className="w-full">Calculate APY</Button>
+              <div className="flex gap-2">
+                <Button type="submit" className="flex-1">Calculate APY</Button>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" disabled={apyResult === null}>
+                      <Download className="mr-2 h-4 w-4" /> Export
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent>
+                    <DropdownMenuItem onClick={() => handleExport('apr')}>Download as .txt</DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+
               {apyResult !== null && (
                 <div className="mt-4 text-center">
                   <p className="text-muted-foreground">Calculated APY</p>
@@ -123,7 +181,20 @@ export default function AprApyCalculator() {
                   </Select>
                 )} />
               </div>
-              <Button type="submit" className="w-full">Calculate APR</Button>
+              <div className="flex gap-2">
+                <Button type="submit" className="flex-1">Calculate APR</Button>
+                 <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" disabled={aprResult === null}>
+                      <Download className="mr-2 h-4 w-4" /> Export
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent>
+                    <DropdownMenuItem onClick={() => handleExport('apy')}>Download as .txt</DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+
               {aprResult !== null && (
                 <div className="mt-4 text-center">
                   <p className="text-muted-foreground">Calculated APR</p>

@@ -11,7 +11,13 @@ import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Info } from 'lucide-react';
+import { Info, Download } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 // 2024 Federal Income Tax Brackets & Standard Deductions
 const taxBrackets = {
@@ -49,6 +55,7 @@ type FormData = z.infer<typeof formSchema>;
 
 export default function IncomeTaxCalculator() {
   const [results, setResults] = useState<any>(null);
+  const [formData, setFormData] = useState<FormData | null>(null);
 
   const { control, handleSubmit, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -82,9 +89,34 @@ export default function IncomeTaxCalculator() {
       effectiveRate,
       error: null,
     });
+    setFormData(data);
   };
 
   const formatCurrency = (value: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value);
+  
+  const handleExport = (format: 'txt' | 'csv') => {
+    if (!results || !formData) return;
+    
+    let content = '';
+    const filename = `income-tax-calculation.${format}`;
+    const { income, filingStatus } = formData;
+
+    if (format === 'txt') {
+      content = `Income Tax Calculation\n\nInputs:\n- Gross Annual Income: ${formatCurrency(income)}\n- Filing Status: ${filingStatus}\n\nResult:\n- Estimated Federal Tax: ${formatCurrency(results.totalTax)}\n- Taxable Income: ${formatCurrency(results.taxableIncome)}\n- Effective Tax Rate: ${results.effectiveRate.toFixed(2)}%`;
+    } else {
+       content = `Category,Value\nGross Annual Income,${income}\nFiling Status,${filingStatus}\n\nResult Category,Value\nEstimated Federal Tax,${results.totalTax}\nTaxable Income,${results.taxableIncome}\nEffective Tax Rate (%),${results.effectiveRate.toFixed(2)}`;
+    }
+
+    const blob = new Blob([content], { type: `text/${format}` });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
 
   return (
     <form onSubmit={handleSubmit(calculateTax)} className="grid md:grid-cols-2 gap-8">
@@ -111,7 +143,20 @@ export default function IncomeTaxCalculator() {
           )} />
         </div>
         
-        <Button type="submit" className="w-full">Calculate Tax</Button>
+        <div className="flex gap-2">
+            <Button type="submit" className="flex-1">Calculate Tax</Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" disabled={!results}>
+                  <Download className="mr-2 h-4 w-4" /> Export
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem onClick={() => handleExport('txt')}>Download as .txt</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleExport('csv')}>Download as .csv</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+        </div>
         <Alert>
           <Info className="h-4 w-4" />
           <AlertTitle>For Estimation Only</AlertTitle>
