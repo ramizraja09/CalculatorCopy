@@ -89,8 +89,8 @@ export default function Vo2MaxEstimator() {
         {results ? (
             <Card>
                 <CardContent className="p-6 text-center">
-                    <p className="text-4xl font-bold my-2">{results.vo2max.toFixed(1)}</p>
-                    <p className="text-muted-foreground">mL/kg/min</p>
+                    <div className="text-4xl font-bold my-2">{results.vo2max.toFixed(1)}</div>
+                    <div className="text-muted-foreground">mL/kg/min</div>
                 </CardContent>
             </Card>
         ) : (
