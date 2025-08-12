@@ -34,6 +34,13 @@ export const calculators: Calculator[] = [
     icon: PiggyBank,
   },
   {
+    name: 'Loan-to-Value (LTV) Ratio Calculator',
+    slug: 'ltv-calculator',
+    description: 'Calculate the Loan-to-Value ratio for a mortgage or property loan.',
+    category: 'Finance',
+    icon: Ratio,
+  },
+  {
     name: 'Student Loan Calculator',
     slug: 'student-loan-calculator',
     description: 'Estimate monthly payments and total interest for student loans.',

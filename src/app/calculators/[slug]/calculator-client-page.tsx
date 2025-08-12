@@ -13,6 +13,7 @@ import { Button } from '@/components/ui/button';
 import BmiWeightLossCalculator from '@/components/calculators/bmi-weight-loss-calculator';
 import MortgageCalculator from '@/components/calculators/mortgage-calculator';
 import LoanCalculator from '@/components/calculators/loan-calculator';
+import LtvCalculator from '@/components/calculators/ltv-calculator';
 import CarLoanCalculator from '@/components/calculators/car-loan-calculator';
 import AmortizationCalculator from '@/components/calculators/amortization-calculator';
 import InterestCalculator from '@/components/calculators/interest-calculator';
@@ -168,6 +169,7 @@ const calculatorComponents: { [key: string]: React.ComponentType<any> } = {
   'mortgage-calculator': MortgageCalculator,
   'mortgage-calculator-uk': MortgageCalculatorUK,
   'loan-calculator': LoanCalculator,
+  'ltv-calculator': LtvCalculator,
   'student-loan-calculator': StudentLoanCalculator,
   'car-loan-calculator': CarLoanCalculator,
   'amortization-calculator': AmortizationCalculator,
