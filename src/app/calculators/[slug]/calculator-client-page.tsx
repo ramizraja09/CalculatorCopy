@@ -157,6 +157,7 @@ import StudentLoanCalculator from '@/components/calculators/student-loan-calcula
 import PensionCalculator from '@/components/calculators/pension-calculator';
 import MortgageCalculatorUK from '@/components/calculators/mortgage-calculator-uk';
 import PValueCalculator from '@/components/calculators/p-value-calculator';
+import BreakEvenPointCalculator from '@/components/calculators/break-even-point-calculator';
 
 
 type CalculatorClientPageProps = {
@@ -311,6 +312,7 @@ const calculatorComponents: { [key: string]: React.ComponentType<any> } = {
   'weight-watchers-points-calculator': WeightWatchersPointsCalculator,
   'overtime-pay-calculator': OvertimePayCalculator,
   'interview-prep-cost-calculator': InterviewPrepCostCalculator,
+  'break-even-point-calculator': BreakEvenPointCalculator,
 };
 
 export default function CalculatorClientPage({ calculator }: CalculatorClientPageProps) {

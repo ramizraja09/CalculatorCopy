@@ -236,6 +236,13 @@ export const calculators: Calculator[] = [
     category: 'Finance',
     icon: ShoppingCart,
   },
+  {
+    name: 'Break-Even Point Calculator',
+    slug: 'break-even-point-calculator',
+    description: 'Find the point where revenue equals costs.',
+    category: 'Finance',
+    icon: Scale,
+  },
   // Health & Fitness (29 -> 44)
   {
     name: 'BMI Calculator',
