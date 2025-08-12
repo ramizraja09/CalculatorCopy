@@ -28,7 +28,6 @@ export default function BasicCalculator() {
   const [expression, setExpression] = useState('');
   const [history, setHistory] = useState<string[]>([]);
   const [isListening, setIsListening] = useState(false);
-  const [showHistory, setShowHistory] = useState(false);
   const [isAfterEquals, setIsAfterEquals] = useState(false);
 
   // Load history from localStorage on component mount (client-side only)
@@ -189,9 +188,6 @@ export default function BasicCalculator() {
             {display}
           </div>
           <div className="flex gap-2 mb-2">
-            <Button variant="ghost" size="icon" onClick={() => setShowHistory(!showHistory)} aria-label="Toggle History">
-              <History />
-            </Button>
             <Button variant="ghost" size="icon" onClick={handleVoiceInput} aria-label="Voice Input">
               <Mic className={isListening ? 'text-destructive animate-pulse' : ''} />
             </Button>
@@ -227,36 +223,34 @@ export default function BasicCalculator() {
       </Card>
       
       {/* History Panel */}
-      {showHistory && (
-        <Card className="flex flex-col">
-          <CardContent className="p-4 flex-grow flex flex-col">
-            <div className="flex justify-between items-center mb-2">
-                <h3 className="text-lg font-semibold">History</h3>
-                <div className="flex gap-1">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                          <Button variant="outline" size="sm" disabled={history.length === 0}><Download className="mr-2 h-4 w-4" /> Export</Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent>
-                          <DropdownMenuItem onClick={() => exportHistory('txt')}>Download as .txt</DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => exportHistory('csv')}>Download as .csv</DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                    <Button variant="outline" size="sm" onClick={clearHistory} aria-label="Clear History" disabled={history.length === 0}><Trash2 className="mr-2 h-4 w-4" /> Clear</Button>
-                </div>
-            </div>
-            <ScrollArea className="flex-grow border rounded-md">
-                <div className="p-2 text-sm text-right">
-                    {history.length > 0 ? (
-                        history.map((item, index) => <p key={index} className="font-mono p-1 border-b">{item}</p>)
-                    ) : (
-                        <p className="p-4 text-center text-muted-foreground">No history yet.</p>
-                    )}
-                </div>
-            </ScrollArea>
-          </CardContent>
-        </Card>
-      )}
+      <Card className="flex flex-col">
+        <CardContent className="p-4 flex-grow flex flex-col">
+          <div className="flex justify-between items-center mb-2">
+              <h3 className="text-lg font-semibold">History</h3>
+              <div className="flex gap-1">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <Button variant="outline" size="sm" disabled={history.length === 0}><Download className="mr-2 h-4 w-4" /> Export</Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent>
+                        <DropdownMenuItem onClick={() => exportHistory('txt')}>Download as .txt</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => exportHistory('csv')}>Download as .csv</DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                  <Button variant="outline" size="sm" onClick={clearHistory} aria-label="Clear History" disabled={history.length === 0}><Trash2 className="mr-2 h-4 w-4" /> Clear</Button>
+              </div>
+          </div>
+          <ScrollArea className="flex-grow border rounded-md">
+              <div className="p-2 text-sm text-right">
+                  {history.length > 0 ? (
+                      history.map((item, index) => <p key={index} className="font-mono p-1 border-b">{item}</p>)
+                  ) : (
+                      <p className="p-4 text-center text-muted-foreground">No history yet.</p>
+                  )}
+              </div>
+          </ScrollArea>
+        </CardContent>
+      </Card>
     </div>
   );
 }
