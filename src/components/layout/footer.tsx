@@ -19,7 +19,10 @@ export default function Footer() {
           <p className="text-sm text-muted-foreground" suppressHydrationWarning={true}>
             &copy; {currentYear ? currentYear : new Date().getFullYear()} My Genius Calculator. All rights reserved.
           </p>
-          <nav className="flex gap-4 md:gap-6">
+          <nav className="flex gap-4 md:gap-6 flex-wrap justify-center">
+            <Link href="/list" className="text-sm text-muted-foreground hover:text-primary transition-colors">
+              Full List
+            </Link>
             <Link href="/about" className="text-sm text-muted-foreground hover:text-primary transition-colors">
               About
             </Link>
