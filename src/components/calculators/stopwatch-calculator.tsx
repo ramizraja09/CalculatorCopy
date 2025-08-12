@@ -6,6 +6,13 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { Download } from 'lucide-react';
 
 export default function StopwatchCalculator() {
   const [time, setTime] = useState(0);
@@ -42,6 +49,36 @@ export default function StopwatchCalculator() {
     const milliseconds = String(Math.floor((ms % 1000) / 10)).padStart(2, '0');
     return `${minutes}:${seconds}.${milliseconds}`;
   };
+  
+  const handleExport = (format: 'txt' | 'csv') => {
+    if (laps.length === 0) return;
+    
+    let content = '';
+    const filename = `stopwatch-laps.${format}`;
+
+    if (format === 'txt') {
+      content = `Stopwatch Laps\n\n`;
+      laps.forEach((lap, index) => {
+        content += `Lap ${index + 1}: ${formatTime(lap)}\n`;
+      });
+    } else {
+      content = 'Lap,Time\n';
+       laps.forEach((lap, index) => {
+        content += `${index + 1},${formatTime(lap)}\n`;
+      });
+    }
+
+    const blob = new Blob([content], { type: `text/${format}` });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
 
   return (
     <div className="grid md:grid-cols-2 gap-8">
@@ -59,6 +96,17 @@ export default function StopwatchCalculator() {
                   Reset
               </Button>
           </div>
+          <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" disabled={laps.length === 0} className="mt-4">
+                  <Download className="mr-2 h-4 w-4" /> Export Laps
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem onClick={() => handleExport('txt')}>Download as .txt</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleExport('csv')}>Download as .csv</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
       </div>
 
       {/* Laps display */}
@@ -75,12 +123,17 @@ export default function StopwatchCalculator() {
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {laps.map((lap, index) => (
+                            {laps.length > 0 ? laps.map((lap, index) => (
                                 <TableRow key={index}>
-                                    <TableCell>{index + 1}</TableCell>
+                                    <TableCell>{laps.length - index}</TableCell>
                                     <TableCell className="text-right font-mono">{formatTime(lap)}</TableCell>
                                 </TableRow>
-                            )).reverse()}
+                            )).reverse()
+                            : (
+                                <TableRow>
+                                    <TableCell colSpan={2} className="text-center text-muted-foreground">No laps yet.</TableCell>
+                                </TableRow>
+                            )}
                         </TableBody>
                     </Table>
                 </ScrollArea>

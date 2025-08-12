@@ -9,6 +9,13 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { Download } from 'lucide-react';
 
 const formSchema = z.object({
   startTime: z.string().nonempty("Start time is required"),
@@ -19,6 +26,8 @@ type FormData = z.infer<typeof formSchema>;
 
 export default function TimeDurationCalculator() {
   const [result, setResult] = useState<string | null>(null);
+  const [formData, setFormData] = useState<FormData | null>(null);
+
   const { control, handleSubmit } = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: { startTime: '09:30', endTime: '17:45' },
@@ -37,6 +46,31 @@ export default function TimeDurationCalculator() {
     const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
 
     setResult(`${hours} hours, ${minutes} minutes`);
+    setFormData(data);
+  };
+  
+  const handleExport = (format: 'txt' | 'csv') => {
+    if (!result || !formData) return;
+    const { startTime, endTime } = formData;
+    
+    let content = '';
+    const filename = `time-duration-result.${format}`;
+
+    if (format === 'txt') {
+      content = `Time Duration Calculation\n\nInputs:\n- Start Time: ${startTime}\n- End Time: ${endTime}\n\nResult:\n- Duration: ${result}`;
+    } else {
+      content = `Start Time,End Time,Result (Duration)\n${startTime},${endTime},"${result}"`;
+    }
+
+    const blob = new Blob([content], { type: `text/${format}` });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   };
 
   return (
@@ -52,7 +86,20 @@ export default function TimeDurationCalculator() {
           <Label htmlFor="endTime">End Time</Label>
           <Controller name="endTime" control={control} render={({ field }) => <Input type="time" {...field} />} />
         </div>
-        <Button type="submit" className="w-full">Calculate Duration</Button>
+        <div className="flex gap-2">
+            <Button type="submit" className="flex-1">Calculate Duration</Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" disabled={!result}>
+                  <Download className="mr-2 h-4 w-4" /> Export
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem onClick={() => handleExport('txt')}>Download as .txt</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleExport('csv')}>Download as .csv</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+        </div>
       </div>
 
       {/* Results */}

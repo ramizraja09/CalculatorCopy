@@ -10,6 +10,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { differenceInYears, differenceInMonths, differenceInDays, subYears, subMonths } from 'date-fns';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { Download } from 'lucide-react';
 
 const formSchema = z.object({
   startDate: z.string().refine((val) => !isNaN(Date.parse(val)), { message: "Invalid date" }),
@@ -23,6 +30,8 @@ type FormData = z.infer<typeof formSchema>;
 
 export default function DateDifferenceCalculator() {
   const [results, setResults] = useState<any>(null);
+  const [formData, setFormData] = useState<FormData | null>(null);
+
   const { control, handleSubmit, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: { startDate: new Date().toISOString().split('T')[0], endDate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0] },
@@ -38,6 +47,33 @@ export default function DateDifferenceCalculator() {
     const days = differenceInDays(end, subMonths(subYears(start, years), months));
 
     setResults({ years, months, days, totalDays });
+    setFormData(data);
+  };
+  
+  const handleExport = (format: 'txt' | 'csv') => {
+    if (!results || !formData) return;
+    const { startDate, endDate } = formData;
+    const { years, months, days, totalDays } = results;
+    
+    let content = '';
+    const filename = `date-difference-result.${format}`;
+    const differenceString = `${years}y ${months}m ${days}d`;
+
+    if (format === 'txt') {
+      content = `Date Difference Result\n\nInputs:\n- Start Date: ${startDate}\n- End Date: ${endDate}\n\nResult:\n- Difference: ${differenceString}\n- Total Days: ${totalDays.toLocaleString()}`;
+    } else {
+      content = `Start Date,End Date,Result (Difference),Result (Total Days)\n${startDate},${endDate},"${differenceString}",${totalDays}`;
+    }
+
+    const blob = new Blob([content], { type: `text/${format}` });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   };
 
   return (
@@ -54,7 +90,20 @@ export default function DateDifferenceCalculator() {
           <Controller name="endDate" control={control} render={({ field }) => <Input type="date" {...field} />} />
           {errors.endDate && <p className="text-destructive text-sm mt-1">{errors.endDate.message}</p>}
         </div>
-        <Button type="submit" className="w-full">Calculate Difference</Button>
+        <div className="flex gap-2">
+            <Button type="submit" className="flex-1">Calculate Difference</Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" disabled={!results}>
+                  <Download className="mr-2 h-4 w-4" /> Export
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem onClick={() => handleExport('txt')}>Download as .txt</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleExport('csv')}>Download as .csv</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+        </div>
       </div>
 
       {/* Results */}

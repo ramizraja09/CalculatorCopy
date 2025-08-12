@@ -10,6 +10,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { Download } from 'lucide-react';
 
 const formSchema = z.object({
   h1: z.number().int().min(0),
@@ -24,6 +31,8 @@ type FormData = z.infer<typeof formSchema>;
 
 export default function TimeCalculator() {
   const [result, setResult] = useState<string | null>(null);
+  const [formData, setFormData] = useState<FormData | null>(null);
+
   const { control, handleSubmit } = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: { h1: 1, m1: 30, s1: 0, op: 'add', h2: 0, m2: 45, s2: 30 },
@@ -37,6 +46,32 @@ export default function TimeCalculator() {
     const m = Math.floor((Math.abs(totalSeconds) % 3600) / 60);
     const s = Math.abs(totalSeconds) % 60;
     setResult(`${totalSeconds < 0 ? '-' : ''}${h}h ${m}m ${s}s`);
+    setFormData(data);
+  };
+  
+  const handleExport = (format: 'txt' | 'csv') => {
+    if (!result || !formData) return;
+    
+    let content = '';
+    const filename = `time-calculation-result.${format}`;
+    const { h1, m1, s1, op, h2, m2, s2 } = formData;
+    const expression = `${h1}h ${m1}m ${s1}s ${op === 'add' ? '+' : '-'} ${h2}h ${m2}m ${s2}s`;
+
+    if (format === 'txt') {
+      content = `Time Calculation\n\nExpression: ${expression}\nResult: ${result}`;
+    } else {
+      content = `Expression,Result\n"${expression}","${result}"`;
+    }
+
+    const blob = new Blob([content], { type: `text/${format}` });
+    const url = URL.createObjectURL(blob);
+    const aEl = document.createElement('a');
+    aEl.href = url;
+    aEl.download = filename;
+    document.body.appendChild(aEl);
+    aEl.click();
+    document.body.removeChild(aEl);
+    URL.revokeObjectURL(url);
   };
 
   return (
@@ -62,7 +97,20 @@ export default function TimeCalculator() {
             <div><Label className="text-xs">Seconds</Label><Controller name="s2" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value) || 0)} />} /></div>
         </div>
       </div>
-      <Button type="submit" className="w-full">Calculate</Button>
+      <div className="flex justify-center gap-2">
+        <Button type="submit" className="w-full max-w-xs">Calculate</Button>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" disabled={!result} className="w-full max-w-[150px]">
+              <Download className="mr-2 h-4 w-4" /> Export
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent>
+            <DropdownMenuItem onClick={() => handleExport('txt')}>Download as .txt</DropdownMenuItem>
+            <DropdownMenuItem onClick={() => handleExport('csv')}>Download as .csv</DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
       {result && <Card><CardContent className="p-6 text-center"><p className="text-4xl font-bold">{result}</p></CardContent></Card>}
     </form>
   );

@@ -10,6 +10,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { format } from 'date-fns';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { Download } from 'lucide-react';
 
 const formSchema = z.object({
   date: z.string().refine((val) => !isNaN(Date.parse(val)), { message: "Invalid date" }),
@@ -19,6 +26,8 @@ type FormData = z.infer<typeof formSchema>;
 
 export default function DateToDayCalculator() {
   const [result, setResult] = useState<string | null>(null);
+  const [formData, setFormData] = useState<FormData | null>(null);
+
   const { control, handleSubmit, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: { date: new Date().toISOString().split('T')[0] },
@@ -28,6 +37,31 @@ export default function DateToDayCalculator() {
     const date = new Date(data.date);
     const dayOfWeek = format(date, 'EEEE');
     setResult(dayOfWeek);
+    setFormData(data);
+  };
+  
+  const handleExport = (format: 'txt' | 'csv') => {
+    if (!result || !formData) return;
+    const { date } = formData;
+    
+    let content = '';
+    const filename = `date-to-day-result.${format}`;
+
+    if (format === 'txt') {
+      content = `Date to Day Calculation\n\nInputs:\n- Date: ${date}\n\nResult:\n- Day of Week: ${result}`;
+    } else {
+      content = `Date,Day of Week\n${date},${result}`;
+    }
+
+    const blob = new Blob([content], { type: `text/${format}` });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   };
 
   return (
@@ -40,7 +74,20 @@ export default function DateToDayCalculator() {
           <Controller name="date" control={control} render={({ field }) => <Input type="date" {...field} />} />
           {errors.date && <p className="text-destructive text-sm mt-1">{errors.date.message}</p>}
         </div>
-        <Button type="submit" className="w-full">Find Day of Week</Button>
+        <div className="flex gap-2">
+            <Button type="submit" className="flex-1">Find Day of Week</Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" disabled={!result}>
+                  <Download className="mr-2 h-4 w-4" /> Export
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem onClick={() => handleExport('txt')}>Download as .txt</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleExport('csv')}>Download as .csv</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+        </div>
       </div>
 
       {/* Results */}

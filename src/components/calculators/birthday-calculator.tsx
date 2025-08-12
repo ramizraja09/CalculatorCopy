@@ -10,6 +10,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { differenceInDays, format, addYears } from 'date-fns';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { Download } from 'lucide-react';
 
 const formSchema = z.object({
   birthDate: z.string().refine((val) => !isNaN(Date.parse(val)), { message: "Invalid date" }),
@@ -19,6 +26,8 @@ type FormData = z.infer<typeof formSchema>;
 
 export default function BirthdayCalculator() {
   const [results, setResults] = useState<any>(null);
+  const [formData, setFormData] = useState<FormData | null>(null);
+
   const { control, handleSubmit, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: { birthDate: '1990-01-01' },
@@ -39,7 +48,34 @@ export default function BirthdayCalculator() {
     const daysUntil = differenceInDays(nextBirthday, today);
 
     setResults({ dayOfWeek, daysUntil });
+    setFormData(data);
   };
+  
+  const handleExport = (format: 'txt' | 'csv') => {
+    if (!results || !formData) return;
+    
+    let content = '';
+    const filename = `birthday-calculation.${format}`;
+    const { birthDate } = formData;
+    const { dayOfWeek, daysUntil } = results;
+
+    if (format === 'txt') {
+      content = `Birthday Calculation\n\nInputs:\n- Birth Date: ${birthDate}\n\nResult:\n- Born on: ${dayOfWeek}\n- Days until next birthday: ${daysUntil}`;
+    } else {
+       content = `Birth Date,Born On,Days Until Next Birthday\n${birthDate},${dayOfWeek},${daysUntil}`;
+    }
+
+    const blob = new Blob([content], { type: `text/${format}` });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
 
   return (
     <form onSubmit={handleSubmit(calculateBirthday)} className="grid md:grid-cols-2 gap-8">
@@ -51,7 +87,20 @@ export default function BirthdayCalculator() {
           <Controller name="birthDate" control={control} render={({ field }) => <Input type="date" {...field} />} />
           {errors.birthDate && <p className="text-destructive text-sm mt-1">{errors.birthDate.message}</p>}
         </div>
-        <Button type="submit" className="w-full">Calculate</Button>
+        <div className="flex gap-2">
+            <Button type="submit" className="flex-1">Calculate</Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" disabled={!results}>
+                  <Download className="mr-2 h-4 w-4" /> Export
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem onClick={() => handleExport('txt')}>Download as .txt</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleExport('csv')}>Download as .csv</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+        </div>
       </div>
 
       {/* Results */}
