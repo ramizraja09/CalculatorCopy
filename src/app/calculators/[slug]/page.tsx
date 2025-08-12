@@ -1,9 +1,20 @@
 
 import { calculators } from '@/lib/calculators';
 import { notFound } from 'next/navigation';
-import CalculatorClientPage from './calculator-client-page';
 import type { Metadata } from 'next';
 import Script from 'next/script';
+import dynamic from 'next/dynamic';
+import { Skeleton } from '@/components/ui/skeleton';
+
+const CalculatorClientPage = dynamic(() => import('./calculator-client-page'), {
+  loading: () => (
+    <div className="container max-w-4xl mx-auto p-4 md:p-8 space-y-6">
+      <Skeleton className="h-6 w-48 mb-4" />
+      <Skeleton className="h-[70vh] w-full" />
+    </div>
+  )
+});
+
 
 type CalculatorPageProps = {
   params: {
