@@ -159,6 +159,9 @@ import PensionCalculator from '@/components/calculators/pension-calculator';
 import MortgageCalculatorUK from '@/components/calculators/mortgage-calculator-uk';
 import PValueCalculator from '@/components/calculators/p-value-calculator';
 import BreakEvenPointCalculator from '@/components/calculators/break-even-point-calculator';
+import BusinessProfitMarginCalculator from '@/components/calculators/business-profit-margin-calculator';
+import StartupRunwayCalculator from '@/components/calculators/startup-runway-calculator';
+import CarbonFootprintCalculator from '@/components/calculators/carbon-footprint-calculator';
 
 
 type CalculatorClientPageProps = {
@@ -315,6 +318,9 @@ const calculatorComponents: { [key: string]: React.ComponentType<any> } = {
   'overtime-pay-calculator': OvertimePayCalculator,
   'interview-prep-cost-calculator': InterviewPrepCostCalculator,
   'break-even-point-calculator': BreakEvenPointCalculator,
+  'business-profit-margin-calculator': BusinessProfitMarginCalculator,
+  'startup-runway-calculator': StartupRunwayCalculator,
+  'carbon-footprint-calculator': CarbonFootprintCalculator,
 };
 
 export default function CalculatorClientPage({ calculator }: CalculatorClientPageProps) {

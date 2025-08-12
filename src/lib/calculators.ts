@@ -1,6 +1,6 @@
 
 import type { ComponentType } from 'react';
-import { PiggyBank, Car, Utensils, HeartPulse, Percent, Home, BrainCircuit, GraduationCap, TrendingUp, Footprints, Scale, Calculator, Calendar, Repeat, Atom, FlaskConical, Beaker, Ruler, Clock, Landmark, FileText, Wallet, Receipt, CreditCard, Recycle, Banknote, CandlestickChart, Briefcase, DraftingCompass, Cigarette, Droplets, Sun, Shirt, Building, Shovel, Box, Weight, Map, BookOpen, Beer, Dna, Leaf, Zap, Sigma, Coins, Award, Baby, UserCheck, Plane, ShoppingCart, TestTube2, Wallpaper, Activity, Moon, Soup, ShieldCheck, Handshake, Target, PaintRoller, Ratio, FunctionSquare, Pilcrow, Infinity, Equal, GitCompareArrows, BookText, AreaChart, CircuitBoard, HardDrive, Network, Gauge, Move, Square, Telescope, Text, Asterisk, WalletCards, Hourglass, BarChart3, TrendingDown, Syringe, Wheat, Sparkles, User, Users, Stethoscope, Wifi } from 'lucide-react';
+import { PiggyBank, Car, Utensils, HeartPulse, Percent, Home, BrainCircuit, GraduationCap, TrendingUp, Footprints, Scale, Calculator, Calendar, Repeat, Atom, FlaskConical, Beaker, Ruler, Clock, Landmark, FileText, Wallet, Receipt, CreditCard, Recycle, Banknote, CandlestickChart, Briefcase, DraftingCompass, Cigarette, Droplets, Sun, Shirt, Building, Shovel, Box, Weight, Map, BookOpen, Beer, Dna, Leaf, Zap, Sigma, Coins, Award, Baby, UserCheck, Plane, ShoppingCart, TestTube2, Wallpaper, Activity, Moon, Soup, ShieldCheck, Handshake, Target, PaintRoller, Ratio, FunctionSquare, Pilcrow, Infinity, Equal, GitCompareArrows, BookText, AreaChart, CircuitBoard, HardDrive, Network, Gauge, Move, Square, Telescope, Text, Asterisk, WalletCards, Hourglass, BarChart3, TrendingDown, Syringe, Wheat, Sparkles, User, Users, Stethoscope, Wifi, Factory } from 'lucide-react';
 
 export type Calculator = {
   name: string;
@@ -249,6 +249,20 @@ export const calculators: Calculator[] = [
     description: 'Find the point where revenue equals costs.',
     category: 'Finance',
     icon: Scale,
+  },
+  {
+    name: 'Business Profit Margin Calculator',
+    slug: 'business-profit-margin-calculator',
+    description: 'Calculate gross and net profit margins to assess business profitability.',
+    category: 'Finance',
+    icon: WalletCards,
+  },
+  {
+    name: 'Startup Runway Calculator',
+    slug: 'startup-runway-calculator',
+    description: 'Estimate how many months your startup has before it runs out of money.',
+    category: 'Finance',
+    icon: Plane,
   },
   // Health & Fitness (29 -> 44)
   {
@@ -893,6 +907,13 @@ export const calculators: Calculator[] = [
     description: 'Compare the cost of living and required salary between two cities.',
     category: 'Everyday Utilities',
     icon: Building,
+  },
+  {
+    name: 'Carbon Footprint Calculator',
+    slug: 'carbon-footprint-calculator',
+    description: 'Estimate your annual carbon footprint from travel, energy, and diet.',
+    category: 'Everyday Utilities',
+    icon: Factory,
   },
   // Unit Converters
   {
