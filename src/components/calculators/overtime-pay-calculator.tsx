@@ -1,13 +1,21 @@
 
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Button } from '@/components/ui/button';
+import { Download } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 const formSchema = z.object({
   hourlyRate: z.number().min(0, "Hourly rate must be non-negative"),
@@ -20,8 +28,9 @@ type FormData = z.infer<typeof formSchema>;
 
 export default function OvertimePayCalculator() {
   const [results, setResults] = useState<any>(null);
+  const [formData, setFormData] = useState<FormData | null>(null);
 
-  const { control, watch } = useForm<FormData>({
+  const { control, handleSubmit } = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       hourlyRate: 20,
@@ -31,10 +40,8 @@ export default function OvertimePayCalculator() {
     },
   });
 
-  const formData = watch();
-
-  useEffect(() => {
-    const { hourlyRate, regularHours, overtimeHours, overtimeMultiplier } = formData;
+  const calculatePay = (data: FormData) => {
+    const { hourlyRate, regularHours, overtimeHours, overtimeMultiplier } = data;
     const regularPay = hourlyRate * regularHours;
     const overtimePay = hourlyRate * overtimeMultiplier * overtimeHours;
     const totalPay = regularPay + overtimePay;
@@ -44,12 +51,38 @@ export default function OvertimePayCalculator() {
       overtimePay,
       totalPay,
     });
-  }, [formData]);
+    setFormData(data);
+  };
+  
+  const handleExport = (format: 'txt' | 'csv') => {
+    if (!results || !formData) return;
+    
+    let content = '';
+    const filename = `overtime-pay-calculation.${format}`;
+    const { hourlyRate, regularHours, overtimeHours, overtimeMultiplier } = formData;
+
+    if (format === 'txt') {
+      content = `Overtime Pay Calculation\n\nInputs:\n- Hourly Rate: ${formatCurrency(hourlyRate)}\n- Regular Hours: ${regularHours}\n- Overtime Hours: ${overtimeHours}\n- Overtime Multiplier: ${overtimeMultiplier}x\n\nResults:\n- Regular Pay: ${formatCurrency(results.regularPay)}\n- Overtime Pay: ${formatCurrency(results.overtimePay)}\n- Total Pay: ${formatCurrency(results.totalPay)}`;
+    } else {
+       content = `Category,Value\nHourly Rate,${hourlyRate}\nRegular Hours,${regularHours}\nOvertime Hours,${overtimeHours}\nOvertime Multiplier,${overtimeMultiplier}\nRegular Pay,${results.regularPay.toFixed(2)}\nOvertime Pay,${results.overtimePay.toFixed(2)}\nTotal Pay,${results.totalPay.toFixed(2)}`;
+    }
+
+    const blob = new Blob([content], { type: `text/${format}` });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
 
   const formatCurrency = (value: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value);
 
   return (
-    <form onSubmit={(e) => e.preventDefault()} className="grid md:grid-cols-2 gap-8">
+    <form onSubmit={handleSubmit(calculatePay)} className="grid md:grid-cols-2 gap-8">
       {/* Inputs Column */}
       <div className="space-y-4">
         <h3 className="text-xl font-semibold">Pay & Hours</h3>
@@ -70,6 +103,20 @@ export default function OvertimePayCalculator() {
         <div>
           <Label htmlFor="overtimeMultiplier">Overtime Multiplier (e.g., 1.5 for time-and-a-half)</Label>
           <Controller name="overtimeMultiplier" control={control} render={({ field }) => <Input id="overtimeMultiplier" type="number" step="0.1" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
+        </div>
+        <div className="flex gap-2">
+            <Button type="submit" className="flex-1">Calculate Pay</Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" disabled={!results}>
+                  <Download className="mr-2 h-4 w-4" /> Export
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem onClick={() => handleExport('txt')}>Download as .txt</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleExport('csv')}>Download as .csv</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
         </div>
       </div>
 

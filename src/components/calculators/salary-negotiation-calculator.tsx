@@ -9,6 +9,13 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
+import { Download } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 const formSchema = z.object({
   currentSalary: z.number().min(1),
@@ -19,6 +26,7 @@ type FormData = z.infer<typeof formSchema>;
 
 export default function SalaryNegotiationCalculator() {
   const [results, setResults] = useState<any>(null);
+  const [formData, setFormData] = useState<FormData | null>(null);
 
   const { control, handleSubmit } = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -30,11 +38,37 @@ export default function SalaryNegotiationCalculator() {
   const calculateTargets = (data: FormData) => {
     const targetSalary = data.currentSalary * (1 + data.desiredIncrease / 100);
     setResults({
-        walkAway: formatCurrency(data.currentSalary * 1.05), // 5% increase
-        target: formatCurrency(targetSalary),
-        ideal: formatCurrency(targetSalary * 1.10), // 10% above target
+        walkAway: data.currentSalary * 1.05, 
+        target: targetSalary,
+        ideal: targetSalary * 1.10, 
     });
+    setFormData(data);
   };
+  
+  const handleExport = (format: 'txt' | 'csv') => {
+    if (!results || !formData) return;
+    
+    let content = '';
+    const filename = `salary-negotiation-targets.${format}`;
+    const { currentSalary, desiredIncrease } = formData;
+
+    if (format === 'txt') {
+      content = `Salary Negotiation Targets\n\nInputs:\n- Current Salary: ${formatCurrency(currentSalary)}\n- Desired Increase: ${desiredIncrease}%\n\nResults:\n- Walk-Away Point: ${formatCurrency(results.walkAway)}\n- Target Salary: ${formatCurrency(results.target)}\n- Ideal Outcome: ${formatCurrency(results.ideal)}`;
+    } else {
+       content = `Category,Value\nCurrent Salary,${currentSalary}\nDesired Increase (%),${desiredIncrease}\nWalk-Away Point,${results.walkAway}\nTarget Salary,${results.target}\nIdeal Outcome,${results.ideal}`;
+    }
+
+    const blob = new Blob([content], { type: `text/${format}` });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
 
   return (
     <form onSubmit={handleSubmit(calculateTargets)} className="grid md:grid-cols-2 gap-8">
@@ -43,7 +77,20 @@ export default function SalaryNegotiationCalculator() {
         <h3 className="text-xl font-semibold">Inputs</h3>
         <div><Label>Current Annual Salary ($)</Label><Controller name="currentSalary" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value) || 0)} />} /></div>
         <div><Label>Desired Increase (%)</Label><Controller name="desiredIncrease" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value) || 0)} />} /></div>
-        <Button type="submit" className="w-full">Calculate Targets</Button>
+        <div className="flex gap-2">
+            <Button type="submit" className="flex-1">Calculate Targets</Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" disabled={!results}>
+                  <Download className="mr-2 h-4 w-4" /> Export
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem onClick={() => handleExport('txt')}>Download as .txt</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleExport('csv')}>Download as .csv</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+        </div>
       </div>
 
       {/* Results */}
@@ -52,9 +99,9 @@ export default function SalaryNegotiationCalculator() {
         {results ? (
             <Card>
                 <CardContent className="p-4 grid grid-cols-1 gap-4 text-center">
-                    <div><p className="font-semibold text-destructive">Walk-Away Point</p><p>{results.walkAway}</p></div>
-                    <div><p className="font-semibold text-primary">Target Salary</p><p className="text-2xl font-bold">{results.target}</p></div>
-                    <div><p className="font-semibold text-green-600">Ideal Outcome</p><p>{results.ideal}</p></div>
+                    <div><p className="font-semibold text-destructive">Walk-Away Point</p><p>{formatCurrency(results.walkAway)}</p></div>
+                    <div><p className="font-semibold text-primary">Target Salary</p><p className="text-2xl font-bold">{formatCurrency(results.target)}</p></div>
+                    <div><p className="font-semibold text-green-600">Ideal Outcome</p><p>{formatCurrency(results.ideal)}</p></div>
                 </CardContent>
             </Card>
         ) : (

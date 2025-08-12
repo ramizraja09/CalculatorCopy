@@ -9,6 +9,14 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Button } from '@/components/ui/button';
+import { Download } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 const formSchema = z.object({
   conversionType: z.enum(['hourlyToSalary', 'salaryToHourly']),
@@ -21,7 +29,8 @@ type FormData = z.infer<typeof formSchema>;
 
 export default function HourlyToSalaryConverter() {
   const [result, setResult] = useState<string | null>(null);
-  const { control, watch } = useForm<FormData>({
+  const [isCalculated, setIsCalculated] = useState(false);
+  const { control, watch, handleSubmit } = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       conversionType: 'hourlyToSalary',
@@ -32,9 +41,9 @@ export default function HourlyToSalaryConverter() {
   });
 
   const formData = watch();
-
-  useEffect(() => {
-    const { conversionType, hourlyRate, hoursPerWeek, annualSalary } = formData;
+  
+  const calculateConversion = (data: FormData) => {
+    const { conversionType, hourlyRate, hoursPerWeek, annualSalary } = data;
     if (conversionType === 'hourlyToSalary') {
       const calculatedSalary = hourlyRate * hoursPerWeek * 52;
       setResult(`Annual Salary: ${formatCurrency(calculatedSalary)}`);
@@ -42,12 +51,50 @@ export default function HourlyToSalaryConverter() {
       const calculatedHourlyRate = annualSalary / 52 / hoursPerWeek;
       setResult(`Hourly Rate: ${formatCurrency(calculatedHourlyRate)}`);
     }
-  }, [formData]);
+    setIsCalculated(true);
+  };
+
+  const handleExport = (format: 'txt' | 'csv') => {
+    if (!result) return;
+    
+    let content = '';
+    const filename = `hourly-salary-conversion.${format}`;
+    const { conversionType, hourlyRate, hoursPerWeek, annualSalary } = formData;
+
+    if (format === 'txt') {
+      content = `Hourly/Salary Conversion\n\nInputs:\n- Conversion Type: ${conversionType}\n`;
+      if (conversionType === 'hourlyToSalary') {
+        content += `- Hourly Rate: ${formatCurrency(hourlyRate)}\n`;
+      } else {
+        content += `- Annual Salary: ${formatCurrency(annualSalary)}\n`;
+      }
+      content += `- Hours Per Week: ${hoursPerWeek}\n\nResult:\n- ${result}`;
+
+    } else {
+      content = `Conversion Type,Input Rate/Salary,Hours Per Week,Result\n`;
+      if(conversionType === 'hourlyToSalary') {
+        content += `Hourly to Salary,${hourlyRate},${hoursPerWeek},"${result}"`;
+      } else {
+        content += `Salary to Hourly,${annualSalary},${hoursPerWeek},"${result}"`;
+      }
+    }
+
+    const blob = new Blob([content], { type: `text/${format}` });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
 
   const formatCurrency = (value: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value);
 
   return (
-    <form onSubmit={(e) => e.preventDefault()} className="grid md:grid-cols-2 gap-8">
+    <form onSubmit={handleSubmit(calculateConversion)} className="grid md:grid-cols-2 gap-8">
       {/* Inputs Column */}
       <div className="space-y-4">
         <h3 className="text-xl font-semibold">Conversion Type</h3>
@@ -69,12 +116,27 @@ export default function HourlyToSalaryConverter() {
                  <div><Label>Hours Per Week</Label><Controller name="hoursPerWeek" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} /></div>
             </div>
         )}
+
+        <div className="flex gap-2">
+            <Button type="submit" className="flex-1">Calculate</Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" disabled={!isCalculated}>
+                  <Download className="mr-2 h-4 w-4" /> Export
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem onClick={() => handleExport('txt')}>Download as .txt</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleExport('csv')}>Download as .csv</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+        </div>
       </div>
 
       {/* Results Column */}
       <div className="space-y-4">
         <h3 className="text-xl font-semibold">Equivalent Rate</h3>
-        {result ? (
+        {isCalculated && result ? (
             <Card>
                 <CardContent className="p-6 text-center">
                     <p className="text-2xl font-bold">{result}</p>

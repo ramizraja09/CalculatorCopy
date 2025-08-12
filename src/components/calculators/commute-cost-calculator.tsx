@@ -9,6 +9,13 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
+import { Download } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 const formSchema = z.object({
   distance: z.number().min(0.1, "Distance must be positive"),
@@ -21,6 +28,7 @@ type FormData = z.infer<typeof formSchema>;
 
 export default function CommuteCostCalculator() {
   const [results, setResults] = useState<any>(null);
+  const [formData, setFormData] = useState<FormData | null>(null);
 
   const { control, handleSubmit } = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -46,9 +54,34 @@ export default function CommuteCostCalculator() {
       monthly: weeklyCost * 4.345, // Average weeks in a month
       yearly: weeklyCost * 52,
     });
+    setFormData(data);
   };
   
   const formatCurrency = (value: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value);
+
+  const handleExport = (format: 'txt' | 'csv') => {
+    if (!results || !formData) return;
+    
+    let content = '';
+    const filename = `commute-cost-calculation.${format}`;
+    const { distance, daysPerWeek, fuelEfficiency, fuelPrice } = formData;
+
+    if (format === 'txt') {
+      content = `Commute Cost Calculation\n\nInputs:\n- One-Way Distance: ${distance} miles\n- Commuting Days Per Week: ${daysPerWeek}\n- Fuel Efficiency: ${fuelEfficiency} MPG\n- Fuel Price: ${formatCurrency(fuelPrice)} per gallon\n\nResults:\n- Daily Cost: ${formatCurrency(results.daily)}\n- Weekly Cost: ${formatCurrency(results.weekly)}\n- Monthly Cost: ${formatCurrency(results.monthly)}\n- Yearly Cost: ${formatCurrency(results.yearly)}`;
+    } else {
+       content = `Category,Value\nOne-Way Distance (miles),${distance}\nDays Per Week,${daysPerWeek}\nFuel Efficiency (MPG),${fuelEfficiency}\nFuel Price ($),${fuelPrice}\nDaily Cost ($),${results.daily.toFixed(2)}\nWeekly Cost ($),${results.weekly.toFixed(2)}\nMonthly Cost ($),${results.monthly.toFixed(2)}\nYearly Cost ($),${results.yearly.toFixed(2)}`;
+    }
+
+    const blob = new Blob([content], { type: `text/${format}` });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
 
   return (
     <form onSubmit={handleSubmit(calculateCost)} className="grid md:grid-cols-2 gap-8">
@@ -60,7 +93,20 @@ export default function CommuteCostCalculator() {
         <h3 className="text-xl font-semibold pt-4">Vehicle & Fuel</h3>
         <div><Label>Vehicle Fuel Efficiency (MPG)</Label><Controller name="fuelEfficiency" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} /></div>
         <div><Label>Price Per Gallon ($)</Label><Controller name="fuelPrice" control={control} render={({ field }) => <Input type="number" step="0.01" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} /></div>
-        <Button type="submit" className="w-full">Calculate Commute Cost</Button>
+        <div className="flex gap-2">
+            <Button type="submit" className="flex-1">Calculate Commute Cost</Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" disabled={!results}>
+                  <Download className="mr-2 h-4 w-4" /> Export
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem onClick={() => handleExport('txt')}>Download as .txt</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleExport('csv')}>Download as .csv</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+        </div>
       </div>
 
       {/* Results Column */}

@@ -10,7 +10,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import { Info } from 'lucide-react';
+import { Info, Download } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 const formSchema = z.object({
   // Salaried Job
@@ -20,7 +26,7 @@ const formSchema = z.object({
 
   // Freelance
   freelanceRate: z.number().min(1, "Hourly rate is required"),
-  billableHoursPerWeek: z.number().min(1).max(60),
+  billableHoursPerWeek: z.number().min(1).max(100),
   businessExpenses: z.number().min(0),
   selfEmploymentTaxRate: z.number().min(0).max(100).default(15.3),
 });
@@ -29,6 +35,7 @@ type FormData = z.infer<typeof formSchema>;
 
 export default function ShouldIGoFreelanceCalculator() {
   const [results, setResults] = useState<any>(null);
+  const [formData, setFormData] = useState<FormData | null>(null);
 
   const { control, handleSubmit } = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -61,6 +68,37 @@ export default function ShouldIGoFreelanceCalculator() {
       netFreelanceIncome,
       difference,
     });
+    setFormData(data);
+  };
+  
+  const handleExport = (format: 'txt' | 'csv') => {
+    if (!results || !formData) return;
+    
+    let content = '';
+    const filename = `freelance-vs-salary.${format}`;
+    const { currentSalary, employer401kMatch, healthInsuranceCost, freelanceRate, billableHoursPerWeek, businessExpenses } = formData;
+
+    if (format === 'txt') {
+      content = `Freelance vs. Salary Comparison\n\n`;
+      content += `Salaried Inputs:\n- Gross Salary: ${formatCurrency(currentSalary)}\n- 401k Match: ${formatCurrency(employer401kMatch)}\n\n`;
+      content += `Freelance Inputs:\n- Hourly Rate: ${formatCurrency(freelanceRate)}\n- Billable Hours/Week: ${billableHoursPerWeek}\n- Business Expenses: ${formatCurrency(businessExpenses)}\n- Health Insurance Cost: ${formatCurrency(healthInsuranceCost)}\n\n`;
+      content += `Results:\n- Total Salaried Compensation: ${formatCurrency(results.totalSalaryComp)}\n- Net Freelance Income: ${formatCurrency(results.netFreelanceIncome)}\n- Difference: ${formatCurrency(results.difference)}`;
+    } else {
+       content = `Category,Value\n`;
+       content += `Salaried - Gross Salary,${currentSalary}\nSalaried - 401k Match,${employer401kMatch}\n`;
+       content += `Freelance - Hourly Rate,${freelanceRate}\nFreelance - Billable Hours/Week,${billableHoursPerWeek}\nFreelance - Business Expenses,${businessExpenses}\nFreelance - Health Insurance,${healthInsuranceCost}\n`;
+       content += `\nResult - Total Salaried Comp,${results.totalSalaryComp.toFixed(2)}\nResult - Net Freelance Income,${results.netFreelanceIncome.toFixed(2)}\nResult - Difference,${results.difference.toFixed(2)}`;
+    }
+
+    const blob = new Blob([content], { type: `text/${format}` });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   };
 
   return (
@@ -83,7 +121,20 @@ export default function ShouldIGoFreelanceCalculator() {
                 <div><Label>Annual Health Insurance Cost</Label><Controller name="healthInsuranceCost" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} /></div>
             </CardContent>
         </Card>
-        <Button type="submit" className="w-full">Compare</Button>
+        <div className="flex gap-2">
+            <Button type="submit" className="flex-1">Compare</Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" disabled={!results}>
+                  <Download className="mr-2 h-4 w-4" /> Export
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem onClick={() => handleExport('txt')}>Download as .txt</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleExport('csv')}>Download as .csv</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+        </div>
       </div>
       {/* Results */}
       <div className="space-y-4">

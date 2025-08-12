@@ -1,12 +1,19 @@
 
 "use client";
 
-import { useForm, useFieldArray, Controller } from 'react-hook-form';
+import { useForm, useFieldArray, Controller, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { Download } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 const offerSchema = z.object({
   name: z.string().nonempty(),
@@ -32,11 +39,45 @@ export default function JobOfferComparisonCalculator() {
     },
   });
   const { fields } = useFieldArray({ control, name: "offers" });
+  const formData = useWatch({ control });
   
   const formatCurrency = (value: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value);
 
+  const handleExport = (format: 'txt' | 'csv') => {
+    if (!formData || !formData.offers) return;
+    
+    let content = '';
+    const filename = `job-offer-comparison.${format}`;
+
+    if (format === 'txt') {
+      content = `Job Offer Comparison\n\n`;
+      formData.offers.forEach(offer => {
+        content += `Offer: ${offer.name}\n`;
+        content += `- Salary: ${formatCurrency(offer.salary)}\n`;
+        content += `- Bonus: ${formatCurrency(offer.bonus)}\n`;
+        content += `- Monthly Healthcare Cost: ${formatCurrency(offer.healthcare)}\n`;
+        content += `- PTO Days: ${offer.ptoDays}\n\n`;
+      });
+    } else {
+      content = 'Offer Name,Salary,Bonus,Monthly Healthcare Cost,PTO Days\n';
+      formData.offers.forEach(offer => {
+        content += `"${offer.name}",${offer.salary},${offer.bonus},${offer.healthcare},${offer.ptoDays}\n`;
+      });
+    }
+
+    const blob = new Blob([content], { type: `text/${format}` });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
   return (
-    <form className="space-y-4">
+    <div className="space-y-4">
       <div className="grid md:grid-cols-2 gap-8">
         {fields.map((field, index) => (
           <Card key={field.id}>
@@ -54,6 +95,19 @@ export default function JobOfferComparisonCalculator() {
           </Card>
         ))}
       </div>
-    </form>
+      <div className="flex justify-center">
+        <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+            <Button variant="outline">
+                <Download className="mr-2 h-4 w-4" /> Export Comparison
+            </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+            <DropdownMenuItem onClick={() => handleExport('txt')}>Download as .txt</DropdownMenuItem>
+            <DropdownMenuItem onClick={() => handleExport('csv')}>Download as .csv</DropdownMenuItem>
+            </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+    </div>
   );
 }
