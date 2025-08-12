@@ -10,6 +10,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { Download } from 'lucide-react';
 
 const formSchema = z.object({
   ft1: z.number().int().min(0),
@@ -22,6 +29,8 @@ type FormData = z.infer<typeof formSchema>;
 
 export default function FeetAndInchesCalculator() {
   const [result, setResult] = useState<string | null>(null);
+  const [formData, setFormData] = useState<FormData | null>(null);
+
   const { control, handleSubmit } = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: { ft1: 5, in1: 8, op: 'add', ft2: 3, in2: 6 },
@@ -36,7 +45,34 @@ export default function FeetAndInchesCalculator() {
     const inches = Math.abs(totalInches) % 12;
     
     setResult(`${totalInches < 0 ? '-' : ''}${feet}' ${inches.toFixed(2)}"`);
+    setFormData(data);
   };
+  
+  const handleExport = (format: 'txt' | 'csv') => {
+    if (!result || !formData) return;
+    
+    let content = '';
+    const filename = `feet-inches-calculation.${format}`;
+    const { ft1, in1, op, ft2, in2 } = formData;
+    const expression = `${ft1}'${in1}" ${op === 'add' ? '+' : '-'} ${ft2}'${in2}"`;
+
+    if (format === 'txt') {
+      content = `Feet and Inches Calculation\n\nExpression: ${expression}\n\nResult: ${result}`;
+    } else {
+       content = `Expression,Result\n"${expression}","${result}"`;
+    }
+
+    const blob = new Blob([content], { type: `text/${format}` });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
 
   return (
     <form onSubmit={handleSubmit(calculate)} className="grid md:grid-cols-1 gap-4">
@@ -59,7 +95,20 @@ export default function FeetAndInchesCalculator() {
             <div><Label className="text-xs">Inches</Label><Controller name="in2" control={control} render={({ field }) => <Input type="number" step="any" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} /></div>
         </div>
       </div>
-      <Button type="submit" className="w-full">Calculate</Button>
+       <div className="flex justify-center gap-2">
+        <Button type="submit" className="w-full max-w-[150px]">Calculate</Button>
+         <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" disabled={!result} className="w-full max-w-[150px]">
+                  <Download className="mr-2 h-4 w-4" /> Export
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem onClick={() => handleExport('txt')}>Download as .txt</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleExport('csv')}>Download as .csv</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+       </div>
       {result && <Card><CardContent className="p-6 text-center"><p className="text-4xl font-bold">{result}</p></CardContent></Card>}
     </form>
   );
