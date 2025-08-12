@@ -1,16 +1,16 @@
 
-
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import type { Calculator } from '@/lib/calculators';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
 import FavoriteButton from '@/components/favorite-button';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
-import { ArrowLeft, Share2 } from 'lucide-react';
+import { ArrowLeft, Copy } from 'lucide-react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Button } from '@/components/ui/button';
+import { useToast } from "@/hooks/use-toast"
 import BmiWeightLossCalculator from '@/components/calculators/bmi-weight-loss-calculator';
 import MortgageCalculator from '@/components/calculators/mortgage-calculator';
 import LoanCalculator from '@/components/calculators/loan-calculator';
@@ -312,6 +312,11 @@ const calculatorComponents: { [key: string]: React.ComponentType<any> } = {
   'weight-watchers-points-calculator': WeightWatchersPointsCalculator,
   'overtime-pay-calculator': OvertimePayCalculator,
   'interview-prep-cost-calculator': InterviewPrepCostCalculator,
+  'protein-intake-calculator': ProteinIntakeCalculator,
+  'student-loan-calculator': StudentLoanCalculator,
+  'pension-calculator': PensionCalculator,
+  'mortgage-calculator-uk': MortgageCalculatorUK,
+  'p-value-calculator': PValueCalculator,
 };
 
 const PageSkeleton = ({ calculator }: { calculator: Omit<Calculator, 'icon'> }) => {
@@ -334,7 +339,7 @@ const PageSkeleton = ({ calculator }: { calculator: Omit<Calculator, 'icon'> }) 
                      <div className="flex items-center gap-2">
                         <FavoriteButton slug={calculator.slug} />
                         <Button variant="outline" size="icon" aria-label="Share">
-                            <Share2 className="h-5 w-5" />
+                            <Copy className="h-5 w-5" />
                         </Button>
                     </div>
                 </div>
@@ -357,6 +362,8 @@ const PageSkeleton = ({ calculator }: { calculator: Omit<Calculator, 'icon'> }) 
 
 function CalculatorPageContent({ calculator }: CalculatorClientPageProps) {
   const [lastUpdated, setLastUpdated] = useState<string | null>(null);
+  const { toast } = useToast();
+  const formRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     // This will only run on the client, after hydration
@@ -364,6 +371,44 @@ function CalculatorPageContent({ calculator }: CalculatorClientPageProps) {
   }, []);
   
   const CalculatorComponent = calculatorComponents[calculator.slug];
+
+  const handleCopyToClipboard = () => {
+    if (!formRef.current) return;
+
+    const inputs = formRef.current.querySelectorAll('input, select, textarea');
+    let report = `Calculator: ${calculator.name}\n\n--- Inputs ---\n`;
+    
+    inputs.forEach(input => {
+      const label = document.querySelector(`label[for="${input.id}"]`);
+      if(label && input.id) {
+          const key = label.textContent || input.id;
+          let value = (input as HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement).value;
+          if (input.tagName.toLowerCase() === 'select') {
+              const select = input as HTMLSelectElement;
+              value = select.options[select.selectedIndex].text;
+          }
+          if (value) {
+            report += `${key}: ${value}\n`;
+          }
+      }
+    });
+
+    const resultsNode = formRef.current.nextElementSibling;
+    if (resultsNode) {
+        report += "\n--- Results ---\n";
+        const textContent = (resultsNode as HTMLElement).innerText;
+        // Clean up the text content a bit
+        const cleanedText = textContent.replace(/^Results\s*/, '').replace(/\n+/g, '\n').trim();
+        report += cleanedText;
+    }
+    
+    navigator.clipboard.writeText(report);
+
+    toast({
+      title: "Copied to Clipboard",
+      description: "The calculator inputs and results have been copied.",
+    })
+  }
   
   return (
     <div className="container max-w-4xl mx-auto p-4 md:p-8 space-y-6">
@@ -384,15 +429,15 @@ function CalculatorPageContent({ calculator }: CalculatorClientPageProps) {
                 </div>
                 <div className="flex items-center gap-2">
                   <FavoriteButton slug={calculator.slug} />
-                  <Button variant="outline" size="icon" aria-label="Share">
-                    <Share2 className="h-5 w-5" />
+                  <Button variant="outline" size="icon" aria-label="Copy Results" onClick={handleCopyToClipboard}>
+                    <Copy className="h-5 w-5" />
                   </Button>
                 </div>
             </div>
             </CardHeader>
             <CardContent>
               {/* Main calculator UI */}
-              <div className="mt-6 border rounded-lg p-4 md:p-6">
+              <div ref={formRef} className="mt-6 border rounded-lg p-4 md:p-6">
                   {CalculatorComponent ? <CalculatorComponent /> : (
                      <div className="grid md:grid-cols-2 gap-8">
                       {/* Inputs */}
@@ -510,3 +555,5 @@ export default function CalculatorClientPage({ calculator }: CalculatorClientPag
   
   return <CalculatorPageContent calculator={calculator} />;
 }
+
+    
