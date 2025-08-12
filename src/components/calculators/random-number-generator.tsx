@@ -2,7 +2,7 @@
 
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -32,7 +32,11 @@ type FormData = z.infer<typeof formSchema>;
 export default function RandomNumberGenerator() {
   const [result, setResult] = useState<number | null>(null);
   const [formData, setFormData] = useState<FormData | null>(null);
+  const [isClient, setIsClient] = useState(false);
 
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   const { control, handleSubmit, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -102,7 +106,7 @@ export default function RandomNumberGenerator() {
       {/* Results */}
       <div className="space-y-4">
         <h3 className="text-xl font-semibold">Result</h3>
-        {result !== null ? (
+        {isClient && result !== null ? (
             <Card>
                 <CardContent className="p-6 text-center">
                     <p className="text-6xl font-bold">{result}</p>

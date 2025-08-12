@@ -10,6 +10,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const formSchema = z.object({
     distance: z.number().min(0),
@@ -104,7 +105,10 @@ export default function PaceCalculator() {
       <div className="space-y-4">
         <h3 className="text-xl font-semibold">Pace</h3>
         {!isClient ? (
-           <div className="flex items-center justify-center h-40 bg-muted/50 rounded-lg border border-dashed"><p>Enter distance and time to see your pace</p></div>
+           <div className="grid grid-cols-2 gap-4">
+              <Card><CardContent className="p-4 text-center"><Skeleton className="h-12 w-full" /></CardContent></Card>
+              <Card><CardContent className="p-4 text-center"><Skeleton className="h-12 w-full" /></CardContent></Card>
+           </div>
         ) : results ? (
             <div className="grid grid-cols-2 gap-4">
               <Card>

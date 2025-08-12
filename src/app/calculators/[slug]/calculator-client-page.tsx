@@ -7,7 +7,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter }
 import FavoriteButton from '@/components/favorite-button';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
-import { ArrowLeft, Share2 } from 'lucide-react';
+import { ArrowLeft, Copy } from 'lucide-react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Button } from '@/components/ui/button';
 import BmiWeightLossCalculator from '@/components/calculators/bmi-weight-loss-calculator';
@@ -341,14 +341,14 @@ export default function CalculatorClientPage({ calculator }: CalculatorClientPag
                 </div>
                 <div className="flex items-center gap-2">
                   <FavoriteButton slug={calculator.slug} />
-                  <Button variant="outline" size="icon" aria-label="Share">
-                    <Share2 className="h-5 w-5" />
+                  <Button variant="outline" size="icon" aria-label="Copy">
+                    <Copy className="h-5 w-5" />
                   </Button>
                 </div>
             </div>
             </CardHeader>
             <CardContent>
-              <div className="mt-6 border rounded-lg p-4 md:p-6">
+              <div className="mt-6 border rounded-lg p-4 md:p-6" id="calculator-container">
                 {CalculatorComponent ? <CalculatorComponent /> : (
                   <div className="grid md:grid-cols-2 gap-8">
                     <div className="space-y-4">
@@ -445,7 +445,7 @@ export default function CalculatorClientPage({ calculator }: CalculatorClientPag
 
             </CardContent>
             <CardFooter className="text-xs text-muted-foreground justify-end">
-              {lastUpdated ? <p>Last Updated: {lastUpdated} | Formula v1.0</p> : <p>Loading date...</p>}
+              {lastUpdated ? <p>Last Updated: {lastUpdated} | Formula v1.0</p> : <p>Loading...</p>}
             </CardFooter>
         </Card>
     </div>
