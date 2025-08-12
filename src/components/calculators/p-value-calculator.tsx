@@ -55,7 +55,7 @@ export default function PValueCalculator() {
   };
   
   const handleExport = (format: 'txt' | 'csv') => {
-    if (!result || !formData) return;
+    if (result === null || !formData) return;
     const { zScore, tail } = formData;
     
     let content = '';
