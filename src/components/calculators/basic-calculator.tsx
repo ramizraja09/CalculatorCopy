@@ -5,7 +5,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Mic, Copy, Trash2, History } from 'lucide-react';
+import { Mic, Copy, Trash2, History, Download } from 'lucide-react';
 import { evaluate } from 'mathjs';
 
 // Type for the Web Speech Recognition API
@@ -103,6 +103,19 @@ export default function BasicCalculator() {
     navigator.clipboard.writeText(display);
   };
 
+  const exportHistory = () => {
+    const historyText = history.join('\n');
+    const blob = new Blob([historyText], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'calculator-history.txt';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
   const handleVoiceInput = () => {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SpeechRecognition) {
@@ -181,9 +194,14 @@ export default function BasicCalculator() {
        <div className="space-y-4">
             <div className="flex justify-between items-center">
                 <h3 className="text-xl font-semibold flex items-center gap-2"><History/> History</h3>
-                <Button variant="ghost" size="icon" onClick={() => setHistory([])} aria-label="Clear History">
-                    <Trash2 className="h-5 w-5"/>
-                </Button>
+                <div className="flex items-center gap-2">
+                  <Button variant="ghost" size="icon" onClick={exportHistory} aria-label="Export History" disabled={history.length === 0}>
+                      <Download className="h-5 w-5"/>
+                  </Button>
+                  <Button variant="ghost" size="icon" onClick={() => setHistory([])} aria-label="Clear History">
+                      <Trash2 className="h-5 w-5"/>
+                  </Button>
+                </div>
             </div>
             <Card>
                 <CardContent className="p-2">
