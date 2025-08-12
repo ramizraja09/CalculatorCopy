@@ -1,6 +1,6 @@
 
 import type { ComponentType } from 'react';
-import { PiggyBank, Car, Utensils, HeartPulse, Percent, Home, BrainCircuit, GraduationCap, TrendingUp, Footprints, Scale, Calculator, Calendar, Repeat, Atom, FlaskConical, Beaker, Ruler, Clock, Landmark, FileText, Wallet, Receipt, CreditCard, Recycle, Banknote, CandlestickChart, Briefcase, DraftingCompass, Cigarette, Droplets, Sun, Shirt, Building, Shovel, Box, Weight, Map, BookOpen, Beer, Dna, Leaf, Zap, Sigma, Coins, Award, Baby, UserCheck, Plane, ShoppingCart, TestTube2, Wallpaper, Activity, Moon, Soup, ShieldCheck, Handshake, Target, PaintRoller, Ratio, FunctionSquare, Pilcrow, Infinity, Equal, GitCompareArrows, BookText, AreaChart, CircuitBoard, HardDrive, Network, Gauge, Move, Square, Telescope, Text, Asterisk, WalletCards, Hourglass, BarChart3, TrendingDown, Syringe, Wheat, Sparkles, User, Users, Stethoscope, Wifi, Factory } from 'lucide-react';
+import { PiggyBank, Car, Utensils, HeartPulse, Percent, Home, BrainCircuit, GraduationCap, TrendingUp, Footprints, Scale, Calculator, Calendar, Repeat, Atom, FlaskConical, Beaker, Ruler, Clock, Landmark, FileText, Wallet, Receipt, CreditCard, Recycle, Banknote, CandlestickChart, Briefcase, DraftingCompass, Cigarette, Droplets, Sun, Shirt, Building, Shovel, Box, Weight, Map, BookOpen, Beer, Dna, Leaf, Zap, Sigma, Coins, Award, Baby, UserCheck, Plane, ShoppingCart, TestTube2, Wallpaper, Activity, Moon, Soup, ShieldCheck, Handshake, Target, PaintRoller, Ratio, FunctionSquare, Pilcrow, Infinity, Equal, GitCompareArrows, BookText, AreaChart, CircuitBoard, HardDrive, Network, Gauge, Move, Square, Telescope, Text, Asterisk, WalletCards, Hourglass, BarChart3, TrendingDown, Syringe, Wheat, Sparkles, User, Users, Stethoscope, Wifi, Factory, PartyPopper, Dog } from 'lucide-react';
 
 export type Calculator = {
   name: string;
@@ -914,6 +914,34 @@ export const calculators: Calculator[] = [
     description: 'Estimate your annual carbon footprint from travel, energy, and diet.',
     category: 'Everyday Utilities',
     icon: Factory,
+  },
+  {
+    name: 'Subscription Savings Calculator',
+    slug: 'subscription-savings-calculator',
+    description: 'Determine if a subscription is cheaper than paying per use.',
+    category: 'Everyday Utilities',
+    icon: WalletCards,
+  },
+  {
+    name: 'Pet Cost Calculator',
+    slug: 'pet-cost-calculator',
+    description: 'Estimate the lifetime cost of owning a pet.',
+    category: 'Everyday Utilities',
+    icon: Dog,
+  },
+  {
+    name: 'Wedding Budget Calculator',
+    slug: 'wedding-budget-calculator',
+    description: 'Plan and track expenses for your wedding to stay on budget.',
+    category: 'Everyday Utilities',
+    icon: PartyPopper,
+  },
+  {
+    name: 'Childcare Cost Calculator',
+    slug: 'childcare-cost-calculator',
+    description: 'Estimate the total cost of childcare over multiple years.',
+    category: 'Everyday Utilities',
+    icon: Baby,
   },
   // Unit Converters
   {

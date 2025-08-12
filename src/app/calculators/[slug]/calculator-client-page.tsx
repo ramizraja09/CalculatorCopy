@@ -162,6 +162,10 @@ import BreakEvenPointCalculator from '@/components/calculators/break-even-point-
 import BusinessProfitMarginCalculator from '@/components/calculators/business-profit-margin-calculator';
 import StartupRunwayCalculator from '@/components/calculators/startup-runway-calculator';
 import CarbonFootprintCalculator from '@/components/calculators/carbon-footprint-calculator';
+import SubscriptionSavingsCalculator from '@/components/calculators/subscription-savings-calculator';
+import PetCostCalculator from '@/components/calculators/pet-cost-calculator';
+import WeddingBudgetCalculator from '@/components/calculators/wedding-budget-calculator';
+import ChildcareCostCalculator from '@/components/calculators/childcare-cost-calculator';
 
 
 type CalculatorClientPageProps = {
@@ -321,6 +325,10 @@ const calculatorComponents: { [key: string]: React.ComponentType<any> } = {
   'business-profit-margin-calculator': BusinessProfitMarginCalculator,
   'startup-runway-calculator': StartupRunwayCalculator,
   'carbon-footprint-calculator': CarbonFootprintCalculator,
+  'subscription-savings-calculator': SubscriptionSavingsCalculator,
+  'pet-cost-calculator': PetCostCalculator,
+  'wedding-budget-calculator': WeddingBudgetCalculator,
+  'childcare-cost-calculator': ChildcareCostCalculator,
 };
 
 export default function CalculatorClientPage({ calculator }: CalculatorClientPageProps) {
