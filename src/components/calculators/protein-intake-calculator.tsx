@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState } from 'react';
@@ -11,6 +10,13 @@ import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { Download } from 'lucide-react';
 
 const formSchema = z.object({
   weight: z.number().min(1),
@@ -31,6 +37,8 @@ const proteinFactors = {
 
 export default function ProteinIntakeCalculator() {
   const [results, setResults] = useState<any>(null);
+  const [formData, setFormData] = useState<FormData | null>(null);
+
   const { control, handleSubmit } = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: { weight: 160, unit: 'lbs', activityLevel: 'moderate', goal: 'maintenance' },
@@ -44,7 +52,33 @@ export default function ProteinIntakeCalculator() {
     setResults({
       proteinGrams,
     });
+    setFormData(data);
   };
+  
+  const handleExport = (format: 'txt' | 'csv') => {
+    if (!results || !formData) return;
+    
+    let content = '';
+    const filename = `protein-intake-calculation.${format}`;
+    const { weight, unit, activityLevel, goal } = formData;
+
+    if (format === 'txt') {
+      content = `Protein Intake Calculation\n\nInputs:\n- Weight: ${weight} ${unit}\n- Activity Level: ${activityLevel}\n- Goal: ${goal}\n\nResult:\n- Recommended Protein Intake: ${results.proteinGrams.toFixed(0)}g`;
+    } else {
+       content = `Weight,Unit,Activity Level,Goal,Protein Intake(g)\n${weight},${unit},${activityLevel},${goal},${results.proteinGrams.toFixed(0)}`;
+    }
+
+    const blob = new Blob([content], { type: `text/${format}` });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
 
   return (
     <form onSubmit={handleSubmit(calculateProtein)} className="grid md:grid-cols-2 gap-8">
@@ -91,7 +125,20 @@ export default function ProteinIntakeCalculator() {
             </Select>
           )} />
         </div>
-        <Button type="submit" className="w-full">Calculate Protein</Button>
+        <div className="flex gap-2">
+            <Button type="submit" className="flex-1">Calculate Protein</Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" disabled={!results}>
+                  <Download className="mr-2 h-4 w-4" /> Export
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem onClick={() => handleExport('txt')}>Download as .txt</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleExport('csv')}>Download as .csv</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+        </div>
       </div>
 
       {/* Results */}

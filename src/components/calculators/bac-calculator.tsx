@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState } from 'react';
@@ -10,6 +9,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { Download } from 'lucide-react';
 
 const formSchema = z.object({
   gender: z.enum(['male', 'female']),
@@ -22,6 +28,8 @@ type FormData = z.infer<typeof formSchema>;
 
 export default function BacCalculator() {
   const [results, setResults] = useState<any>(null);
+  const [formData, setFormData] = useState<FormData | null>(null);
+
   const { control, handleSubmit } = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: { gender: 'male', weightLbs: 160, drinks: 2, hours: 2 },
@@ -32,6 +40,31 @@ export default function BacCalculator() {
     const genderConstant = gender === 'male' ? 0.68 : 0.55;
     const bac = ((drinks * 14 * 1.055) / (weightLbs * 453.592 * genderConstant)) * 100 - (hours * 0.015);
     setResults({ bac: Math.max(0, bac) });
+    setFormData(data);
+  };
+  
+  const handleExport = (format: 'txt' | 'csv') => {
+    if (!results || !formData) return;
+    
+    let content = '';
+    const filename = `bac-calculation.${format}`;
+    const { gender, weightLbs, drinks, hours } = formData;
+
+    if (format === 'txt') {
+      content = `BAC Calculation\n\nInputs:\n- Gender: ${gender}\n- Weight: ${weightLbs} lbs\n- Drinks: ${drinks}\n- Hours Since First Drink: ${hours}\n\nResult:\n- Estimated BAC: ${results.bac.toFixed(3)}%`;
+    } else {
+       content = `Gender,Weight (lbs),Drinks,Hours,Estimated BAC\n${gender},${weightLbs},${drinks},${hours},${results.bac.toFixed(3)}`;
+    }
+
+    const blob = new Blob([content], { type: `text/${format}` });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   };
 
   return (
@@ -48,7 +81,20 @@ export default function BacCalculator() {
         <div><Label>Weight (lbs)</Label><Controller name="weightLbs" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} /></div>
         <div><Label>Number of Standard Drinks</Label><Controller name="drinks" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value) || 0)} />} /></div>
         <div><Label>Hours Since First Drink</Label><Controller name="hours" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} /></div>
-        <Button type="submit" className="w-full">Calculate BAC</Button>
+        <div className="flex gap-2">
+            <Button type="submit" className="flex-1">Calculate BAC</Button>
+             <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" disabled={!results}>
+                  <Download className="mr-2 h-4 w-4" /> Export
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem onClick={() => handleExport('txt')}>Download as .txt</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleExport('csv')}>Download as .csv</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+        </div>
       </div>
 
       {/* Results */}

@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState } from 'react';
@@ -10,6 +9,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { Download } from 'lucide-react';
 
 const formSchema = z.object({
   tdee: z.number().min(1, 'TDEE must be positive'),
@@ -26,6 +32,8 @@ const surplusCalories = {
 
 export default function HealthyWeightGainCalculator() {
   const [results, setResults] = useState<any>(null);
+  const [formData, setFormData] = useState<FormData | null>(null);
+
   const { control, handleSubmit, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: { tdee: 2500, goal: 'steady' },
@@ -39,6 +47,31 @@ export default function HealthyWeightGainCalculator() {
         targetCalories,
         surplus
     });
+    setFormData(data);
+  };
+  
+  const handleExport = (format: 'txt' | 'csv') => {
+    if (!results || !formData) return;
+    
+    let content = '';
+    const filename = `weight-gain-calculation.${format}`;
+    const { tdee, goal } = formData;
+
+    if (format === 'txt') {
+      content = `Healthy Weight Gain Calculation\n\nInputs:\n- TDEE: ${tdee} calories\n- Goal: ${goal}\n\nResult:\n- Target Daily Calories: ${Math.round(results.targetCalories)}\n- Calorie Surplus: ${Math.round(results.surplus)}`;
+    } else {
+       content = `TDEE,Goal,Target Calories,Surplus\n${tdee},${goal},${Math.round(results.targetCalories)},${Math.round(results.surplus)}`;
+    }
+
+    const blob = new Blob([content], { type: `text/${format}` });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   };
 
   return (
@@ -65,7 +98,20 @@ export default function HealthyWeightGainCalculator() {
             </Select>
           )} />
         </div>
-        <Button type="submit" className="w-full">Calculate Calorie Target</Button>
+        <div className="flex gap-2">
+            <Button type="submit" className="flex-1">Calculate Calorie Target</Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" disabled={!results}>
+                  <Download className="mr-2 h-4 w-4" /> Export
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem onClick={() => handleExport('txt')}>Download as .txt</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleExport('csv')}>Download as .csv</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+        </div>
       </div>
 
       {/* Results */}

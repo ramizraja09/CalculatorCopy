@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState } from 'react';
@@ -10,6 +9,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { Download } from 'lucide-react';
 
 const formSchema = z.object({
   calories: z.number().min(1, "Calories must be positive"),
@@ -26,6 +32,8 @@ const macroRatios = {
 
 export default function MacroCalculator() {
   const [results, setResults] = useState<any>(null);
+  const [formData, setFormData] = useState<FormData | null>(null);
+
   const { control, handleSubmit, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: { calories: 2000, goal: 'maintenance' },
@@ -40,7 +48,33 @@ export default function MacroCalculator() {
     const fatGrams = (calories * ratios.fat) / 9;
 
     setResults({ proteinGrams, carbGrams, fatGrams });
+    setFormData(data);
   };
+
+  const handleExport = (format: 'txt' | 'csv') => {
+    if (!results || !formData) return;
+    
+    let content = '';
+    const filename = `macros-calculation.${format}`;
+    const { calories, goal } = formData;
+
+    if (format === 'txt') {
+      content = `Macronutrient Calculation\n\nInputs:\n- Daily Calories: ${calories}\n- Goal: ${goal}\n\nResult:\n- Protein: ${Math.round(results.proteinGrams)}g\n- Carbs: ${Math.round(results.carbGrams)}g\n- Fat: ${Math.round(results.fatGrams)}g`;
+    } else {
+       content = `Calories,Goal,Protein(g),Carbs(g),Fat(g)\n${calories},${goal},${Math.round(results.proteinGrams)},${Math.round(results.carbGrams)},${Math.round(results.fatGrams)}`;
+    }
+
+    const blob = new Blob([content], { type: `text/${format}` });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
 
   return (
     <form onSubmit={handleSubmit(calculateMacros)} className="grid md:grid-cols-2 gap-8">
@@ -65,7 +99,20 @@ export default function MacroCalculator() {
             </Select>
           )} />
         </div>
-        <Button type="submit" className="w-full">Calculate Macros</Button>
+        <div className="flex gap-2">
+            <Button type="submit" className="flex-1">Calculate Macros</Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" disabled={!results}>
+                  <Download className="mr-2 h-4 w-4" /> Export
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem onClick={() => handleExport('txt')}>Download as .txt</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleExport('csv')}>Download as .csv</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+        </div>
       </div>
 
       {/* Results */}

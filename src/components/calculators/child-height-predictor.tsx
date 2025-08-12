@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState } from 'react';
@@ -10,6 +9,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { Download } from 'lucide-react';
 
 const formSchema = z.object({
   unit: z.enum(['imperial', 'metric']),
@@ -29,6 +35,8 @@ type FormData = z.infer<typeof formSchema>;
 
 export default function ChildHeightPredictor() {
   const [results, setResults] = useState<any>(null);
+  const [formData, setFormData] = useState<FormData | null>(null);
+
   const { control, handleSubmit, watch, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: { unit: 'imperial', gender: 'male', fatherHeightFt: 6, motherHeightFt: 5, motherHeightIn: 6 },
@@ -52,7 +60,40 @@ export default function ChildHeightPredictor() {
     const cm = (predictedInches * 2.54).toFixed(1);
     
     setResults({ ft, inch, cm });
+    setFormData(data);
   };
+  
+  const handleExport = (format: 'txt' | 'csv') => {
+    if (!results || !formData) return;
+    
+    let content = '';
+    const filename = `height-prediction.${format}`;
+    const { unit, gender, fatherHeightCm, motherHeightCm, fatherHeightFt, motherHeightFt, fatherHeightIn, motherHeightIn } = formData;
+
+    if (format === 'txt') {
+      content = `Child Height Prediction\n\nInputs:\n- Gender: ${gender}\n`;
+      if(unit === 'metric') {
+        content += `- Father's Height: ${fatherHeightCm} cm\n- Mother's Height: ${motherHeightCm} cm\n`;
+      } else {
+        content += `- Father's Height: ${fatherHeightFt} ft ${fatherHeightIn} in\n- Mother's Height: ${motherHeightFt} ft ${motherHeightIn} in\n`;
+      }
+      content += `\nResult:\n- Predicted Height: ${results.ft}' ${results.inch}" (${results.cm} cm)`;
+    } else {
+       content = `Gender,Father's Height,Mother's Height,Predicted Height (ft/in),Predicted Height (cm)\n`;
+       content += `${gender},"${unit === 'metric' ? `${fatherHeightCm}cm` : `${fatherHeightFt}'${fatherHeightIn}"`}","${unit === 'metric' ? `${motherHeightCm}cm` : `${motherHeightFt}'${motherHeightIn}"`},"${results.ft}' ${results.inch}""",${results.cm}`;
+    }
+
+    const blob = new Blob([content], { type: `text/${format}` });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
 
   return (
     <form onSubmit={handleSubmit(predictHeight)} className="grid md:grid-cols-2 gap-8">
@@ -89,7 +130,20 @@ export default function ChildHeightPredictor() {
             </>
         )}
         {errors.fatherHeightFt && <p className="text-destructive text-sm mt-1">{errors.fatherHeightFt.message}</p>}
-        <Button type="submit" className="w-full">Predict Height</Button>
+        <div className="flex gap-2">
+            <Button type="submit" className="flex-1">Predict Height</Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" disabled={!results}>
+                  <Download className="mr-2 h-4 w-4" /> Export
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem onClick={() => handleExport('txt')}>Download as .txt</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleExport('csv')}>Download as .csv</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+        </div>
       </div>
 
       {/* Results */}

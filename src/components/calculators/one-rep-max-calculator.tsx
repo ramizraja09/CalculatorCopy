@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState } from 'react';
@@ -9,6 +8,13 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { Download } from 'lucide-react';
 
 const formSchema = z.object({
   weight: z.number().min(1, "Weight must be positive"),
@@ -19,6 +25,8 @@ type FormData = z.infer<typeof formSchema>;
 
 export default function OneRepMaxCalculator() {
   const [results, setResults] = useState<any>(null);
+  const [formData, setFormData] = useState<FormData | null>(null);
+
   const { control, handleSubmit, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: { weight: 135, reps: 5 },
@@ -28,7 +36,33 @@ export default function OneRepMaxCalculator() {
     // Brzycki formula
     const oneRepMax = data.weight * (36 / (37 - data.reps));
     setResults({ oneRepMax });
+    setFormData(data);
   };
+
+  const handleExport = (format: 'txt' | 'csv') => {
+    if (!results || !formData) return;
+    
+    let content = '';
+    const filename = `1rm-calculation.${format}`;
+    const { weight, reps } = formData;
+
+    if (format === 'txt') {
+      content = `1RM Calculation\n\nInputs:\n- Weight Lifted: ${weight}\n- Reps: ${reps}\n\nResult:\n- Estimated 1RM: ${results.oneRepMax.toFixed(1)}`;
+    } else {
+       content = `Weight,Reps,Estimated 1RM\n${weight},${reps},${results.oneRepMax.toFixed(1)}`;
+    }
+
+    const blob = new Blob([content], { type: `text/${format}` });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
 
   return (
     <form onSubmit={handleSubmit(calculate1rm)} className="grid md:grid-cols-2 gap-8">
@@ -45,7 +79,20 @@ export default function OneRepMaxCalculator() {
           <Controller name="reps" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value) || 0)} />} />
           {errors.reps && <p className="text-destructive text-sm mt-1">{errors.reps.message}</p>}
         </div>
-        <Button type="submit" className="w-full">Calculate 1RM</Button>
+        <div className="flex gap-2">
+            <Button type="submit" className="flex-1">Calculate 1RM</Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" disabled={!results}>
+                  <Download className="mr-2 h-4 w-4" /> Export
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem onClick={() => handleExport('txt')}>Download as .txt</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleExport('csv')}>Download as .csv</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+        </div>
       </div>
 
       {/* Results */}

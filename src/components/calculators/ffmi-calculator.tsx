@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState } from 'react';
@@ -10,6 +9,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { Download } from 'lucide-react';
 
 const formSchema = z.object({
   unit: z.enum(['metric', 'imperial']),
@@ -29,6 +35,8 @@ type FormData = z.infer<typeof formSchema>;
 
 export default function FfmiCalculator() {
   const [results, setResults] = useState<any>(null);
+  const [formData, setFormData] = useState<FormData | null>(null);
+
   const { control, handleSubmit, watch, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: { unit: 'imperial', heightFt: 5, heightIn: 10, weightLbs: 180, bodyFat: 15 },
@@ -53,6 +61,39 @@ export default function FfmiCalculator() {
     const adjustedFfmi = ffmi + 6.1 * (1.8 - heightMeters);
 
     setResults({ ffmi, adjustedFfmi });
+    setFormData(data);
+  };
+  
+  const handleExport = (format: 'txt' | 'csv') => {
+    if (!results || !formData) return;
+    
+    let content = '';
+    const filename = `ffmi-calculation.${format}`;
+    const { unit, heightCm, weightKg, heightFt, heightIn, weightLbs, bodyFat } = formData;
+
+    if (format === 'txt') {
+      content = `FFMI Calculation\n\nInputs:\n`;
+      if(unit === 'metric') {
+        content += `- Height: ${heightCm} cm\n- Weight: ${weightKg} kg\n`;
+      } else {
+        content += `- Height: ${heightFt} ft ${heightIn} in\n- Weight: ${weightLbs} lbs\n`;
+      }
+      content += `- Body Fat: ${bodyFat}%\n`;
+      content += `\nResult:\n- FFMI: ${results.ffmi.toFixed(1)}\n- Adjusted FFMI: ${results.adjustedFfmi.toFixed(1)}`;
+    } else {
+       content = `Unit,Height(cm),Weight(kg),Height(ft),Height(in),Weight(lbs),Body Fat (%),FFMI,Adjusted FFMI\n`;
+       content += `${unit},${heightCm || ''},${weightKg || ''},${heightFt || ''},${heightIn || ''},${weightLbs || ''},${bodyFat},${results.ffmi.toFixed(1)},${results.adjustedFfmi.toFixed(1)}`;
+    }
+
+    const blob = new Blob([content], { type: `text/${format}` });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   };
 
   return (
@@ -85,7 +126,20 @@ export default function FfmiCalculator() {
             <Controller name="bodyFat" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
             {errors.bodyFat && <p className="text-destructive text-sm mt-1">{errors.bodyFat.message}</p>}
         </div>
-        <Button type="submit" className="w-full">Calculate FFMI</Button>
+        <div className="flex gap-2">
+            <Button type="submit" className="flex-1">Calculate FFMI</Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" disabled={!results}>
+                  <Download className="mr-2 h-4 w-4" /> Export
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem onClick={() => handleExport('txt')}>Download as .txt</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleExport('csv')}>Download as .csv</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+        </div>
       </div>
 
       {/* Results */}

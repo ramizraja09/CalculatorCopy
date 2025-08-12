@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState } from 'react';
@@ -10,6 +9,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { Download } from 'lucide-react';
 
 const formSchema = z.object({
   gender: z.enum(['male', 'female']),
@@ -26,6 +32,8 @@ const femaleCoeffs = { a: 594.31747775582, b: -27.23842536447, c: 0.82112226871,
 
 export default function WilksScoreCalculator() {
   const [results, setResults] = useState<any>(null);
+  const [formData, setFormData] = useState<FormData | null>(null);
+
   const { control, handleSubmit } = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: { gender: 'male', unit: 'lbs', bodyWeight: 181, totalLifted: 1000 },
@@ -42,6 +50,31 @@ export default function WilksScoreCalculator() {
     const wilksCoeff = 500 / (coeffs.a + coeffs.b * x + coeffs.c * x**2 + coeffs.d * x**3 + coeffs.e * x**4 + coeffs.f * x**5);
     const wilksScore = totalLifted * wilksCoeff;
     setResults({ wilksScore });
+    setFormData(data);
+  };
+  
+  const handleExport = (format: 'txt' | 'csv') => {
+    if (!results || !formData) return;
+    
+    let content = '';
+    const filename = `wilks-score-calculation.${format}`;
+    const { gender, bodyWeight, totalLifted, unit } = formData;
+
+    if (format === 'txt') {
+      content = `Wilks Score Calculation\n\nInputs:\n- Gender: ${gender}\n- Body Weight: ${bodyWeight} ${unit}\n- Total Lifted: ${totalLifted} ${unit}\n\nResult:\n- Wilks Score: ${results.wilksScore.toFixed(2)}`;
+    } else {
+       content = `Gender,Body Weight,Unit,Total Lifted,Wilks Score\n${gender},${bodyWeight},${unit},${totalLifted},${results.wilksScore.toFixed(2)}`;
+    }
+
+    const blob = new Blob([content], { type: `text/${format}` });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   };
 
   return (
@@ -63,7 +96,20 @@ export default function WilksScoreCalculator() {
         )}/>
         <div><Label>Body Weight</Label><Controller name="bodyWeight" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} /></div>
         <div><Label>Total Weight Lifted (Squat+Bench+Deadlift)</Label><Controller name="totalLifted" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} /></div>
-        <Button type="submit" className="w-full">Calculate Wilks Score</Button>
+        <div className="flex gap-2">
+            <Button type="submit" className="flex-1">Calculate Wilks Score</Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" disabled={!results}>
+                  <Download className="mr-2 h-4 w-4" /> Export
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem onClick={() => handleExport('txt')}>Download as .txt</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleExport('csv')}>Download as .csv</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+        </div>
       </div>
       {/* Results */}
       <div className="space-y-4">

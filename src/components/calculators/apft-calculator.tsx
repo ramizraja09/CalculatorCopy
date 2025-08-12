@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState } from 'react';
@@ -10,6 +9,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { Download } from 'lucide-react';
 
 const formSchema = z.object({
   gender: z.enum(['male', 'female']),
@@ -32,6 +38,8 @@ const getRunScore = (totalSeconds: number) => {
 
 export default function ApftCalculator() {
   const [results, setResults] = useState<any>(null);
+  const [formData, setFormData] = useState<FormData | null>(null);
+
   const { control, handleSubmit } = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: { gender: 'male', age: 25, pushups: 50, situps: 60, runMinutes: 15, runSeconds: 30 },
@@ -45,7 +53,33 @@ export default function ApftCalculator() {
     const totalScore = pushupScore + situpScore + runScore;
     const passed = pushupScore >= 60 && situpScore >= 60 && runScore >= 60;
     setResults({ pushupScore, situpScore, runScore, totalScore, passed });
+    setFormData(data);
   };
+  
+  const handleExport = (format: 'txt' | 'csv') => {
+    if (!results || !formData) return;
+    
+    let content = '';
+    const filename = `apft-score-calculation.${format}`;
+    const { gender, age, pushups, situps, runMinutes, runSeconds } = formData;
+
+    if (format === 'txt') {
+      content = `APFT Score Calculation\n\nInputs:\n- Gender: ${gender}\n- Age: ${age}\n- Push-ups: ${pushups}\n- Sit-ups: ${situps}\n- 2-Mile Run: ${runMinutes}m ${runSeconds}s\n\nResult:\n- Total Score: ${results.totalScore}\n- Status: ${results.passed ? 'Passed' : 'Failed'}`;
+    } else {
+       content = `Gender,Age,Push-ups,Sit-ups,Run Time,Total Score,Status\n${gender},${age},${pushups},${situps},"${runMinutes}m ${runSeconds}s",${results.totalScore},${results.passed ? 'Passed' : 'Failed'}`;
+    }
+
+    const blob = new Blob([content], { type: `text/${format}` });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
 
   return (
     <form onSubmit={handleSubmit(calculateScore)} className="grid md:grid-cols-2 gap-8">
@@ -68,7 +102,20 @@ export default function ApftCalculator() {
             <div><Label className="text-xs text-muted-foreground">Seconds</Label><Controller name="runSeconds" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value) || 0)} />} /></div>
           </div>
         </div>
-        <Button type="submit" className="w-full">Calculate Score</Button>
+        <div className="flex gap-2">
+            <Button type="submit" className="flex-1">Calculate Score</Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" disabled={!results}>
+                  <Download className="mr-2 h-4 w-4" /> Export
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem onClick={() => handleExport('txt')}>Download as .txt</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleExport('csv')}>Download as .csv</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+        </div>
       </div>
 
       {/* Results */}

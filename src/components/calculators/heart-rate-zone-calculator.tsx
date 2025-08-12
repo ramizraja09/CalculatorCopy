@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState } from 'react';
@@ -9,6 +8,13 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { Download } from 'lucide-react';
 
 const formSchema = z.object({
   age: z.number().int().min(1),
@@ -26,6 +32,8 @@ const zones = [
 
 export default function HeartRateZoneCalculator() {
   const [results, setResults] = useState<any>(null);
+  const [formData, setFormData] = useState<FormData | null>(null);
+
   const { control, handleSubmit } = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: { age: 30 },
@@ -34,7 +42,45 @@ export default function HeartRateZoneCalculator() {
   const calculateZones = (data: FormData) => {
     const maxHeartRate = 220 - data.age;
     setResults({ maxHeartRate });
+    setFormData(data);
   };
+
+  const handleExport = (format: 'txt' | 'csv') => {
+    if (!results || !formData) return;
+    
+    let content = '';
+    const filename = `hr-zones-calculation.${format}`;
+    const { age } = formData;
+    
+    if (format === 'txt') {
+        content = `Heart Rate Zone Calculation\n\nInputs:\n- Age: ${age}\n- Max Heart Rate: ${results.maxHeartRate} bpm\n\nZones:\n`;
+        zones.forEach(zone => {
+            const [min, max] = zone.percent.replace('%', '').split('-').map(Number);
+            const minBpm = Math.round(results.maxHeartRate * (min/100));
+            const maxBpm = Math.round(results.maxHeartRate * (max/100));
+            content += `- ${zone.name}: ${minBpm} - ${maxBpm} bpm\n`;
+        })
+    } else {
+        content = `Age,Max Heart Rate,Zone Name,Percentage,BPM Range\n`;
+        zones.forEach(zone => {
+            const [min, max] = zone.percent.replace('%', '').split('-').map(Number);
+            const minBpm = Math.round(results.maxHeartRate * (min/100));
+            const maxBpm = Math.round(results.maxHeartRate * (max/100));
+            content += `${age},${results.maxHeartRate},${zone.name},${zone.percent},"${minBpm} - ${maxBpm}"\n`;
+        });
+    }
+
+    const blob = new Blob([content], { type: `text/${format}` });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
 
   return (
     <form onSubmit={handleSubmit(calculateZones)} className="grid md:grid-cols-2 gap-8">
@@ -42,7 +88,20 @@ export default function HeartRateZoneCalculator() {
       <div className="space-y-4">
         <h3 className="text-xl font-semibold">Inputs</h3>
         <div><Label>Age</Label><Controller name="age" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value) || 0)} />} /></div>
-        <Button type="submit" className="w-full">Calculate Zones</Button>
+        <div className="flex gap-2">
+            <Button type="submit" className="flex-1">Calculate Zones</Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" disabled={!results}>
+                  <Download className="mr-2 h-4 w-4" /> Export
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem onClick={() => handleExport('txt')}>Download as .txt</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleExport('csv')}>Download as .csv</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+        </div>
       </div>
 
       {/* Results */}

@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState } from 'react';
@@ -10,6 +9,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { Download } from 'lucide-react';
 
 const formSchema = z.object({
   distance: z.number().min(0.1),
@@ -33,6 +39,8 @@ const distancesKm = {
 
 export default function RunningTimePredictor() {
   const [results, setResults] = useState<any>(null);
+  const [formData, setFormData] = useState<FormData | null>(null);
+
   const { control, handleSubmit } = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: { distance: 5, distanceUnit: 'km', timeHours: 0, timeMinutes: 25, timeSeconds: 0 },
@@ -58,6 +66,44 @@ export default function RunningTimePredictor() {
       }
     }
     setResults(predictions);
+    setFormData(data);
+  };
+  
+  const handleExport = (format: 'txt' | 'csv') => {
+    if (!results || !formData) return;
+    
+    let content = '';
+    const filename = `running-time-prediction.${format}`;
+    const { distance, distanceUnit, timeHours, timeMinutes, timeSeconds } = formData;
+    const raceTime = `${timeHours}h ${timeMinutes}m ${timeSeconds}s`;
+
+    if (format === 'txt') {
+      content = `Running Time Prediction\n\nInputs:\n- Distance: ${distance} ${distanceUnit}\n- Time: ${raceTime}\n\nPredictions:\n`;
+      for(const [name, time] of Object.entries(results)){
+          content += `- ${name.replace('-', ' ')}: ${time}\n`;
+      }
+    } else {
+       content = `Distance,Unit,Time,Predicted Race,Predicted Time\n`;
+       let first = true;
+       for(const [name, time] of Object.entries(results)){
+           if(first) {
+               content += `${distance},${distanceUnit},${raceTime},${name.replace('-', ' ')},${time}\n`;
+               first = false;
+           } else {
+               content += `,,,${name.replace('-', ' ')},${time}\n`;
+           }
+       }
+    }
+
+    const blob = new Blob([content], { type: `text/${format}` });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   };
 
   return (
@@ -82,7 +128,20 @@ export default function RunningTimePredictor() {
             <div><Label className="text-xs text-muted-foreground">Seconds</Label><Controller name="timeSeconds" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value) || 0)} />} /></div>
           </div>
         </div>
-        <Button type="submit" className="w-full">Predict Times</Button>
+        <div className="flex gap-2">
+            <Button type="submit" className="flex-1">Predict Times</Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" disabled={!results}>
+                  <Download className="mr-2 h-4 w-4" /> Export
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem onClick={() => handleExport('txt')}>Download as .txt</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleExport('csv')}>Download as .csv</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+        </div>
       </div>
 
       {/* Results */}

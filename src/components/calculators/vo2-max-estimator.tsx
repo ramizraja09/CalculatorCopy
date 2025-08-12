@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState } from 'react';
@@ -10,6 +9,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { Download } from 'lucide-react';
 
 const formSchema = z.object({
   distance: z.enum(['1_mile', '1.5_mile', '5k', '10k']),
@@ -28,6 +34,8 @@ const distanceMeters: { [key: string]: number } = {
 
 export default function Vo2MaxEstimator() {
   const [results, setResults] = useState<any>(null);
+  const [formData, setFormData] = useState<FormData | null>(null);
+
   const { control, handleSubmit, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: { distance: '5k', timeMinutes: 25, timeSeconds: 0 },
@@ -46,6 +54,32 @@ export default function Vo2MaxEstimator() {
     // This is too complex. The VDOT is a good standard.
 
     setResults({ vo2max });
+    setFormData(data);
+  };
+  
+  const handleExport = (format: 'txt' | 'csv') => {
+    if (!results || !formData) return;
+    
+    let content = '';
+    const filename = `vo2max-estimation.${format}`;
+    const { distance, timeMinutes, timeSeconds } = formData;
+    const raceTime = `${timeMinutes}m ${timeSeconds}s`;
+
+    if (format === 'txt') {
+      content = `VO2 Max Estimation\n\nInputs:\n- Distance: ${distance.replace('_', ' ')}\n- Time: ${raceTime}\n\nResult:\n- Estimated VO2 Max: ${results.vo2max.toFixed(1)} mL/kg/min`;
+    } else {
+       content = `Distance,Time,Estimated VO2 Max (mL/kg/min)\n${distance.replace('_', ' ')},${raceTime},${results.vo2max.toFixed(1)}`;
+    }
+
+    const blob = new Blob([content], { type: `text/${format}` });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   };
 
   return (
@@ -80,7 +114,20 @@ export default function Vo2MaxEstimator() {
             </div>
           </div>
         </div>
-        <Button type="submit" className="w-full">Estimate VO2 Max</Button>
+        <div className="flex gap-2">
+            <Button type="submit" className="flex-1">Estimate VO2 Max</Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" disabled={!results}>
+                  <Download className="mr-2 h-4 w-4" /> Export
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem onClick={() => handleExport('txt')}>Download as .txt</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleExport('csv')}>Download as .csv</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+        </div>
       </div>
 
       {/* Results */}

@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState } from 'react';
@@ -9,6 +8,13 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { Download } from 'lucide-react';
 
 const formSchema = z.object({
   wakeUpTime: z.string().nonempty("Please select a time"),
@@ -18,6 +24,8 @@ type FormData = z.infer<typeof formSchema>;
 
 export default function SleepCalculator() {
   const [results, setResults] = useState<any>(null);
+  const [formData, setFormData] = useState<FormData | null>(null);
+
   const { control, handleSubmit, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: { wakeUpTime: '07:00' },
@@ -36,6 +44,37 @@ export default function SleepCalculator() {
     }
 
     setResults({ bedtimes });
+    setFormData(data);
+  };
+  
+  const handleExport = (format: 'txt' | 'csv') => {
+    if (!results || !formData) return;
+    
+    let content = '';
+    const filename = `sleep-calculation.${format}`;
+    const { wakeUpTime } = formData;
+
+    if (format === 'txt') {
+      content = `Sleep Calculation\n\nInputs:\n- Wake Up Time: ${wakeUpTime}\n\nSuggested Bedtimes:\n`;
+      results.bedtimes.forEach((time: string, index: number) => {
+          content += `- ${time} (${6 - index} cycles)\n`;
+      })
+    } else {
+       content = `Wake Up Time,Suggested Bedtime,Cycles\n`;
+       results.bedtimes.forEach((time: string, index: number) => {
+           content += `${wakeUpTime},${time},${6 - index}\n`;
+       });
+    }
+
+    const blob = new Blob([content], { type: `text/${format}` });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   };
 
   return (
@@ -48,7 +87,20 @@ export default function SleepCalculator() {
           <Controller name="wakeUpTime" control={control} render={({ field }) => <Input type="time" {...field} />} />
           {errors.wakeUpTime && <p className="text-destructive text-sm mt-1">{errors.wakeUpTime.message}</p>}
         </div>
-        <Button type="submit" className="w-full">Calculate Bedtimes</Button>
+        <div className="flex gap-2">
+            <Button type="submit" className="flex-1">Calculate Bedtimes</Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" disabled={!results}>
+                  <Download className="mr-2 h-4 w-4" /> Export
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem onClick={() => handleExport('txt')}>Download as .txt</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleExport('csv')}>Download as .csv</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+        </div>
       </div>
 
       {/* Results */}

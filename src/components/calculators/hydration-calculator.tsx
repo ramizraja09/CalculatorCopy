@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState } from 'react';
@@ -11,6 +10,13 @@ import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { Download } from 'lucide-react';
 
 const formSchema = z.object({
   weight: z.number().min(1),
@@ -23,6 +29,8 @@ type FormData = z.infer<typeof formSchema>;
 
 export default function HydrationCalculator() {
   const [results, setResults] = useState<any>(null);
+  const [formData, setFormData] = useState<FormData | null>(null);
+
   const { control, handleSubmit } = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: { weight: 160, unit: 'lbs', exerciseDuration: 60, climate: 'temperate' },
@@ -48,6 +56,31 @@ export default function HydrationCalculator() {
       ounces: totalOunces.toFixed(0),
       liters: (totalOunces * 0.0295735).toFixed(1),
     });
+    setFormData(data);
+  };
+  
+  const handleExport = (format: 'txt' | 'csv') => {
+    if (!results || !formData) return;
+    
+    let content = '';
+    const filename = `hydration-calculation.${format}`;
+    const { weight, unit, exerciseDuration, climate } = formData;
+
+    if (format === 'txt') {
+      content = `Hydration Calculation\n\nInputs:\n- Weight: ${weight} ${unit}\n- Exercise Duration: ${exerciseDuration} mins\n- Climate: ${climate}\n\nResult:\n- Recommended Intake: ${results.ounces} oz (${results.liters} L)`;
+    } else {
+       content = `Weight,Unit,Exercise (mins),Climate,Intake (oz),Intake (L)\n${weight},${unit},${exerciseDuration},${climate},${results.ounces},${results.liters}`;
+    }
+
+    const blob = new Blob([content], { type: `text/${format}` });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   };
 
   return (
@@ -83,7 +116,20 @@ export default function HydrationCalculator() {
             </Select>
           )} />
         </div>
-        <Button type="submit" className="w-full">Calculate Hydration Needs</Button>
+        <div className="flex gap-2">
+            <Button type="submit" className="flex-1">Calculate Hydration Needs</Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" disabled={!results}>
+                  <Download className="mr-2 h-4 w-4" /> Export
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem onClick={() => handleExport('txt')}>Download as .txt</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleExport('csv')}>Download as .csv</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+        </div>
       </div>
 
       {/* Results */}

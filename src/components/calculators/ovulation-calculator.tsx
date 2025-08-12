@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState } from 'react';
@@ -9,6 +8,13 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { Download } from 'lucide-react';
 
 const formSchema = z.object({
   lastPeriodDate: z.string().refine((val) => !isNaN(Date.parse(val)), { message: "Invalid date" }),
@@ -19,6 +25,8 @@ type FormData = z.infer<typeof formSchema>;
 
 export default function OvulationCalculator() {
   const [results, setResults] = useState<any>(null);
+  const [formData, setFormData] = useState<FormData | null>(null);
+
   const { control, handleSubmit, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: { lastPeriodDate: new Date().toISOString().split('T')[0], cycleLength: 28 },
@@ -40,6 +48,31 @@ export default function OvulationCalculator() {
     setResults({
         fertileWindow: `${formatDate(fertileStart)} - ${formatDate(fertileEnd)}`,
     });
+    setFormData(data);
+  };
+  
+  const handleExport = (format: 'txt' | 'csv') => {
+    if (!results || !formData) return;
+    
+    let content = '';
+    const filename = `ovulation-calculation.${format}`;
+    const { lastPeriodDate, cycleLength } = formData;
+
+    if (format === 'txt') {
+      content = `Ovulation Calculation\n\nInputs:\n- Last Period Start: ${lastPeriodDate}\n- Cycle Length: ${cycleLength} days\n\nResult:\n- Estimated Fertile Window: ${results.fertileWindow}`;
+    } else {
+       content = `Last Period Date,Cycle Length,Fertile Window\n${lastPeriodDate},${cycleLength},"${results.fertileWindow}"`;
+    }
+
+    const blob = new Blob([content], { type: `text/${format}` });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   };
 
   return (
@@ -57,7 +90,20 @@ export default function OvulationCalculator() {
           <Controller name="cycleLength" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value) || 0)} />} />
           {errors.cycleLength && <p className="text-destructive text-sm mt-1">{errors.cycleLength.message}</p>}
         </div>
-        <Button type="submit" className="w-full">Calculate Fertile Window</Button>
+        <div className="flex gap-2">
+            <Button type="submit" className="flex-1">Calculate Fertile Window</Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" disabled={!results}>
+                  <Download className="mr-2 h-4 w-4" /> Export
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem onClick={() => handleExport('txt')}>Download as .txt</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleExport('csv')}>Download as .csv</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+        </div>
       </div>
 
       {/* Results */}

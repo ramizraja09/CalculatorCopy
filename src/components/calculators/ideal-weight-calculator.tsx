@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState } from 'react';
@@ -10,6 +9,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { Download } from 'lucide-react';
 
 const formSchema = z.object({
   unit: z.enum(['metric', 'imperial']),
@@ -26,6 +32,8 @@ type FormData = z.infer<typeof formSchema>;
 
 export default function IdealWeightCalculator() {
   const [results, setResults] = useState<any>(null);
+  const [formData, setFormData] = useState<FormData | null>(null);
+
   const { control, handleSubmit, watch, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: { unit: 'imperial', gender: 'male', heightFt: 5, heightIn: 10 },
@@ -48,6 +56,38 @@ export default function IdealWeightCalculator() {
     setResults({
         robinson: { kg: idealWeightKg.toFixed(1), lbs: (idealWeightKg * 2.20462).toFixed(1) }
     });
+    setFormData(data);
+  };
+  
+  const handleExport = (format: 'txt' | 'csv') => {
+    if (!results || !formData) return;
+    
+    let content = '';
+    const filename = `ideal-weight-calculation.${format}`;
+    const { unit, gender, heightCm, heightFt, heightIn } = formData;
+    const resultText = unit === 'imperial' ? `${results.robinson.lbs} lbs` : `${results.robinson.kg} kg`;
+
+    if (format === 'txt') {
+      content = `Ideal Weight Calculation\n\nInputs:\n- Gender: ${gender}\n`;
+      if(unit === 'metric') {
+        content += `- Height: ${heightCm} cm\n`;
+      } else {
+        content += `- Height: ${heightFt} ft ${heightIn} in\n`;
+      }
+      content += `\nResult:\n- Ideal Weight (Robinson Formula): ${resultText}`;
+    } else {
+       content = `Gender,Height,Ideal Weight\n${gender},"${unit === 'metric' ? `${heightCm}cm` : `${heightFt}'${heightIn}"`}",${resultText}`;
+    }
+
+    const blob = new Blob([content], { type: `text/${format}` });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   };
 
   return (
@@ -76,7 +116,20 @@ export default function IdealWeightCalculator() {
             <div><Label>Height (cm)</Label><Controller name="heightCm" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} /></div>
         )}
         {errors.heightCm && <p className="text-destructive text-sm mt-1">{errors.heightCm.message}</p>}
-        <Button type="submit" className="w-full">Calculate Ideal Weight</Button>
+        <div className="flex gap-2">
+            <Button type="submit" className="flex-1">Calculate Ideal Weight</Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" disabled={!results}>
+                  <Download className="mr-2 h-4 w-4" /> Export
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem onClick={() => handleExport('txt')}>Download as .txt</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleExport('csv')}>Download as .csv</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+        </div>
       </div>
       {/* Results */}
       <div className="space-y-4">
