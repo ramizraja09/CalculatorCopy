@@ -448,6 +448,13 @@ export default function CalculatorClientPage({ calculator }: CalculatorClientPag
               {lastUpdated ? <p>Last Updated: {lastUpdated} | Formula v1.0</p> : <p>Loading...</p>}
             </CardFooter>
         </Card>
+        
+        {/* Ad Placeholder */}
+        <div className="mt-8 flex justify-center">
+          <div className="w-full max-w-lg h-24 bg-muted/50 rounded-lg border border-dashed flex items-center justify-center">
+            <p className="text-sm text-muted-foreground">Advertisement Placeholder</p>
+          </div>
+        </div>
     </div>
   );
 }
