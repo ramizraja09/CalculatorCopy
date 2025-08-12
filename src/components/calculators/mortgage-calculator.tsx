@@ -14,6 +14,10 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recha
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
+type MortgageCalculatorProps = {
+  onCalculate?: (inputs: {[key: string]: any}, result: string) => void;
+}
+
 const formSchema = z.object({
   homePrice: z.number().min(1, 'Home price must be greater than 0'),
   downPayment: z.number().min(0, 'Down payment must be non-negative'),
@@ -27,7 +31,7 @@ const formSchema = z.object({
 
 type FormData = z.infer<typeof formSchema>;
 
-export default function MortgageCalculator() {
+export default function MortgageCalculator({ onCalculate }: MortgageCalculatorProps) {
   const [results, setResults] = useState<any>(null);
 
   const { control, watch, handleSubmit, formState: { errors } } = useForm<FormData>({
@@ -95,7 +99,7 @@ export default function MortgageCalculator() {
         });
     }
 
-    setResults({
+    const newResults = {
       monthlyPrincipalAndInterest,
       monthlyPropertyTax,
       monthlyHomeInsurance,
@@ -107,7 +111,19 @@ export default function MortgageCalculator() {
       principal,
       amortization,
       error: null,
-    });
+    };
+    setResults(newResults);
+
+    if (onCalculate) {
+      const inputs = {
+        "Home Price": formatCurrency(data.homePrice),
+        "Down Payment": formatCurrency(downPaymentAmount),
+        "Loan Term": `${data.loanTerm} years`,
+        "Interest Rate": `${data.interestRate}%`,
+      };
+      const resultText = `Monthly Payment: ${formatCurrency(newResults.monthlyTotal)}`;
+      onCalculate(inputs, resultText);
+    }
   };
   
   const formatCurrency = (value: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value);

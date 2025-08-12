@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -16,11 +16,16 @@ declare global {
   }
 }
 
-export default function BasicCalculator() {
+type BasicCalculatorProps = {
+  onCalculate?: (inputs: {[key: string]: any}, result: string) => void;
+}
+
+export default function BasicCalculator({ onCalculate }: BasicCalculatorProps) {
   const [display, setDisplay] = useState('0');
   const [expression, setExpression] = useState('');
   const [history, setHistory] = useState<string[]>([]);
   const [isListening, setIsListening] = useState(false);
+  const isAfterEquals = useRef(false);
 
   // Load history from localStorage on component mount (client-side only)
   useEffect(() => {
@@ -46,9 +51,10 @@ export default function BasicCalculator() {
 
   const handleInput = (value: string) => {
     // If the current display is the result of a previous calculation, start a new expression
-    if (expression === display) {
+    if (isAfterEquals.current) {
       setExpression(value);
       setDisplay(value);
+      isAfterEquals.current = false;
     } else {
       setExpression(prev => (prev === '0' && value !== '.') ? value : prev + value);
       setDisplay(prev => (prev === '0' && value !== '.') ? value : prev + value);
@@ -56,12 +62,14 @@ export default function BasicCalculator() {
   };
 
   const handleOperator = (op: string) => {
+    isAfterEquals.current = false;
     // Avoid adding multiple operators in a row
     if (/[+\-*/]$/.test(expression)) {
       setExpression(prev => prev.slice(0, -1) + op);
     } else {
       setExpression(prev => prev + op);
     }
+     setDisplay(expression + op);
   };
 
   const handleEquals = () => {
@@ -72,9 +80,11 @@ export default function BasicCalculator() {
       const resultString = String(result);
       const newHistoryEntry = `${expression} = ${resultString}`;
       
+      onCalculate?.({ Expression: expression}, resultString);
       setHistory(prev => [newHistoryEntry, ...prev].slice(0, 50)); // Keep last 50 entries
       setDisplay(resultString);
       setExpression(resultString);
+      isAfterEquals.current = true;
     } catch (error) {
       setDisplay('Error');
       setExpression('');
@@ -84,10 +94,11 @@ export default function BasicCalculator() {
   const clearAll = () => {
     setDisplay('0');
     setExpression('');
+    isAfterEquals.current = false;
   };
 
   const backspace = () => {
-    if (expression === display) return; // Don't backspace a result
+    if (isAfterEquals.current) return;
     setDisplay(prev => prev.length > 1 ? prev.slice(0, -1) : '0');
     setExpression(prev => prev.length > 1 ? prev.slice(0, -1) : '0');
   };
@@ -149,7 +160,7 @@ export default function BasicCalculator() {
 
 
   return (
-    <div className="grid md:grid-cols-2 gap-8">
+    <div data-results-container>
       {/* Calculator */}
       <Card className="w-full">
         <CardContent className="p-4">
@@ -190,37 +201,6 @@ export default function BasicCalculator() {
           </div>
         </CardContent>
       </Card>
-      {/* History */}
-       <div className="space-y-4" data-results-container>
-            <div className="flex justify-between items-center">
-                <h3 className="text-xl font-semibold flex items-center gap-2"><History/> History</h3>
-                <div className="flex items-center gap-2">
-                  <Button variant="ghost" size="icon" onClick={exportHistory} aria-label="Export History" disabled={history.length === 0}>
-                      <Download className="h-5 w-5"/>
-                  </Button>
-                  <Button variant="ghost" size="icon" onClick={() => setHistory([])} aria-label="Clear History">
-                      <Trash2 className="h-5 w-5"/>
-                  </Button>
-                </div>
-            </div>
-            <Card>
-                <CardContent className="p-2">
-                    <ScrollArea className="h-96">
-                        {history.length > 0 ? (
-                           <ul className="space-y-2 p-2 text-sm font-mono">
-                                {history.map((entry, index) => (
-                                    <li key={index} className="text-muted-foreground break-words">{entry}</li>
-                                ))}
-                           </ul>
-                        ) : (
-                             <div className="flex items-center justify-center h-full">
-                                <p className="text-sm text-muted-foreground">Your calculation history is empty.</p>
-                            </div>
-                        )}
-                    </ScrollArea>
-                </CardContent>
-            </Card>
-        </div>
     </div>
   );
 }
