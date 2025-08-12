@@ -9,6 +9,13 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { Download } from 'lucide-react';
 
 const formSchema = z.object({
   numbers: z.string().nonempty("Please enter at least two numbers separated by commas."),
@@ -25,6 +32,8 @@ const findLcmOfList = (numbers: number[]) => {
 
 export default function LcmCalculator() {
   const [results, setResults] = useState<any>(null);
+  const [formData, setFormData] = useState<FormData | null>(null);
+
   const { control, handleSubmit, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: { numbers: "12, 15" },
@@ -38,7 +47,32 @@ export default function LcmCalculator() {
     }
     const result = findLcmOfList(numberList.map(Math.abs));
     setResults({ result });
+    setFormData(data);
   };
+
+  const handleExport = (format: 'txt' | 'csv') => {
+    if (!results || !formData) return;
+    
+    let content = '';
+    const filename = `lcm-result.${format}`;
+
+    if (format === 'txt') {
+      content = `LCM Calculation\n\nInput Numbers: ${formData.numbers}\n\nResult:\nLeast Common Multiple (LCM): ${results.result}`;
+    } else {
+      content = `Input Numbers,LCM\n"${formData.numbers}",${results.result}`;
+    }
+
+    const blob = new Blob([content], { type: `text/${format}` });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
 
   return (
     <form onSubmit={handleSubmit(calculateLcm)} className="grid md:grid-cols-2 gap-8">
@@ -50,7 +84,20 @@ export default function LcmCalculator() {
           <Controller name="numbers" control={control} render={({ field }) => <Input {...field} />} />
           {errors.numbers && <p className="text-destructive text-sm mt-1">{errors.numbers.message}</p>}
         </div>
-        <Button type="submit" className="w-full">Calculate LCM</Button>
+        <div className="flex gap-2">
+            <Button type="submit" className="flex-1">Calculate LCM</Button>
+             <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" disabled={!results}>
+                  <Download className="mr-2 h-4 w-4" /> Export
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem onClick={() => handleExport('txt')}>Download as .txt</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleExport('csv')}>Download as .csv</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+        </div>
       </div>
       {/* Results */}
       <div className="space-y-4">

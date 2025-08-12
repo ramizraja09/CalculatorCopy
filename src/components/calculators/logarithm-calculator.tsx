@@ -9,6 +9,14 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { Download } from 'lucide-react';
+
 
 const formSchema = z.object({
   number: z.number().min(0, "Number must be non-negative"),
@@ -19,6 +27,8 @@ type FormData = z.infer<typeof formSchema>;
 
 export default function LogarithmCalculator() {
   const [results, setResults] = useState<any>(null);
+  const [formData, setFormData] = useState<FormData | null>(null);
+
   const { control, handleSubmit, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: { number: 100, base: 10 },
@@ -27,7 +37,33 @@ export default function LogarithmCalculator() {
   const calculateLog = (data: FormData) => {
     const result = Math.log(data.number) / Math.log(data.base);
     setResults({ result: isFinite(result) ? result.toFixed(5) : 'Invalid' });
+    setFormData(data);
   };
+
+  const handleExport = (format: 'txt' | 'csv') => {
+    if (!results || !formData) return;
+    
+    let content = '';
+    const filename = `log-result.${format}`;
+    const expression = `log base ${formData.base} of ${formData.number}`;
+
+    if (format === 'txt') {
+      content = `Logarithm Calculation\n\nExpression: ${expression}\n\nResult: ${results.result}`;
+    } else {
+      content = `Expression,Result\n"${expression}",${results.result}`;
+    }
+
+    const blob = new Blob([content], { type: `text/${format}` });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
 
   return (
     <form onSubmit={handleSubmit(calculateLog)} className="grid md:grid-cols-2 gap-8">
@@ -38,7 +74,20 @@ export default function LogarithmCalculator() {
         {errors.number && <p className="text-destructive text-sm mt-1">{errors.number.message}</p>}</div>
         <div><Label>Base</Label><Controller name="base" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
         {errors.base && <p className="text-destructive text-sm mt-1">{errors.base.message}</p>}</div>
-        <Button type="submit" className="w-full">Calculate Log</Button>
+        <div className="flex gap-2">
+            <Button type="submit" className="flex-1">Calculate Log</Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" disabled={!results}>
+                  <Download className="mr-2 h-4 w-4" /> Export
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem onClick={() => handleExport('txt')}>Download as .txt</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleExport('csv')}>Download as .csv</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+        </div>
       </div>
 
       {/* Results */}

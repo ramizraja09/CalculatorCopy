@@ -9,6 +9,13 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { Download } from 'lucide-react';
 
 const formSchema = z.object({
   number: z.number().int().min(0, "Number must be non-negative").max(170, "Number is too large"),
@@ -29,6 +36,8 @@ const factorial = (num: number): number => {
 
 export default function FactorialCalculator() {
   const [results, setResults] = useState<any>(null);
+  const [formData, setFormData] = useState<FormData | null>(null);
+
   const { control, handleSubmit, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: { number: 5 },
@@ -37,7 +46,33 @@ export default function FactorialCalculator() {
   const calculateFactorial = (data: FormData) => {
     const result = factorial(data.number);
     setResults({ result: result.toExponential(5) });
+    setFormData(data);
   };
+
+  const handleExport = (format: 'txt' | 'csv') => {
+    if (!results || !formData) return;
+    
+    let content = '';
+    const filename = `factorial-result.${format}`;
+    const expression = `${formData.number}!`;
+
+    if (format === 'txt') {
+      content = `Factorial Calculation\n\nExpression: ${expression}\nResult: ${results.result}`;
+    } else {
+      content = `Expression,Result\n"${expression}","${results.result}"`;
+    }
+
+    const blob = new Blob([content], { type: `text/${format}` });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
 
   return (
     <form onSubmit={handleSubmit(calculateFactorial)} className="grid md:grid-cols-2 gap-8">
@@ -49,7 +84,20 @@ export default function FactorialCalculator() {
           <Controller name="number" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value) || 0)} />} />
           {errors.number && <p className="text-destructive text-sm mt-1">{errors.number.message}</p>}
         </div>
-        <Button type="submit" className="w-full">Calculate Factorial</Button>
+        <div className="flex gap-2">
+            <Button type="submit" className="flex-1">Calculate Factorial</Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" disabled={!results}>
+                  <Download className="mr-2 h-4 w-4" /> Export
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem onClick={() => handleExport('txt')}>Download as .txt</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleExport('csv')}>Download as .csv</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+        </div>
       </div>
 
       {/* Results */}

@@ -9,7 +9,13 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
-import { Equal } from 'lucide-react';
+import { Equal, Download } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 const formSchema = z.object({
   a: z.string().optional(),
@@ -29,6 +35,8 @@ type FormData = z.infer<typeof formSchema>;
 
 export default function RatioCalculator() {
   const [result, setResult] = useState<string | null>(null);
+  const [formData, setFormData] = useState<FormData | null>(null);
+
   const { control, handleSubmit, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: { a: "2", b: "3", c: "10", d: "" },
@@ -57,6 +65,33 @@ export default function RatioCalculator() {
         missingVar = `D = ${solvedValue.toFixed(4)}`;
     }
     setResult(missingVar);
+    setFormData(data);
+  };
+
+  const handleExport = (format: 'txt' | 'csv') => {
+    if (!result || !formData) return;
+    
+    let content = '';
+    const filename = `ratio-result.${format}`;
+    const {a,b,c,d} = formData;
+    const solvedVar = result.split(" = ")[0];
+    const solvedVal = result.split(" = ")[1];
+
+    if (format === 'txt') {
+      content = `Ratio Calculation\n\nInputs:\nA: ${a}\nB: ${b}\nC: ${c}\nD: ${d}\n\nResult:\n${result}`;
+    } else {
+      content = `A,B,C,D,Solved Variable,Solved Value\n${a || ''},${b || ''},${c || ''},${d || ''},${solvedVar},${solvedVal}`;
+    }
+
+    const blob = new Blob([content], { type: `text/${format}` });
+    const url = URL.createObjectURL(blob);
+    const aEl = document.createElement('a');
+    aEl.href = url;
+    aEl.download = filename;
+    document.body.appendChild(aEl);
+    aEl.click();
+    document.body.removeChild(aEl);
+    URL.revokeObjectURL(url);
   };
 
   return (
@@ -79,7 +114,20 @@ export default function RatioCalculator() {
         </div>
       </div>
        {errors.a && <p className="text-destructive text-sm mt-1 text-center">{errors.a.message}</p>}
-      <Button type="submit" className="w-full">Solve</Button>
+      <div className="flex justify-center gap-2">
+        <Button type="submit" className="w-full max-w-xs">Solve</Button>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" disabled={!result}>
+              <Download className="mr-2 h-4 w-4" /> Export
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent>
+            <DropdownMenuItem onClick={() => handleExport('txt')}>Download as .txt</DropdownMenuItem>
+            <DropdownMenuItem onClick={() => handleExport('csv')}>Download as .csv</DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
       
       {result && (
         <Card className="mt-4">

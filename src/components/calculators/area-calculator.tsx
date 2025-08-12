@@ -10,6 +10,14 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { Download } from 'lucide-react';
+
 
 const formSchema = z.object({
   shape: z.enum(['rectangle', 'circle', 'triangle']),
@@ -30,6 +38,8 @@ type FormData = z.infer<typeof formSchema>;
 
 export default function AreaCalculator() {
   const [results, setResults] = useState<any>(null);
+  const [formData, setFormData] = useState<FormData | null>(null);
+
   const { control, handleSubmit, watch, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: { shape: 'rectangle', length: 10, width: 5 },
@@ -43,7 +53,37 @@ export default function AreaCalculator() {
     if (data.shape === 'circle') area = Math.PI * data.radius! ** 2;
     if (data.shape === 'triangle') area = (data.base! * data.height!) / 2;
     setResults({ area });
+    setFormData(data);
   };
+
+  const handleExport = (format: 'txt' | 'csv') => {
+    if (!results || !formData) return;
+    
+    let content = '';
+    const filename = `area-calculation.${format}`;
+    let inputs = `Shape: ${formData.shape}`;
+    if (formData.shape === 'rectangle') inputs += `, Length: ${formData.length}, Width: ${formData.width}`;
+    if (formData.shape === 'circle') inputs += `, Radius: ${formData.radius}`;
+    if (formData.shape === 'triangle') inputs += `, Base: ${formData.base}, Height: ${formData.height}`;
+
+
+    if (format === 'txt') {
+      content = `Area Calculation\n\nInputs:\n${inputs}\n\nResult:\nArea: ${results.area.toFixed(2)} square units`;
+    } else {
+       content = `Shape,Length,Width,Radius,Base,Height,Area\n${formData.shape},${formData.length || ''},${formData.width || ''},${formData.radius || ''},${formData.base || ''},${formData.height || ''},${results.area.toFixed(2)}`;
+    }
+
+    const blob = new Blob([content], { type: `text/${format}` });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
 
   return (
     <form onSubmit={handleSubmit(calculateArea)} className="grid md:grid-cols-2 gap-8">
@@ -75,7 +115,20 @@ export default function AreaCalculator() {
             <div><Label>Height</Label><Controller name="height" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} /></div>
         </>}
         {errors.length && <p className="text-destructive text-sm mt-1">{errors.length.message}</p>}
-        <Button type="submit" className="w-full">Calculate Area</Button>
+        <div className="flex gap-2">
+            <Button type="submit" className="flex-1">Calculate Area</Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" disabled={!results}>
+                  <Download className="mr-2 h-4 w-4" /> Export
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem onClick={() => handleExport('txt')}>Download as .txt</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleExport('csv')}>Download as .csv</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+        </div>
       </div>
 
       {/* Results */}

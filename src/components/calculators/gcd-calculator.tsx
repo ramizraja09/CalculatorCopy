@@ -9,6 +9,14 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { Download } from 'lucide-react';
+
 
 const formSchema = z.object({
   numbers: z.string().nonempty("Please enter at least two numbers separated by commas."),
@@ -24,6 +32,8 @@ const findGcdOfList = (numbers: number[]) => {
 
 export default function GcdCalculator() {
   const [results, setResults] = useState<any>(null);
+  const [formData, setFormData] = useState<FormData | null>(null);
+
   const { control, handleSubmit, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: { numbers: "48, 180" },
@@ -37,7 +47,32 @@ export default function GcdCalculator() {
     }
     const result = findGcdOfList(numberList.map(Math.abs));
     setResults({ result });
+    setFormData(data);
   };
+
+  const handleExport = (format: 'txt' | 'csv') => {
+    if (!results || !formData) return;
+    
+    let content = '';
+    const filename = `gcd-result.${format}`;
+
+    if (format === 'txt') {
+      content = `GCD Calculation\n\nInput Numbers: ${formData.numbers}\n\nResult:\nGreatest Common Divisor (GCD): ${results.result}`;
+    } else {
+      content = `Input Numbers,GCD\n"${formData.numbers}",${results.result}`;
+    }
+
+    const blob = new Blob([content], { type: `text/${format}` });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
 
   return (
     <form onSubmit={handleSubmit(calculateGcd)} className="grid md:grid-cols-2 gap-8">
@@ -49,7 +84,20 @@ export default function GcdCalculator() {
           <Controller name="numbers" control={control} render={({ field }) => <Input {...field} />} />
           {errors.numbers && <p className="text-destructive text-sm mt-1">{errors.numbers.message}</p>}
         </div>
-        <Button type="submit" className="w-full">Calculate GCD</Button>
+        <div className="flex gap-2">
+            <Button type="submit" className="flex-1">Calculate GCD</Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" disabled={!results}>
+                  <Download className="mr-2 h-4 w-4" /> Export
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem onClick={() => handleExport('txt')}>Download as .txt</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleExport('csv')}>Download as .csv</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+        </div>
       </div>
       {/* Results */}
       <div className="space-y-4">

@@ -10,6 +10,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { Download } from 'lucide-react';
 
 const formSchema = z.object({
   number: z.number().int().min(1, "Number must be a positive integer"),
@@ -35,6 +42,8 @@ const findPrimesUpTo = (limit: number) => {
 
 export default function PrimeNumberCalculator() {
   const [results, setResults] = useState<any>(null);
+  const [formData, setFormData] = useState<FormData | null>(null);
+
   const { control, handleSubmit } = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: { number: 100 },
@@ -44,7 +53,32 @@ export default function PrimeNumberCalculator() {
     const primeStatus = isPrime(data.number);
     const primeList = findPrimesUpTo(data.number);
     setResults({ primeStatus, primeList: primeList.join(', ') });
+    setFormData(data);
   };
+  
+  const handleExport = (format: 'txt' | 'csv') => {
+    if (!results || !formData) return;
+    
+    let content = '';
+    const filename = `prime-number-result.${format}`;
+
+    if (format === 'txt') {
+      content = `Prime Number Calculation\n\nInput Number: ${formData.number}\n\nResults:\nIs Prime?: ${results.primeStatus}\nPrimes up to ${formData.number}: ${results.primeList}`;
+    } else {
+      content = `Input Number,Is Prime,Primes Up To Input\n${formData.number},${results.primeStatus},"${results.primeList}"`;
+    }
+
+    const blob = new Blob([content], { type: `text/${format}` });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
 
   return (
     <form onSubmit={handleSubmit(checkPrime)} className="grid md:grid-cols-2 gap-8">
@@ -55,7 +89,20 @@ export default function PrimeNumberCalculator() {
           <Label htmlFor="number">Enter a number</Label>
           <Controller name="number" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value) || 0)} />} />
         </div>
-        <Button type="submit" className="w-full">Check & List Primes</Button>
+        <div className="flex gap-2">
+            <Button type="submit" className="flex-1">Check & List Primes</Button>
+             <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" disabled={!results}>
+                  <Download className="mr-2 h-4 w-4" /> Export
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem onClick={() => handleExport('txt')}>Download as .txt</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleExport('csv')}>Download as .csv</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+        </div>
       </div>
 
       {/* Results */}

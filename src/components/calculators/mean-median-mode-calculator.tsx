@@ -9,6 +9,14 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { Download } from 'lucide-react';
+
 
 const formSchema = z.object({
   numbers: z.string().nonempty("Please enter at least one number."),
@@ -18,6 +26,8 @@ type FormData = z.infer<typeof formSchema>;
 
 export default function MeanMedianModeCalculator() {
   const [results, setResults] = useState<any>(null);
+  const [formData, setFormData] = useState<FormData | null>(null);
+
   const { control, handleSubmit } = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: { numbers: "1, 2, 2, 3, 4, 7, 9" },
@@ -51,6 +61,30 @@ export default function MeanMedianModeCalculator() {
     if (modes.length === Object.keys(counts).length) modes = []; // No mode if all have same frequency
     
     setResults({ mean: mean.toFixed(2), median: median, mode: modes.join(', ') || 'N/A' });
+    setFormData(data);
+  };
+  
+  const handleExport = (format: 'txt' | 'csv') => {
+    if (!results || !formData) return;
+    
+    let content = '';
+    const filename = `stats-result.${format}`;
+
+    if (format === 'txt') {
+      content = `Statistics Calculation\n\nInput Data: ${formData.numbers}\n\nResults:\nMean: ${results.mean}\nMedian: ${results.median}\nMode: ${results.mode}`;
+    } else {
+      content = `Input Data,Mean,Median,Mode\n"${formData.numbers}",${results.mean},${results.median},"${results.mode}"`;
+    }
+
+    const blob = new Blob([content], { type: `text/${format}` });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   };
 
   return (
@@ -62,7 +96,20 @@ export default function MeanMedianModeCalculator() {
           <Label>Numbers (comma or space separated)</Label>
           <Controller name="numbers" control={control} render={({ field }) => <Textarea {...field} rows={5} />} />
         </div>
-        <Button type="submit" className="w-full">Calculate</Button>
+        <div className="flex gap-2">
+            <Button type="submit" className="flex-1">Calculate</Button>
+             <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" disabled={!results}>
+                  <Download className="mr-2 h-4 w-4" /> Export
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem onClick={() => handleExport('txt')}>Download as .txt</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleExport('csv')}>Download as .csv</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+        </div>
       </div>
 
       {/* Results */}
