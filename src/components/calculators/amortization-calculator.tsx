@@ -134,9 +134,9 @@ export default function AmortizationCalculator() {
 
   return (
     <form onSubmit={handleSubmit(calculateAmortization)}>
-        <div className="grid lg:grid-cols-3 gap-8">
+        <div className="grid xl:grid-cols-3 gap-8">
         {/* Inputs Column */}
-        <div className="lg:col-span-1 space-y-4">
+        <div className="xl:col-span-1 space-y-4">
             <Card>
                 <CardHeader><CardTitle>Loan Details</CardTitle></CardHeader>
                 <CardContent className="space-y-4">
@@ -189,7 +189,7 @@ export default function AmortizationCalculator() {
         </div>
 
         {/* Results Column */}
-        <div className="lg:col-span-2 space-y-4" data-results-container>
+        <div className="xl:col-span-2 space-y-4" data-results-container>
             <h3 className="text-xl font-semibold">Amortization Schedule</h3>
             {results ? (
                 results.error ? (
@@ -205,7 +205,7 @@ export default function AmortizationCalculator() {
                                     <LineChart data={results.schedule} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
                                         <CartesianGrid strokeDasharray="3 3" />
                                         <XAxis dataKey="month" label={{ value: 'Month', position: 'insideBottom', offset: -5 }} />
-                                        <YAxis tickFormatter={(tick) => formatCurrency(tick)} />
+                                        <YAxis tickFormatter={(value) => typeof value === 'number' ? formatCurrency(value) : ''} />
                                         <RechartsTooltip formatter={(value: number) => formatCurrency(value)} />
                                         <Line type="monotone" dataKey="remainingBalance" name="Remaining Balance" stroke="hsl(var(--primary))" dot={false} />
                                     </LineChart>

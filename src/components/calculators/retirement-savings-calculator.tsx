@@ -212,7 +212,7 @@ export default function RetirementSavingsCalculator() {
                             <LineChart data={results.schedule} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
                               <CartesianGrid strokeDasharray="3 3" />
                               <XAxis dataKey="age" name="Age" />
-                              <YAxis tickFormatter={(value: number) => formatCurrency(value)} />
+                              <YAxis tickFormatter={(value) => typeof value === 'number' ? formatCurrency(value) : ''} />
                               <Tooltip formatter={(value: number) => formatCurrency(value)} />
                               <Legend />
                               <Line type="monotone" dataKey="balance" name="Savings Balance" stroke="hsl(var(--primary))" dot={false} />

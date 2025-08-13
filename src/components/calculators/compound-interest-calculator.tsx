@@ -132,9 +132,9 @@ export default function CompoundInterestCalculator() {
   };
 
   return (
-    <form onSubmit={handleSubmit(calculateCompoundInterest)} className="grid lg:grid-cols-3 gap-8">
+    <form onSubmit={handleSubmit(calculateCompoundInterest)} className="grid xl:grid-cols-3 gap-8">
       {/* Inputs Column */}
-      <div className="lg:col-span-1 space-y-4">
+      <div className="xl:col-span-1 space-y-4">
         <Card>
           <CardHeader><CardTitle>Investment Details</CardTitle></CardHeader>
           <CardContent className="space-y-4">
@@ -196,7 +196,7 @@ export default function CompoundInterestCalculator() {
       </div>
 
       {/* Results Column */}
-      <div className="lg:col-span-2 space-y-4">
+      <div className="xl:col-span-2 space-y-4">
         <h3 className="text-xl font-semibold">Results</h3>
         {results ? (
             results.error ? (
@@ -227,7 +227,7 @@ export default function CompoundInterestCalculator() {
                             <LineChart data={results.schedule} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
                               <CartesianGrid strokeDasharray="3 3" />
                               <XAxis dataKey="year" label={{ value: 'Year', position: 'insideBottom', offset: -5 }} />
-                              <YAxis tickFormatter={(value) => formatCurrency(value)} />
+                              <YAxis tickFormatter={(value) => typeof value === 'number' ? formatCurrency(value) : ''} />
                               <Tooltip formatter={(value: number, name: string) => (name === "Total Contributions" || name === "Total Balance") ? formatCurrency(value) : value } />
                               <Legend />
                               <Line type="monotone" dataKey="endBalance" name="Total Balance" stroke="hsl(var(--primary))" dot={false} />
