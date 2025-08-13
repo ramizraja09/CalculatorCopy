@@ -18,7 +18,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsLineTooltip } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer } from 'recharts';
 
 
 const formSchema = z.object({
@@ -183,7 +183,7 @@ export default function AmortizationCalculator() {
                             <CartesianGrid strokeDasharray="3 3" />
                             <XAxis dataKey="month" label={{ value: 'Month', position: 'insideBottom', offset: -5 }} />
                             <YAxis tickFormatter={(tick) => formatCurrency(tick)} />
-                            <RechartsLineTooltip formatter={(value: number) => formatCurrency(value)} />
+                            <RechartsTooltip formatter={(value: number) => formatCurrency(value)} />
                             <Line type="monotone" dataKey="remainingBalance" name="Remaining Balance" stroke="hsl(var(--primary))" dot={false} />
                         </LineChart>
                     </ResponsiveContainer>
@@ -246,6 +246,6 @@ export default function AmortizationCalculator() {
             </div>
         )}
       </div>
-    </form>
+    </div>
   );
 }
