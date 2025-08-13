@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from 'react';
@@ -82,7 +83,7 @@ export default function CarbCalculator() {
         <h3 className="text-xl font-semibold">Inputs</h3>
         <div>
           <Label htmlFor="calories">Daily Calorie Goal</Label>
-          <Controller name="calories" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value) || 0)} />} />
+          <Controller name="calories" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseInt(e.target.value, 10))} />} />
           {errors.calories && <p className="text-destructive text-sm mt-1">{errors.calories.message}</p>}
         </div>
         <div>

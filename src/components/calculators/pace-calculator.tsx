@@ -58,7 +58,7 @@ export default function PaceCalculator() {
         <div>
           <Label>Distance</Label>
           <div className="flex gap-2">
-            <Controller name="distance" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
+            <Controller name="distance" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
             <Controller name="distanceUnit" control={control} render={({ field }) => (
                 <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <SelectTrigger className="w-[120px]"><SelectValue/></SelectTrigger>
@@ -72,15 +72,15 @@ export default function PaceCalculator() {
           <div className="grid grid-cols-3 gap-2">
             <div>
               <Label htmlFor="timeHours" className="text-xs text-muted-foreground">Hours</Label>
-              <Controller name="timeHours" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value) || 0)} />} />
+              <Controller name="timeHours" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseInt(e.target.value, 10))} />} />
             </div>
             <div>
               <Label htmlFor="timeMinutes" className="text-xs text-muted-foreground">Minutes</Label>
-              <Controller name="timeMinutes" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value) || 0)} />} />
+              <Controller name="timeMinutes" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseInt(e.target.value, 10))} />} />
             </div>
             <div>
               <Label htmlFor="timeSeconds" className="text-xs text-muted-foreground">Seconds</Label>
-              <Controller name="timeSeconds" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value) || 0)} />} />
+              <Controller name="timeSeconds" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseInt(e.target.value, 10))} />} />
             </div>
           </div>
         </div>

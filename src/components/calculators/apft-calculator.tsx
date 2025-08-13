@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from 'react';
@@ -92,14 +93,14 @@ export default function ApftCalculator() {
                 <Label className="flex items-center justify-center rounded-md border-2 border-muted bg-popover p-4 peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary"><RadioGroupItem value="female" className="mr-2"/>Female</Label>
             </RadioGroup>
         )}/>
-        <div><Label>Age</Label><Controller name="age" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value) || 0)} />} /></div>
-        <div><Label>Push-up Reps</Label><Controller name="pushups" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value) || 0)} />} /></div>
-        <div><Label>Sit-up Reps</Label><Controller name="situps" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value) || 0)} />} /></div>
+        <div><Label>Age</Label><Controller name="age" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseInt(e.target.value, 10))} />} /></div>
+        <div><Label>Push-up Reps</Label><Controller name="pushups" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseInt(e.target.value, 10))} />} /></div>
+        <div><Label>Sit-up Reps</Label><Controller name="situps" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseInt(e.target.value, 10))} />} /></div>
         <div>
           <Label>2-Mile Run Time</Label>
           <div className="grid grid-cols-2 gap-2">
-            <div><Label className="text-xs text-muted-foreground">Minutes</Label><Controller name="runMinutes" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value) || 0)} />} /></div>
-            <div><Label className="text-xs text-muted-foreground">Seconds</Label><Controller name="runSeconds" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value) || 0)} />} /></div>
+            <div><Label className="text-xs text-muted-foreground">Minutes</Label><Controller name="runMinutes" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseInt(e.target.value, 10))} />} /></div>
+            <div><Label className="text-xs text-muted-foreground">Seconds</Label><Controller name="runSeconds" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseInt(e.target.value, 10))} />} /></div>
           </div>
         </div>
         <div className="flex gap-2">

@@ -72,10 +72,10 @@ export default function BodyFatCalculator() {
                 <Label className="flex items-center justify-center rounded-md border-2 border-muted bg-popover p-4 peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary"><RadioGroupItem value="female" className="mr-2"/>Female</Label>
             </RadioGroup>
         )}/>
-        <div><Label>Height ({unit === 'imperial' ? 'in' : 'cm'})</Label><Controller name="height" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} /></div>
-        <div><Label>Neck ({unit === 'imperial' ? 'in' : 'cm'})</Label><Controller name="neck" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} /></div>
-        <div><Label>Waist ({unit === 'imperial' ? 'in' : 'cm'})</Label><Controller name="waist" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} /></div>
-        {gender === 'female' && <div><Label>Hip ({unit === 'imperial' ? 'in' : 'cm'})</Label><Controller name="hip" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} /></div>}
+        <div><Label>Height ({unit === 'imperial' ? 'in' : 'cm'})</Label><Controller name="height" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} /></div>
+        <div><Label>Neck ({unit === 'imperial' ? 'in' : 'cm'})</Label><Controller name="neck" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} /></div>
+        <div><Label>Waist ({unit === 'imperial' ? 'in' : 'cm'})</Label><Controller name="waist" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} /></div>
+        {gender === 'female' && <div><Label>Hip ({unit === 'imperial' ? 'in' : 'cm'})</Label><Controller name="hip" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} /></div>}
         {errors.hip && <p className="text-destructive text-sm mt-1">{errors.hip.message}</p>}
         <Button type="submit" className="w-full">Calculate Body Fat</Button>
       </div>

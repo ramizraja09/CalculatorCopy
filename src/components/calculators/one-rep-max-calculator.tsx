@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from 'react';
@@ -71,12 +72,12 @@ export default function OneRepMaxCalculator() {
         <h3 className="text-xl font-semibold">Inputs</h3>
         <div>
           <Label htmlFor="weight">Weight Lifted</Label>
-          <Controller name="weight" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
+          <Controller name="weight" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
           {errors.weight && <p className="text-destructive text-sm mt-1">{errors.weight.message}</p>}
         </div>
         <div>
           <Label htmlFor="reps">Repetitions</Label>
-          <Controller name="reps" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value) || 0)} />} />
+          <Controller name="reps" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseInt(e.target.value, 10))} />} />
           {errors.reps && <p className="text-destructive text-sm mt-1">{errors.reps.message}</p>}
         </div>
         <div className="flex gap-2">

@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from 'react';
@@ -114,7 +115,7 @@ export default function RunningTimePredictor() {
         <div>
           <Label>Distance</Label>
           <div className="flex gap-2">
-            <Controller name="distance" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
+            <Controller name="distance" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
             <Controller name="distanceUnit" control={control} render={({ field }) => (
                 <Select onValueChange={field.onChange} defaultValue={field.value}><SelectTrigger className="w-[120px]"><SelectValue/></SelectTrigger><SelectContent><SelectItem value="miles">Miles</SelectItem><SelectItem value="km">KM</SelectItem></SelectContent></Select>
             )} />
@@ -123,9 +124,9 @@ export default function RunningTimePredictor() {
         <div>
           <Label>Time</Label>
           <div className="grid grid-cols-3 gap-2">
-            <div><Label className="text-xs text-muted-foreground">Hours</Label><Controller name="timeHours" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value) || 0)} />} /></div>
-            <div><Label className="text-xs text-muted-foreground">Minutes</Label><Controller name="timeMinutes" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value) || 0)} />} /></div>
-            <div><Label className="text-xs text-muted-foreground">Seconds</Label><Controller name="timeSeconds" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value) || 0)} />} /></div>
+            <div><Label className="text-xs text-muted-foreground">Hours</Label><Controller name="timeHours" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseInt(e.target.value, 10))} />} /></div>
+            <div><Label className="text-xs text-muted-foreground">Minutes</Label><Controller name="timeMinutes" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseInt(e.target.value, 10))} />} /></div>
+            <div><Label className="text-xs text-muted-foreground">Seconds</Label><Controller name="timeSeconds" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseInt(e.target.value, 10))} />} /></div>
           </div>
         </div>
         <div className="flex gap-2">

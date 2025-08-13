@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from 'react';
@@ -94,8 +95,8 @@ export default function WilksScoreCalculator() {
                 <Label className="flex items-center justify-center rounded-md border-2 border-muted bg-popover p-4 peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary"><RadioGroupItem value="kg" className="mr-2"/>Kilograms (kg)</Label>
             </RadioGroup>
         )}/>
-        <div><Label>Body Weight</Label><Controller name="bodyWeight" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} /></div>
-        <div><Label>Total Weight Lifted (Squat+Bench+Deadlift)</Label><Controller name="totalLifted" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} /></div>
+        <div><Label>Body Weight</Label><Controller name="bodyWeight" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} /></div>
+        <div><Label>Total Weight Lifted (Squat+Bench+Deadlift)</Label><Controller name="totalLifted" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} /></div>
         <div className="flex gap-2">
             <Button type="submit" className="flex-1">Calculate Wilks Score</Button>
             <DropdownMenu>

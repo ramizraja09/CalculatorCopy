@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from 'react';
@@ -116,17 +117,17 @@ export default function ChildHeightPredictor() {
             <>
             <div>
               <Label>Father's Height</Label>
-              <div className="flex gap-2"><Controller name="fatherHeightFt" control={control} render={({ field }) => <Input placeholder="ft" type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value) || 0)} />} /><Controller name="fatherHeightIn" control={control} render={({ field }) => <Input placeholder="in" type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value) || 0)} />} /></div>
+              <div className="flex gap-2"><Controller name="fatherHeightFt" control={control} render={({ field }) => <Input placeholder="ft" type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseInt(e.target.value, 10))} />} /><Controller name="fatherHeightIn" control={control} render={({ field }) => <Input placeholder="in" type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseInt(e.target.value, 10))} />} /></div>
             </div>
             <div>
               <Label>Mother's Height</Label>
-              <div className="flex gap-2"><Controller name="motherHeightFt" control={control} render={({ field }) => <Input placeholder="ft" type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value) || 0)} />} /><Controller name="motherHeightIn" control={control} render={({ field }) => <Input placeholder="in" type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value) || 0)} />} /></div>
+              <div className="flex gap-2"><Controller name="motherHeightFt" control={control} render={({ field }) => <Input placeholder="ft" type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseInt(e.target.value, 10))} />} /><Controller name="motherHeightIn" control={control} render={({ field }) => <Input placeholder="in" type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseInt(e.target.value, 10))} />} /></div>
             </div>
             </>
         ) : (
             <>
-            <div><Label>Father's Height (cm)</Label><Controller name="fatherHeightCm" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} /></div>
-            <div><Label>Mother's Height (cm)</Label><Controller name="motherHeightCm" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} /></div>
+            <div><Label>Father's Height (cm)</Label><Controller name="fatherHeightCm" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} /></div>
+            <div><Label>Mother's Height (cm)</Label><Controller name="motherHeightCm" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} /></div>
             </>
         )}
         {errors.fatherHeightFt && <p className="text-destructive text-sm mt-1">{errors.fatherHeightFt.message}</p>}
