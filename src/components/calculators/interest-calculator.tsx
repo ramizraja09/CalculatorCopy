@@ -5,12 +5,14 @@ import { useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { Download } from 'lucide-react';
 import {
   DropdownMenu,
@@ -20,11 +22,10 @@ import {
 } from "@/components/ui/dropdown-menu"
 
 const formSchema = z.object({
-  principal: z.number().min(0.01, 'Principal must be positive'),
-  rate: z.number().min(0, 'Interest rate cannot be negative'),
-  term: z.number().int().min(1, 'Term must be at least 1'),
-  termUnit: z.enum(['years', 'months']),
-  interestType: z.enum(['simple', 'compound']),
+  initialPrincipal: z.number().min(0, 'Initial principal must be non-negative'),
+  monthlyContribution: z.number().min(0, 'Monthly contribution must be non-negative'),
+  interestRate: z.number().min(0, 'Interest rate must be non-negative'),
+  years: z.number().int().min(1, 'Must invest for at least 1 year'),
   compoundFrequency: z.enum(['annually', 'semiannually', 'quarterly', 'monthly', 'daily']),
 });
 
@@ -34,50 +35,66 @@ export default function InterestCalculator() {
   const [results, setResults] = useState<any>(null);
   const [formData, setFormData] = useState<FormData | null>(null);
 
-  const { control, handleSubmit, watch, formState: { errors } } = useForm<FormData>({
+  const { control, handleSubmit, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      principal: 1000,
-      rate: 5,
-      term: 5,
-      termUnit: 'years',
-      interestType: 'compound',
+      initialPrincipal: 1000,
+      monthlyContribution: 100,
+      interestRate: 7,
+      years: 10,
       compoundFrequency: 'annually',
     },
   });
-  
-  const interestType = watch('interestType');
 
-  const calculateInterest = (data: FormData) => {
-    const { principal, rate, term, termUnit, interestType, compoundFrequency } = data;
+  const calculateCompoundInterest = (data: FormData) => {
+    const { initialPrincipal, monthlyContribution, interestRate, years, compoundFrequency } = data;
+
+    const annualRate = interestRate / 100;
+    const compoundMap: { [key: string]: number } = {
+      annually: 1,
+      semiannually: 2,
+      quarterly: 4,
+      monthly: 12,
+      daily: 365
+    };
+    const n = compoundMap[compoundFrequency];
+    const schedule = [];
+    let balance = initialPrincipal;
+    let totalContributions = initialPrincipal;
     
-    const annualRate = rate / 100;
-    const timeInYears = termUnit === 'years' ? term : term / 12;
+    schedule.push({
+      year: 0,
+      endBalance: initialPrincipal,
+      totalContributions: initialPrincipal,
+      totalInterest: 0,
+    });
+    
+    for (let year = 1; year <= years; year++) {
+      let yearStartBalance = balance;
+      for (let month = 1; month <= 12; month++) {
+        balance += monthlyContribution;
+      }
+      
+      const interestForYear = balance * (Math.pow(1 + annualRate / n, n) - 1);
+      balance += interestForYear;
+      
+      totalContributions += monthlyContribution * 12;
+      const currentTotalInterest = balance - totalContributions;
 
-    let totalAmount = 0;
-    let totalInterest = 0;
-
-    if (interestType === 'simple') {
-      totalInterest = principal * annualRate * timeInYears;
-      totalAmount = principal + totalInterest;
-    } else { // Compound Interest
-      const compoundMap: { [key: string]: number } = {
-        'annually': 1,
-        'semiannually': 2,
-        'quarterly': 4,
-        'monthly': 12,
-        'daily': 365,
-      };
-      const n = compoundMap[compoundFrequency];
-      totalAmount = principal * Math.pow(1 + annualRate / n, n * timeInYears);
-      totalInterest = totalAmount - principal;
+      schedule.push({
+        year,
+        endBalance: balance,
+        totalContributions,
+        totalInterest: currentTotalInterest > 0 ? currentTotalInterest : 0,
+      });
     }
 
     setResults({
-      principal,
-      totalInterest,
-      totalAmount,
-      error: null
+      finalBalance: balance,
+      totalContributions,
+      totalInterest: balance - totalContributions,
+      schedule,
+      error: null,
     });
     setFormData(data);
   };
@@ -88,21 +105,20 @@ export default function InterestCalculator() {
     if (!results || !formData) return;
     
     let content = '';
-    const filename = `interest-calculation.${format}`;
-    const { principal, rate, term, termUnit, interestType, compoundFrequency } = formData;
+    const filename = `compound-interest-calculation.${format}`;
+    const { initialPrincipal, monthlyContribution, interestRate, years, compoundFrequency } = formData;
 
     if (format === 'txt') {
-      content = `Interest Calculation\n\nInputs:\n- Principal: ${formatCurrency(principal)}\n- Rate: ${rate}%\n- Term: ${term} ${termUnit}\n- Type: ${interestType}\n`;
-      if(interestType === 'compound') {
-        content += `- Compound Frequency: ${compoundFrequency}\n`;
-      }
-      content += `\nResult:\n- Final Amount: ${formatCurrency(results.totalAmount)}\n- Total Interest: ${formatCurrency(results.totalInterest)}`;
+      content = `Compound Interest Calculation\n\nInputs:\n`;
+      content += `- Initial Principal: ${formatCurrency(initialPrincipal)}\n- Monthly Contribution: ${formatCurrency(monthlyContribution)}\n- Annual Interest Rate: ${interestRate}%\n`;
+      content += `- Length of Time: ${years} years\n- Compound Frequency: ${compoundFrequency}\n\n`;
+      content += `Results:\n- Future Value: ${formatCurrency(results.finalBalance)}\n- Total Contributions: ${formatCurrency(results.totalContributions)}\n- Total Interest: ${formatCurrency(results.totalInterest)}\n`;
     } else {
-       content = `Category,Value\nPrincipal,${principal}\nRate (%),${rate}\nTerm,${term}\nTerm Unit,${termUnit}\nInterest Type,${interestType}\n`;
-       if(interestType === 'compound') {
-         content += `Compound Frequency,${compoundFrequency}\n`;
-       }
-       content += `\nResult Category,Value\nFinal Amount,${results.totalAmount}\nTotal Interest,${results.totalInterest}`;
+      content = 'Category,Value\n';
+      content += `Initial Principal,${initialPrincipal}\nMonthly Contribution,${monthlyContribution}\nAnnual Interest Rate (%),${interestRate}\n`;
+      content += `Length of Time (years),${years}\nCompound Frequency,${compoundFrequency}\n\n`;
+      content += 'Result Category,Value\n';
+      content += `Future Value,${results.finalBalance.toFixed(2)}\nTotal Contributions,${results.totalContributions.toFixed(2)}\nTotal Interest,${results.totalInterest.toFixed(2)}\n`;
     }
 
     const blob = new Blob([content], { type: `text/${format}` });
@@ -117,76 +133,53 @@ export default function InterestCalculator() {
   };
 
   return (
-    <form onSubmit={handleSubmit(calculateInterest)} className="grid md:grid-cols-2 gap-8">
+    <form onSubmit={handleSubmit(calculateCompoundInterest)} className="grid xl:grid-cols-3 gap-8">
       {/* Inputs Column */}
-      <div className="space-y-4">
-        <h3 className="text-xl font-semibold">Inputs</h3>
-        
-        <div>
-          <Label htmlFor="principal">Principal Amount ($)</Label>
-          <Controller name="principal" control={control} render={({ field }) => <Input id="principal" type="number" step="0.01" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
-          {errors.principal && <p className="text-destructive text-sm mt-1">{errors.principal.message}</p>}
-        </div>
-
-        <div>
-          <Label htmlFor="rate">Annual Interest Rate (%)</Label>
-          <Controller name="rate" control={control} render={({ field }) => <Input id="rate" type="number" step="0.01" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
-          {errors.rate && <p className="text-destructive text-sm mt-1">{errors.rate.message}</p>}
-        </div>
-
-        <div className="grid grid-cols-3 gap-2">
-          <div className="col-span-2">
-            <Label htmlFor="term">Investment/Loan Term</Label>
-            <Controller name="term" control={control} render={({ field }) => <Input id="term" type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseInt(e.target.value, 10))} />} />
-            {errors.term && <p className="text-destructive text-sm mt-1">{errors.term.message}</p>}
-          </div>
-          <div>
-            <Label>&nbsp;</Label>
-            <Controller name="termUnit" control={control} render={({ field }) => (
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="years">Years</SelectItem>
-                  <SelectItem value="months">Months</SelectItem>
-                </SelectContent>
-              </Select>
-            )} />
-          </div>
-        </div>
-
-        <div>
-          <Label>Interest Type</Label>
-          <Controller name="interestType" control={control} render={({ field }) => (
-            <RadioGroup onValueChange={field.onChange} defaultValue={field.value} className="flex gap-4 pt-2">
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="simple" id="simple" />
-                <Label htmlFor="simple">Simple</Label>
+      <div className="xl:col-span-1 space-y-4">
+        <Card>
+          <CardHeader><CardTitle>Investment Details</CardTitle></CardHeader>
+          <CardContent className="space-y-4">
+              <div>
+                <Label htmlFor="initialPrincipal">Initial Principal ($)</Label>
+                <Controller name="initialPrincipal" control={control} render={({ field }) => <Input id="initialPrincipal" type="number" step="0.01" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
+                {errors.initialPrincipal && <p className="text-destructive text-sm mt-1">{errors.initialPrincipal.message}</p>}
               </div>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="compound" id="compound" />
-                <Label htmlFor="compound">Compound</Label>
+
+              <div>
+                <Label htmlFor="monthlyContribution">Monthly Contribution ($)</Label>
+                <Controller name="monthlyContribution" control={control} render={({ field }) => <Input id="monthlyContribution" type="number" step="0.01" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
+                {errors.monthlyContribution && <p className="text-destructive text-sm mt-1">{errors.monthlyContribution.message}</p>}
               </div>
-            </RadioGroup>
-          )} />
-        </div>
-        
-        {interestType === 'compound' && (
-          <div>
-            <Label htmlFor="compoundFrequency">Compound Frequency</Label>
-            <Controller name="compoundFrequency" control={control} render={({ field }) => (
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
-                <SelectTrigger id="compoundFrequency"><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="annually">Annually</SelectItem>
-                  <SelectItem value="semiannually">Semiannually</SelectItem>
-                  <SelectItem value="quarterly">Quarterly</SelectItem>
-                  <SelectItem value="monthly">Monthly</SelectItem>
-                  <SelectItem value="daily">Daily</SelectItem>
-                </SelectContent>
-              </Select>
-            )} />
-          </div>
-        )}
+
+              <div>
+                <Label htmlFor="interestRate">Annual Interest Rate (%)</Label>
+                <Controller name="interestRate" control={control} render={({ field }) => <Input id="interestRate" type="number" step="0.01" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
+                {errors.interestRate && <p className="text-destructive text-sm mt-1">{errors.interestRate.message}</p>}
+              </div>
+              
+              <div>
+                <Label htmlFor="years">Length of Time (years)</Label>
+                <Controller name="years" control={control} render={({ field }) => <Input id="years" type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseInt(e.target.value, 10))} />} />
+                {errors.years && <p className="text-destructive text-sm mt-1">{errors.years.message}</p>}
+              </div>
+              
+              <div>
+                <Label htmlFor="compoundFrequency">Compound Frequency</Label>
+                <Controller name="compoundFrequency" control={control} render={({ field }) => (
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <SelectTrigger id="compoundFrequency"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="annually">Annually</SelectItem>
+                      <SelectItem value="semiannually">Semiannually</SelectItem>
+                      <SelectItem value="quarterly">Quarterly</SelectItem>
+                      <SelectItem value="monthly">Monthly</SelectItem>
+                      <SelectItem value="daily">Daily</SelectItem>
+                    </SelectContent>
+                  </Select>
+                )} />
+              </div>
+          </CardContent>
+        </Card>
         
         <div className="flex gap-2">
             <Button type="submit" className="flex-1">Calculate</Button>
@@ -205,7 +198,7 @@ export default function InterestCalculator() {
       </div>
 
       {/* Results Column */}
-      <div className="space-y-4">
+      <div className="xl:col-span-2 space-y-4">
         <h3 className="text-xl font-semibold">Results</h3>
         {results ? (
             results.error ? (
@@ -215,22 +208,69 @@ export default function InterestCalculator() {
             ) : (
                 <div className="space-y-4">
                     <Card>
-                        <CardContent className="p-4">
-                            <p className="text-sm text-muted-foreground">Final Amount</p>
-                            <p className="text-3xl font-bold">{formatCurrency(results.totalAmount)}</p>
+                        <CardHeader>
+                            <CardTitle className="text-base text-muted-foreground text-center">Future Value</CardTitle>
+                        </CardHeader>
+                        <CardContent className="text-center">
+                            <p className="text-4xl font-bold">{formatCurrency(results.finalBalance)}</p>
                         </CardContent>
                     </Card>
                     <Card>
-                        <CardContent className="p-4 grid grid-cols-2 gap-2 text-sm">
-                             <div><p className="text-muted-foreground">Principal Amount</p><p className="font-semibold">{formatCurrency(results.principal)}</p></div>
+                        <CardContent className="p-4 grid grid-cols-2 gap-2 text-sm text-center">
+                             <div><p className="text-muted-foreground">Total Contributions</p><p className="font-semibold">{formatCurrency(results.totalContributions)}</p></div>
                              <div><p className="text-muted-foreground">Total Interest</p><p className="font-semibold">{formatCurrency(results.totalInterest)}</p></div>
                         </CardContent>
+                    </Card>
+
+                    <Card>
+                      <CardHeader><CardTitle className="text-lg">Investment Growth Over Time</CardTitle></CardHeader>
+                      <CardContent className="p-4 h-64">
+                          <ResponsiveContainer width="100%" height="100%">
+                            <LineChart data={results.schedule} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
+                              <CartesianGrid strokeDasharray="3 3" />
+                              <XAxis dataKey="year" label={{ value: 'Year', position: 'insideBottom', offset: -5 }} />
+                              <YAxis tickFormatter={(value) => typeof value === 'number' ? formatCurrency(value) : ''} />
+                              <Tooltip formatter={(value: number, name: string) => (name === "Total Contributions" || name === "Total Balance") ? formatCurrency(value) : value } />
+                              <Legend />
+                              <Line type="monotone" dataKey="endBalance" name="Total Balance" stroke="hsl(var(--primary))" dot={false} />
+                              <Line type="monotone" dataKey="totalContributions" name="Total Contributions" stroke="hsl(var(--secondary-foreground))" dot={false} />
+                            </LineChart>
+                          </ResponsiveContainer>
+                      </CardContent>
+                    </Card>
+                    
+                    <Card>
+                      <CardHeader><CardTitle className="text-lg">Yearly Breakdown</CardTitle></CardHeader>
+                      <CardContent className="p-0">
+                         <ScrollArea className="h-96">
+                              <Table>
+                                  <TableHeader className="sticky top-0 bg-muted">
+                                      <TableRow>
+                                          <TableHead>Year</TableHead>
+                                          <TableHead className="text-right">Contributions</TableHead>
+                                          <TableHead className="text-right">Interest</TableHead>
+                                          <TableHead className="text-right">End Balance</TableHead>
+                                      </TableRow>
+                                  </TableHeader>
+                                  <TableBody>
+                                      {results.schedule.slice(1).map((row: any) => (
+                                          <TableRow key={row.year}>
+                                              <TableCell>{row.year}</TableCell>
+                                              <TableCell className="text-right">{formatCurrency(row.totalContributions)}</TableCell>
+                                              <TableCell className="text-right">{formatCurrency(row.totalInterest)}</TableCell>
+                                              <TableCell className="text-right">{formatCurrency(row.endBalance)}</TableCell>
+                                          </TableRow>
+                                      ))}
+                                  </TableBody>
+                              </Table>
+                          </ScrollArea>
+                      </CardContent>
                     </Card>
                 </div>
             )
         ) : (
-             <div className="flex items-center justify-center h-60 bg-muted/50 rounded-lg border border-dashed">
-                <p className="text-sm text-muted-foreground">Enter your details to calculate the interest</p>
+             <div className="flex items-center justify-center h-full min-h-[30rem] bg-muted/50 rounded-lg border border-dashed">
+                <p className="text-sm text-muted-foreground">Enter your details to calculate your investment growth</p>
             </div>
         )}
       </div>
