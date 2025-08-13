@@ -129,21 +129,21 @@ export default function Four01kCalculator() {
             <CardHeader><CardTitle className="text-lg">Your Details</CardTitle></CardHeader>
             <CardContent className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
-                    <div><Label>Current Age</Label><Controller name="currentAge" control={control} render={({ field }) => <Input type="number" placeholder="30" {...field} onChange={e => field.onChange(parseInt(e.target.value, 10) || 0)} />} /></div>
-                    <div><Label>Retirement Age</Label><Controller name="retirementAge" control={control} render={({ field }) => <Input type="number" placeholder="67" {...field} onChange={e => field.onChange(parseInt(e.target.value, 10) || 0)} />} /></div>
+                    <div><Label>Current Age</Label><Controller name="currentAge" control={control} render={({ field }) => <Input type="number" placeholder="30" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseInt(e.target.value, 10))} />} /></div>
+                    <div><Label>Retirement Age</Label><Controller name="retirementAge" control={control} render={({ field }) => <Input type="number" placeholder="67" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseInt(e.target.value, 10))} />} /></div>
                 </div>
                  {errors.retirementAge && <p className="text-destructive text-sm">{errors.retirementAge.message}</p>}
-                <div><Label>Annual Salary ($)</Label><Controller name="annualSalary" control={control} render={({ field }) => <Input type="number" placeholder="80000" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} /></div>
-                <div><Label>Current 401k Balance ($)</Label><Controller name="currentBalance" control={control} render={({ field }) => <Input type="number" placeholder="50000" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} /></div>
+                <div><Label>Annual Salary ($)</Label><Controller name="annualSalary" control={control} render={({ field }) => <Input type="number" placeholder="80000" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} /></div>
+                <div><Label>Current 401k Balance ($)</Label><Controller name="currentBalance" control={control} render={({ field }) => <Input type="number" placeholder="50000" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} /></div>
             </CardContent>
         </Card>
         <Card>
             <CardHeader><CardTitle className="text-lg">Contributions & Growth</CardTitle></CardHeader>
             <CardContent className="space-y-4">
-                <div><Label>Your Contribution (%)</Label><Controller name="contributionPercent" control={control} render={({ field }) => <Input type="number" placeholder="10" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} /></div>
-                <div><Label>Employer Match (%)</Label><Controller name="employerMatchPercent" control={control} render={({ field }) => <Input type="number" placeholder="50" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} /></div>
-                <div><Label>Employer Match Up To (%)</Label><Controller name="matchUpToPercent" control={control} render={({ field }) => <Input type="number" placeholder="6" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} /></div>
-                <div><Label>Estimated Annual Return (%)</Label><Controller name="annualReturn" control={control} render={({ field }) => <Input type="number" step="0.1" placeholder="7" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} /></div>
+                <div><Label>Your Contribution (%)</Label><Controller name="contributionPercent" control={control} render={({ field }) => <Input type="number" placeholder="10" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} /></div>
+                <div><Label>Employer Match (%)</Label><Controller name="employerMatchPercent" control={control} render={({ field }) => <Input type="number" placeholder="50" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} /></div>
+                <div><Label>Employer Match Up To (%)</Label><Controller name="matchUpToPercent" control={control} render={({ field }) => <Input type="number" placeholder="6" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} /></div>
+                <div><Label>Estimated Annual Return (%)</Label><Controller name="annualReturn" control={control} render={({ field }) => <Input type="number" step="0.1" placeholder="7" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} /></div>
             </CardContent>
         </Card>
         <div className="flex gap-2">

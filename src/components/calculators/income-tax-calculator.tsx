@@ -126,7 +126,7 @@ export default function IncomeTaxCalculator() {
         
         <div>
           <Label htmlFor="income">Gross Annual Income ($)</Label>
-          <Controller name="income" control={control} render={({ field }) => <Input id="income" type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
+          <Controller name="income" control={control} render={({ field }) => <Input id="income" type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
           {errors.income && <p className="text-destructive text-sm mt-1">{errors.income.message}</p>}
         </div>
 

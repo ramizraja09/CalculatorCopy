@@ -124,20 +124,20 @@ export default function InterestCalculator() {
         
         <div>
           <Label htmlFor="principal">Principal Amount ($)</Label>
-          <Controller name="principal" control={control} render={({ field }) => <Input id="principal" type="number" step="0.01" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
+          <Controller name="principal" control={control} render={({ field }) => <Input id="principal" type="number" step="0.01" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
           {errors.principal && <p className="text-destructive text-sm mt-1">{errors.principal.message}</p>}
         </div>
 
         <div>
           <Label htmlFor="rate">Annual Interest Rate (%)</Label>
-          <Controller name="rate" control={control} render={({ field }) => <Input id="rate" type="number" step="0.01" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
+          <Controller name="rate" control={control} render={({ field }) => <Input id="rate" type="number" step="0.01" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
           {errors.rate && <p className="text-destructive text-sm mt-1">{errors.rate.message}</p>}
         </div>
 
         <div className="grid grid-cols-3 gap-2">
           <div className="col-span-2">
             <Label htmlFor="term">Investment/Loan Term</Label>
-            <Controller name="term" control={control} render={({ field }) => <Input id="term" type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value) || 0)} />} />
+            <Controller name="term" control={control} render={({ field }) => <Input id="term" type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseInt(e.target.value, 10))} />} />
             {errors.term && <p className="text-destructive text-sm mt-1">{errors.term.message}</p>}
           </div>
           <div>

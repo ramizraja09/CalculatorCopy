@@ -90,13 +90,13 @@ export default function LtvCalculator() {
         
         <div>
           <Label htmlFor="loanAmount">Loan Amount ($)</Label>
-          <Controller name="loanAmount" control={control} render={({ field }) => <Input id="loanAmount" type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
+          <Controller name="loanAmount" control={control} render={({ field }) => <Input id="loanAmount" type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
           {errors.loanAmount && <p className="text-destructive text-sm mt-1">{errors.loanAmount.message}</p>}
         </div>
 
         <div>
           <Label htmlFor="propertyValue">Appraised Property Value ($)</Label>
-          <Controller name="propertyValue" control={control} render={({ field }) => <Input id="propertyValue" type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
+          <Controller name="propertyValue" control={control} render={({ field }) => <Input id="propertyValue" type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
           {errors.propertyValue && <p className="text-destructive text-sm mt-1">{errors.propertyValue.message}</p>}
         </div>
         

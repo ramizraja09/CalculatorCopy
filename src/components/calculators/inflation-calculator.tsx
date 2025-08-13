@@ -122,7 +122,7 @@ export default function InflationCalculator() {
         
         <div>
           <Label htmlFor="initialAmount">Amount ($)</Label>
-          <Controller name="initialAmount" control={control} render={({ field }) => <Input id="initialAmount" type="number" step="0.01" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
+          <Controller name="initialAmount" control={control} render={({ field }) => <Input id="initialAmount" type="number" step="0.01" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
           {errors.initialAmount && <p className="text-destructive text-sm mt-1">{errors.initialAmount.message}</p>}
         </div>
 

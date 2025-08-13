@@ -163,19 +163,19 @@ export default function CarLoanCalculator() {
         
         <div>
           <Label htmlFor="vehiclePrice">Vehicle Price ($)</Label>
-          <Controller name="vehiclePrice" control={control} render={({ field }) => <Input id="vehiclePrice" type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
+          <Controller name="vehiclePrice" control={control} render={({ field }) => <Input id="vehiclePrice" type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
           {errors.vehiclePrice && <p className="text-destructive text-sm mt-1">{errors.vehiclePrice.message}</p>}
         </div>
 
         <div>
           <Label htmlFor="loanTerm">Loan Term (years)</Label>
-          <Controller name="loanTerm" control={control} render={({ field }) => <Input id="loanTerm" type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value) || 0)} />} />
+          <Controller name="loanTerm" control={control} render={({ field }) => <Input id="loanTerm" type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseInt(e.target.value, 10))} />} />
           {errors.loanTerm && <p className="text-destructive text-sm mt-1">{errors.loanTerm.message}</p>}
         </div>
 
         <div>
           <Label htmlFor="interestRate">Interest Rate (%)</Label>
-          <Controller name="interestRate" control={control} render={({ field }) => <Input id="interestRate" type="number" step="0.01" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
+          <Controller name="interestRate" control={control} render={({ field }) => <Input id="interestRate" type="number" step="0.01" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
           {errors.interestRate && <p className="text-destructive text-sm mt-1">{errors.interestRate.message}</p>}
         </div>
         
@@ -183,19 +183,19 @@ export default function CarLoanCalculator() {
           <h4 className="font-semibold text-muted-foreground">Additional Details (Optional)</h4>
           <div>
             <Label htmlFor="downPayment">Down Payment ($)</Label>
-            <Controller name="downPayment" control={control} render={({ field }) => <Input id="downPayment" type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
+            <Controller name="downPayment" control={control} render={({ field }) => <Input id="downPayment" type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
             {errors.downPayment && <p className="text-destructive text-sm mt-1">{errors.downPayment.message}</p>}
           </div>
 
           <div>
             <Label htmlFor="tradeInValue">Trade-in Value ($)</Label>
-            <Controller name="tradeInValue" control={control} render={({ field }) => <Input id="tradeInValue" type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
+            <Controller name="tradeInValue" control={control} render={({ field }) => <Input id="tradeInValue" type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
             {errors.tradeInValue && <p className="text-destructive text-sm mt-1">{errors.tradeInValue.message}</p>}
           </div>
           
           <div>
             <Label htmlFor="salesTaxRate">Sales Tax Rate (%)</Label>
-            <Controller name="salesTaxRate" control={control} render={({ field }) => <Input id="salesTaxRate" type="number" step="0.01" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
+            <Controller name="salesTaxRate" control={control} render={({ field }) => <Input id="salesTaxRate" type="number" step="0.01" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
             {errors.salesTaxRate && <p className="text-destructive text-sm mt-1">{errors.salesTaxRate.message}</p>}
           </div>
         </div>
@@ -222,7 +222,7 @@ export default function CarLoanCalculator() {
         {results ? (
             results.error ? (
                 <Card className="flex items-center justify-center h-60 bg-muted/50 border-dashed">
-                    <p className="text-destructive text-center">{results.error}</p>
+                    <p className="text-destructive text-center p-4">{results.error}</p>
                 </Card>
             ) : (
                 <div className="space-y-4">

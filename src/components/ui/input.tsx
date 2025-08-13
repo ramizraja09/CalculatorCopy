@@ -8,8 +8,6 @@ const Input = React.forwardRef<HTMLInputElement, React.ComponentProps<"input">>(
     
     const handleFocus = (event: React.FocusEvent<HTMLInputElement>) => {
       event.target.select();
-      
-      // Propagate the onFocus event if it exists in props
       if (props.onFocus) {
         props.onFocus(event);
       }

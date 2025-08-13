@@ -137,19 +137,19 @@ export default function HomeAffordabilityCalculator() {
         
         <div>
           <Label htmlFor="annualIncome">Gross Annual Income ($)</Label>
-          <Controller name="annualIncome" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
+          <Controller name="annualIncome" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
           {errors.annualIncome && <p className="text-destructive text-sm mt-1">{errors.annualIncome.message}</p>}
         </div>
 
         <div>
           <Label htmlFor="monthlyDebts">Total Monthly Debts ($)</Label>
-          <Controller name="monthlyDebts" control={control} render={({ field }) => <Input type="number" placeholder="Car payments, student loans, etc." {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
+          <Controller name="monthlyDebts" control={control} render={({ field }) => <Input type="number" placeholder="Car payments, student loans, etc." {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
           {errors.monthlyDebts && <p className="text-destructive text-sm mt-1">{errors.monthlyDebts.message}</p>}
         </div>
 
         <div>
           <Label htmlFor="downPayment">Down Payment ($)</Label>
-          <Controller name="downPayment" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
+          <Controller name="downPayment" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
           {errors.downPayment && <p className="text-destructive text-sm mt-1">{errors.downPayment.message}</p>}
         </div>
         
@@ -157,25 +157,25 @@ export default function HomeAffordabilityCalculator() {
         
         <div>
           <Label htmlFor="interestRate">Estimated Interest Rate (%)</Label>
-          <Controller name="interestRate" control={control} render={({ field }) => <Input type="number" step="0.01" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
+          <Controller name="interestRate" control={control} render={({ field }) => <Input type="number" step="0.01" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
           {errors.interestRate && <p className="text-destructive text-sm mt-1">{errors.interestRate.message}</p>}
         </div>
 
         <div>
           <Label htmlFor="loanTerm">Loan Term (years)</Label>
-          <Controller name="loanTerm" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value) || 0)} />} />
+          <Controller name="loanTerm" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseInt(e.target.value, 10))} />} />
           {errors.loanTerm && <p className="text-destructive text-sm mt-1">{errors.loanTerm.message}</p>}
         </div>
         
         <div>
           <Label htmlFor="propertyTaxRate">Annual Property Tax Rate (%)</Label>
-          <Controller name="propertyTaxRate" control={control} render={({ field }) => <Input type="number" step="0.01" placeholder="e.g., 1.2" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
+          <Controller name="propertyTaxRate" control={control} render={({ field }) => <Input type="number" step="0.01" placeholder="e.g., 1.2" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
           {errors.propertyTaxRate && <p className="text-destructive text-sm mt-1">{errors.propertyTaxRate.message}</p>}
         </div>
         
         <div>
           <Label htmlFor="homeInsuranceRate">Annual Home Insurance Rate (%)</Label>
-          <Controller name="homeInsuranceRate" control={control} render={({ field }) => <Input type="number" step="0.01" placeholder="e.g., 0.5" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
+          <Controller name="homeInsuranceRate" control={control} render={({ field }) => <Input type="number" step="0.01" placeholder="e.g., 0.5" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
           {errors.homeInsuranceRate && <p className="text-destructive text-sm mt-1">{errors.homeInsuranceRate.message}</p>}
         </div>
 

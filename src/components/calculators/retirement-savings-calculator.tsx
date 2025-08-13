@@ -159,20 +159,20 @@ export default function RetirementSavingsCalculator() {
       <div className="space-y-4">
         <h3 className="text-xl font-semibold">Your Details</h3>
         <div className="grid grid-cols-2 gap-4">
-            <div><Label htmlFor="currentAge">Current Age</Label><Controller name="currentAge" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value) || 0)} />} /></div>
-            <div><Label htmlFor="retirementAge">Retirement Age</Label><Controller name="retirementAge" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value) || 0)} />} /></div>
+            <div><Label htmlFor="currentAge">Current Age</Label><Controller name="currentAge" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseInt(e.target.value, 10))} />} /></div>
+            <div><Label htmlFor="retirementAge">Retirement Age</Label><Controller name="retirementAge" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseInt(e.target.value, 10))} />} /></div>
         </div>
         {errors.retirementAge && <p className="text-destructive text-sm mt-1">{errors.retirementAge.message}</p>}
         
         <h3 className="text-xl font-semibold pt-4">Savings & Investments</h3>
-        <div><Label htmlFor="currentSavings">Current Savings ($)</Label><Controller name="currentSavings" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} /></div>
-        <div><Label htmlFor="monthlyContribution">Monthly Contribution ($)</Label><Controller name="monthlyContribution" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} /></div>
-        <div><Label htmlFor="preRetirementROR">Pre-Retirement Rate of Return (%)</Label><Controller name="preRetirementROR" control={control} render={({ field }) => <Input type="number" step="0.1" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} /></div>
+        <div><Label htmlFor="currentSavings">Current Savings ($)</Label><Controller name="currentSavings" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} /></div>
+        <div><Label htmlFor="monthlyContribution">Monthly Contribution ($)</Label><Controller name="monthlyContribution" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} /></div>
+        <div><Label htmlFor="preRetirementROR">Pre-Retirement Rate of Return (%)</Label><Controller name="preRetirementROR" control={control} render={({ field }) => <Input type="number" step="0.1" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} /></div>
         
         <h3 className="text-xl font-semibold pt-4">Retirement Goals</h3>
-        <div><Label htmlFor="desiredAnnualIncome">Desired Annual Income ($)</Label><Controller name="desiredAnnualIncome" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} /></div>
-        <div><Label htmlFor="drawdownYears">Years in Retirement</Label><Controller name="drawdownYears" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value) || 0)} />} /></div>
-        <div><Label htmlFor="postRetirementROR">Post-Retirement Rate of Return (%)</Label><Controller name="postRetirementROR" control={control} render={({ field }) => <Input type="number" step="0.1" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} /></div>
+        <div><Label htmlFor="desiredAnnualIncome">Desired Annual Income ($)</Label><Controller name="desiredAnnualIncome" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} /></div>
+        <div><Label htmlFor="drawdownYears">Years in Retirement</Label><Controller name="drawdownYears" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseInt(e.target.value, 10))} />} /></div>
+        <div><Label htmlFor="postRetirementROR">Post-Retirement Rate of Return (%)</Label><Controller name="postRetirementROR" control={control} render={({ field }) => <Input type="number" step="0.1" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} /></div>
         
          <div className="flex gap-2">
             <Button type="submit" className="flex-1">Calculate</Button>

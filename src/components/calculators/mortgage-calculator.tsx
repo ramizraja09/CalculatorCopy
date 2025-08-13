@@ -188,13 +188,13 @@ export default function MortgageCalculator() {
               <AccordionContent className="space-y-4 px-1">
                 <div>
                   <Label htmlFor="homePrice">Home Price ($)</Label>
-                  <Controller name="homePrice" control={control} render={({ field }) => <Input id="homePrice" type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
+                  <Controller name="homePrice" control={control} render={({ field }) => <Input id="homePrice" type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
                   {errors.homePrice && <p className="text-destructive text-sm mt-1">{errors.homePrice.message}</p>}
                 </div>
                 <div className="grid grid-cols-3 gap-2">
                     <div className="col-span-2">
                         <Label htmlFor="downPayment">Down Payment</Label>
-                        <Controller name="downPayment" control={control} render={({ field }) => <Input id="downPayment" type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
+                        <Controller name="downPayment" control={control} render={({ field }) => <Input id="downPayment" type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
                     </div>
                     <div>
                         <Label>&nbsp;</Label>
@@ -213,11 +213,11 @@ export default function MortgageCalculator() {
                  {errors.downPayment && <p className="text-destructive text-sm mt-1 col-span-3">{errors.downPayment.message}</p>}
                  <div>
                   <Label htmlFor="loanTerm">Loan Term (years)</Label>
-                  <Controller name="loanTerm" control={control} render={({ field }) => <Input id="loanTerm" type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value) || 0)} />} />
+                  <Controller name="loanTerm" control={control} render={({ field }) => <Input id="loanTerm" type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseInt(e.target.value, 10))} />} />
                 </div>
                 <div>
                   <Label htmlFor="interestRate">Interest Rate (%)</Label>
-                  <Controller name="interestRate" control={control} render={({ field }) => <Input id="interestRate" type="number" step="0.01" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
+                  <Controller name="interestRate" control={control} render={({ field }) => <Input id="interestRate" type="number" step="0.01" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
                 </div>
               </AccordionContent>
             </AccordionItem>
@@ -226,15 +226,15 @@ export default function MortgageCalculator() {
               <AccordionContent className="space-y-4 px-1">
                  <div>
                     <Label htmlFor="propertyTax">Annual Property Tax ($)</Label>
-                    <Controller name="propertyTax" control={control} render={({ field }) => <Input id="propertyTax" type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
+                    <Controller name="propertyTax" control={control} render={({ field }) => <Input id="propertyTax" type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
                 </div>
                 <div>
                     <Label htmlFor="homeInsurance">Annual Home Insurance ($)</Label>
-                    <Controller name="homeInsurance" control={control} render={({ field }) => <Input id="homeInsurance" type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
+                    <Controller name="homeInsurance" control={control} render={({ field }) => <Input id="homeInsurance" type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
                 </div>
                 <div>
                     <Label htmlFor="hoaFees">Monthly HOA Fees ($)</Label>
-                    <Controller name="hoaFees" control={control} render={({ field }) => <Input id="hoaFees" type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
+                    <Controller name="hoaFees" control={control} render={({ field }) => <Input id="hoaFees" type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
                 </div>
               </AccordionContent>
             </AccordionItem>
@@ -291,7 +291,7 @@ export default function MortgageCalculator() {
                     <LineChart data={results.amortization} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
                         <CartesianGrid strokeDasharray="3 3" />
                         <XAxis dataKey="month" label={{ value: 'Month', position: 'insideBottom', offset: -5 }} />
-                        <YAxis tickFormatter={(tick) => formatCurrency(tick)} />
+                        <YAxis tickFormatter={(value) => typeof value === 'number' ? formatCurrency(value) : ''} />
                         <RechartsLineTooltip formatter={(value: number) => formatCurrency(value)} />
                         <Line type="monotone" dataKey="remainingBalance" name="Remaining Balance" stroke="hsl(var(--primary))" dot={false} />
                     </LineChart>
