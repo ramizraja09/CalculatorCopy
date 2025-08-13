@@ -5,14 +5,16 @@ import { useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
+import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip as RechartsTooltip } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsLineTooltip } from 'recharts';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Download } from 'lucide-react';
 import {
   DropdownMenu,
@@ -30,7 +32,16 @@ const formSchema = z.object({
   propertyTax: z.number().min(0, 'Property tax must be non-negative'),
   homeInsurance: z.number().min(0, 'Home insurance must be non-negative'),
   hoaFees: z.number().min(0, 'HOA fees must be non-negative'),
+}).refine(data => {
+    if (data.downPaymentType === 'percent') {
+        return data.downPayment >= 0 && data.downPayment <= 100;
+    }
+    return data.downPayment < data.homePrice;
+}, {
+    message: "Down payment is invalid.",
+    path: ["downPayment"],
 });
+
 
 type FormData = z.infer<typeof formSchema>;
 
@@ -47,8 +58,8 @@ export default function MortgageCalculator() {
       downPaymentType: 'percent',
       loanTerm: 30,
       interestRate: 6.5,
-      propertyTax: 3000,
-      homeInsurance: 1500,
+      propertyTax: 4200, // 1.2% of 350k
+      homeInsurance: 1750, // 0.5% of 350k
       hoaFees: 0,
     },
   });
@@ -81,7 +92,9 @@ export default function MortgageCalculator() {
     const monthlyInterestRate = interestRate / 100 / 12;
     const numberOfPayments = loanTerm * 12;
 
-    const monthlyPrincipalAndInterest = principal * (monthlyInterestRate * Math.pow(1 + monthlyInterestRate, numberOfPayments)) / (Math.pow(1 + monthlyInterestRate, numberOfPayments) - 1);
+    const monthlyPrincipalAndInterest = monthlyInterestRate > 0 ?
+      principal * (monthlyInterestRate * Math.pow(1 + monthlyInterestRate, numberOfPayments)) / (Math.pow(1 + monthlyInterestRate, numberOfPayments) - 1)
+      : principal / numberOfPayments;
 
     const monthlyPropertyTax = propertyTax / 12;
     const monthlyHomeInsurance = homeInsurance / 12;
@@ -131,7 +144,7 @@ export default function MortgageCalculator() {
       ].filter(item => item.value > 0)
     : [];
 
-  const PIE_COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
+  const PIE_COLORS = ['hsl(var(--chart-1))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))', 'hsl(var(--chart-4))'];
   
   const handleExport = (format: 'txt' | 'csv') => {
     if (!results || !formData) return;
@@ -165,175 +178,172 @@ export default function MortgageCalculator() {
   };
 
   return (
-    <form onSubmit={handleSubmit(calculateMortgage)} className="grid md:grid-cols-2 gap-8">
-      {/* Inputs Column */}
-      <div className="space-y-4">
-        <h3 className="text-xl font-semibold">Inputs</h3>
-        
-        <div>
-          <Label htmlFor="homePrice">Home Price ($)</Label>
-          <Controller name="homePrice" control={control} render={({ field }) => <Input id="homePrice" type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
-          {errors.homePrice && <p className="text-destructive text-sm mt-1">{errors.homePrice.message}</p>}
-        </div>
-
-        <div className="grid grid-cols-3 gap-2">
-            <div className="col-span-2">
-                <Label htmlFor="downPayment">Down Payment</Label>
-                <Controller name="downPayment" control={control} render={({ field }) => <Input id="downPayment" type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
-            </div>
-            <div>
-                <Label>&nbsp;</Label>
-                <Controller
-                    name="downPaymentType"
-                    control={control}
-                    render={({ field }) => (
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                            <SelectTrigger><SelectValue /></SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="percent">%</SelectItem>
-                                <SelectItem value="amount">$</SelectItem>
-                            </SelectContent>
-                        </Select>
-                    )}
-                />
-            </div>
-        </div>
-        {watchDownPaymentType === 'percent' 
-            ? errors.downPayment && <p className="text-destructive text-sm mt-1">{errors.downPayment.message}</p>
-            : (watch('downPayment') > watchHomePrice) && <p className="text-destructive text-sm mt-1">Down payment cannot exceed home price.</p>
-        }
-
-
-        <div>
-          <Label htmlFor="loanTerm">Loan Term (years)</Label>
-          <Controller name="loanTerm" control={control} render={({ field }) => <Input id="loanTerm" type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value) || 0)} />} />
-          {errors.loanTerm && <p className="text-destructive text-sm mt-1">{errors.loanTerm.message}</p>}
-        </div>
-
-        <div>
-          <Label htmlFor="interestRate">Interest Rate (%)</Label>
-          <Controller name="interestRate" control={control} render={({ field }) => <Input id="interestRate" type="number" step="0.01" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
-          {errors.interestRate && <p className="text-destructive text-sm mt-1">{errors.interestRate.message}</p>}
-        </div>
-        
-        <div className="space-y-2 pt-4">
-            <h4 className="font-semibold text-muted-foreground">Additional Costs (Optional)</h4>
-             <div>
-              <Label htmlFor="propertyTax">Annual Property Tax ($)</Label>
-              <Controller name="propertyTax" control={control} render={({ field }) => <Input id="propertyTax" type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
-              {errors.propertyTax && <p className="text-destructive text-sm mt-1">{errors.propertyTax.message}</p>}
-            </div>
-
-            <div>
-              <Label htmlFor="homeInsurance">Annual Home Insurance ($)</Label>
-              <Controller name="homeInsurance" control={control} render={({ field }) => <Input id="homeInsurance" type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
-              {errors.homeInsurance && <p className="text-destructive text-sm mt-1">{errors.homeInsurance.message}</p>}
-            </div>
-
-            <div>
-              <Label htmlFor="hoaFees">Monthly HOA Fees ($)</Label>
-              <Controller name="hoaFees" control={control} render={({ field }) => <Input id="hoaFees" type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
-              {errors.hoaFees && <p className="text-destructive text-sm mt-1">{errors.hoaFees.message}</p>}
-            </div>
-        </div>
-
-        <div className="flex gap-2">
-            <Button type="submit" className="flex-1">Calculate</Button>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" disabled={!results}>
-                  <Download className="mr-2 h-4 w-4" /> Export
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent>
-                <DropdownMenuItem onClick={() => handleExport('txt')}>Download as .txt</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handleExport('csv')}>Download as .csv</DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-        </div>
-      </div>
-
-      {/* Results Column */}
-      <div className="space-y-4" data-results-container>
-        <h3 className="text-xl font-semibold">Results</h3>
-        {results ? (
-            results.error ? (
-                <Card className="flex items-center justify-center h-60 bg-muted/50 border-dashed">
-                    <p className="text-destructive">{results.error}</p>
-                </Card>
-            ) : (
-                <div className="space-y-4">
-                    <Card>
-                        <CardContent className="p-4">
-                            <p className="text-sm text-muted-foreground">Monthly Payment</p>
-                            <p className="text-3xl font-bold">{formatCurrency(results.monthlyTotal)}</p>
-                            <div className="h-64 mt-4">
-                                <ResponsiveContainer width="100%" height="100%">
-                                    <PieChart>
-                                        <Pie data={pieData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80} fill="#8884d8" labelLine={false} label={({ cx, cy, midAngle, innerRadius, outerRadius, percent }) => {
-                                            const radius = innerRadius + (outerRadius - innerRadius) * 1.2;
-                                            const x = cx + radius * Math.cos(-midAngle * Math.PI / 180);
-                                            const y = cy + radius * Math.sin(-midAngle * Math.PI / 180);
-                                            return (
-                                                <text x={x} y={y} fill="currentColor" textAnchor={x > cx ? 'start' : 'end'} dominantBaseline="central" className="text-xs">
-                                                {`${(percent * 100).toFixed(0)}%`}
-                                                </text>
-                                            );
-                                        }}>
-                                            {pieData.map((entry, index) => <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />)}
-                                        </Pie>
-                                        <Tooltip formatter={(value: number) => formatCurrency(value)} />
-                                        <Legend iconSize={10} />
-                                    </PieChart>
-                                </ResponsiveContainer>
-                            </div>
-                        </CardContent>
-                    </Card>
-
-                    <Card>
-                        <CardContent className="p-4 grid grid-cols-2 gap-2 text-sm">
-                            <div><p className="text-muted-foreground">Principal Loan Amount</p><p className="font-semibold">{formatCurrency(results.principal)}</p></div>
-                            <div><p className="text-muted-foreground">Down Payment</p><p className="font-semibold">{formatCurrency(results.downPaymentAmount)}</p></div>
-                            <div><p className="text-muted-foreground">Total Interest Paid</p><p className="font-semibold">{formatCurrency(results.totalInterestPaid)}</p></div>
-                             <div><p className="text-muted-foreground">Total Paid</p><p className="font-semibold">{formatCurrency(results.totalPaid + results.downPaymentAmount)}</p></div>
-                        </CardContent>
-                    </Card>
-
-                    <Card>
-                        <CardContent className="p-4">
-                            <h4 className="font-semibold mb-2">Amortization Schedule</h4>
-                            <ScrollArea className="h-72">
-                                <Table>
-                                    <TableHeader className="sticky top-0 bg-muted">
-                                        <TableRow>
-                                            <TableHead className="w-1/4">Month</TableHead>
-                                            <TableHead className="w-1/4 text-right">Principal</TableHead>
-                                            <TableHead className="w-1/4 text-right">Interest</TableHead>
-                                            <TableHead className="w-1/4 text-right">Balance</TableHead>
-                                        </TableRow>
-                                    </TableHeader>
-                                    <TableBody>
-                                        {results.amortization.map((row: any) => (
-                                            <TableRow key={row.month}>
-                                                <TableCell>{row.month}</TableCell>
-                                                <TableCell className="text-right">{formatCurrency(row.principalPayment)}</TableCell>
-                                                <TableCell className="text-right">{formatCurrency(row.interestPayment)}</TableCell>
-                                                <TableCell className="text-right">{formatCurrency(row.remainingBalance)}</TableCell>
-                                            </TableRow>
-                                        ))}
-                                    </TableBody>
-                                </Table>
-                            </ScrollArea>
-                        </CardContent>
-                    </Card>
+    <main className="grid lg:grid-cols-3 gap-8">
+      {/* Left Pane: Inputs */}
+      <section className="lg:col-span-1">
+        <form onSubmit={handleSubmit(calculateMortgage)} className="space-y-4">
+          <Accordion type="multiple" defaultValue={['loan-basics', 'costs']} className="w-full">
+            <AccordionItem value="loan-basics">
+              <AccordionTrigger>Loan Basics</AccordionTrigger>
+              <AccordionContent className="space-y-4 px-1">
+                <div>
+                  <Label htmlFor="homePrice">Home Price ($)</Label>
+                  <Controller name="homePrice" control={control} render={({ field }) => <Input id="homePrice" type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
+                  {errors.homePrice && <p className="text-destructive text-sm mt-1">{errors.homePrice.message}</p>}
                 </div>
-            )
+                <div className="grid grid-cols-3 gap-2">
+                    <div className="col-span-2">
+                        <Label htmlFor="downPayment">Down Payment</Label>
+                        <Controller name="downPayment" control={control} render={({ field }) => <Input id="downPayment" type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
+                    </div>
+                    <div>
+                        <Label>&nbsp;</Label>
+                        <Controller name="downPaymentType" control={control} render={({ field }) => (
+                                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                    <SelectTrigger><SelectValue /></SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="percent">%</SelectItem>
+                                        <SelectItem value="amount">$</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            )}
+                        />
+                    </div>
+                </div>
+                 {errors.downPayment && <p className="text-destructive text-sm mt-1 col-span-3">{errors.downPayment.message}</p>}
+                 <div>
+                  <Label htmlFor="loanTerm">Loan Term (years)</Label>
+                  <Controller name="loanTerm" control={control} render={({ field }) => <Input id="loanTerm" type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value) || 0)} />} />
+                </div>
+                <div>
+                  <Label htmlFor="interestRate">Interest Rate (%)</Label>
+                  <Controller name="interestRate" control={control} render={({ field }) => <Input id="interestRate" type="number" step="0.01" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+            <AccordionItem value="costs">
+              <AccordionTrigger>Costs & Escrows</AccordionTrigger>
+              <AccordionContent className="space-y-4 px-1">
+                 <div>
+                    <Label htmlFor="propertyTax">Annual Property Tax ($)</Label>
+                    <Controller name="propertyTax" control={control} render={({ field }) => <Input id="propertyTax" type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
+                </div>
+                <div>
+                    <Label htmlFor="homeInsurance">Annual Home Insurance ($)</Label>
+                    <Controller name="homeInsurance" control={control} render={({ field }) => <Input id="homeInsurance" type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
+                </div>
+                <div>
+                    <Label htmlFor="hoaFees">Monthly HOA Fees ($)</Label>
+                    <Controller name="hoaFees" control={control} render={({ field }) => <Input id="hoaFees" type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
+          
+          <div className="flex gap-2">
+              <Button type="submit" className="flex-1">Calculate</Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" disabled={!results}>
+                    <Download className="mr-2 h-4 w-4" /> Export
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent>
+                  <DropdownMenuItem onClick={() => handleExport('txt')}>Download as .txt</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleExport('csv')}>Download as .csv</DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+          </div>
+        </form>
+      </section>
+
+      {/* Center Pane: Key Results & Charts */}
+      <section className="lg:col-span-1 space-y-4">
+        <h2 className="text-xl font-semibold">Summary</h2>
+        {results && !results.error ? (
+          <div className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base text-center text-muted-foreground">Estimated Monthly Payment</CardTitle>
+              </CardHeader>
+              <CardContent className="text-center">
+                <p className="text-4xl font-bold">{formatCurrency(results.monthlyTotal)}</p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader><CardTitle className="text-base text-center">Monthly Breakdown</CardTitle></CardHeader>
+              <CardContent className="h-64">
+                <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                        <Pie data={pieData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80} fill="#8884d8">
+                            {pieData.map((_entry, index) => <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />)}
+                        </Pie>
+                        <RechartsTooltip formatter={(value: number) => formatCurrency(value)} />
+                        <Legend iconSize={10} />
+                    </PieChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader><CardTitle className="text-base text-center">Loan Balance Over Time</CardTitle></CardHeader>
+              <CardContent className="h-64">
+                <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={results.amortization} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="month" label={{ value: 'Month', position: 'insideBottom', offset: -5 }} />
+                        <YAxis tickFormatter={(tick) => formatCurrency(tick)} />
+                        <RechartsLineTooltip formatter={(value: number) => formatCurrency(value)} />
+                        <Line type="monotone" dataKey="remainingBalance" name="Remaining Balance" stroke="hsl(var(--primary))" dot={false} />
+                    </LineChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+          </div>
         ) : (
-             <div className="flex items-center justify-center h-60 bg-muted/50 rounded-lg border border-dashed">
-                <p className="text-sm text-muted-foreground">Enter your details and click calculate</p>
-            </div>
+          <Card className="flex items-center justify-center h-full min-h-[30rem] bg-muted/50 border-dashed">
+            <p className="text-sm text-muted-foreground">{results?.error || "Enter details to see results"}</p>
+          </Card>
         )}
-      </div>
-    </form>
+      </section>
+
+      {/* Right Pane: Amortization Schedule */}
+      <aside className="lg:col-span-1">
+        <h2 className="text-xl font-semibold mb-4">Amortization Schedule</h2>
+         <Card>
+            <CardContent className="p-0">
+                <ScrollArea className="h-[40rem]">
+                    <Table>
+                        <TableHeader className="sticky top-0 bg-muted z-10">
+                            <TableRow>
+                                <TableHead className="w-1/4">Month</TableHead>
+                                <TableHead className="w-1/4 text-right">Principal</TableHead>
+                                <TableHead className="w-1/4 text-right">Interest</TableHead>
+                                <TableHead className="w-1/4 text-right">Balance</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            {results && !results.error ? (
+                                results.amortization.map((row: any) => (
+                                    <TableRow key={row.month}>
+                                        <TableCell>{row.month}</TableCell>
+                                        <TableCell className="text-right">{formatCurrency(row.principalPayment)}</TableCell>
+                                        <TableCell className="text-right">{formatCurrency(row.interestPayment)}</TableCell>
+                                        <TableCell className="text-right">{formatCurrency(row.remainingBalance)}</TableCell>
+                                    </TableRow>
+                                ))
+                            ) : (
+                                <TableRow>
+                                    <TableCell colSpan={4} className="text-center h-96 text-muted-foreground">
+                                        Schedule will appear here.
+                                    </TableCell>
+                                </TableRow>
+                            )}
+                        </TableBody>
+                    </Table>
+                </ScrollArea>
+            </CardContent>
+        </Card>
+      </aside>
+    </main>
   );
 }
