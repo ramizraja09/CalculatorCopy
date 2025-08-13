@@ -156,7 +156,7 @@ export default function SunAngleCalculator() {
          <Card className="mt-4">
             <CardContent className="p-4 text-center">
                  <p className="text-sm text-muted-foreground">Current UTC Time</p>
-                 <p className="font-mono">{isClient ? currentTime : 'Loading...'}</p>
+                 <p className="font-mono" suppressHydrationWarning>{isClient ? currentTime : 'Loading...'}</p>
             </CardContent>
          </Card>
       </div>
