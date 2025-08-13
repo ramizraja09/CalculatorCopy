@@ -232,22 +232,24 @@ export default function BasicCalculator() {
         <CardContent className="p-4 flex-grow flex flex-col">
           <div className="flex justify-between items-center mb-2">
               <h3 className="text-lg font-semibold">History</h3>
-              <div className="flex gap-1">
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                        <Button variant="outline" size="sm" disabled={history.length === 0}><Download className="mr-2 h-4 w-4" /> Export</Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent>
-                        <DropdownMenuItem onClick={() => exportHistory('txt')}>Download as .txt</DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => exportHistory('csv')}>Download as .csv</DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                  <Button variant="outline" size="sm" onClick={clearHistory} aria-label="Clear History" disabled={history.length === 0}><Trash2 className="mr-2 h-4 w-4" /> Clear</Button>
-              </div>
+              {isClient && (
+                <div className="flex gap-1">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                          <Button variant="outline" size="sm" disabled={history.length === 0}><Download className="mr-2 h-4 w-4" /> Export</Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent>
+                          <DropdownMenuItem onClick={() => exportHistory('txt')}>Download as .txt</DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => exportHistory('csv')}>Download as .csv</DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                    <Button variant="outline" size="sm" onClick={clearHistory} aria-label="Clear History" disabled={history.length === 0}><Trash2 className="mr-2 h-4 w-4" /> Clear</Button>
+                </div>
+              )}
           </div>
           <ScrollArea className="flex-grow border rounded-md">
               <div className="p-2 text-sm text-right">
-                  {history.length > 0 ? (
+                  {isClient && history.length > 0 ? (
                       history.map((item, index) => <p key={index} className="font-mono p-1 border-b">{item}</p>)
                   ) : (
                       <p className="p-4 text-center text-muted-foreground">No history yet.</p>
