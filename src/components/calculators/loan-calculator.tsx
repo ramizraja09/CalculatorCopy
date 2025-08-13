@@ -172,7 +172,7 @@ export default function LoanCalculator() {
                 </Card>
             ) : (
                 <div className="space-y-4">
-                    <div className="grid md:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                         <Card>
                             <CardHeader><CardTitle className="text-base text-muted-foreground">Monthly Payment</CardTitle></CardHeader>
                             <CardContent><p className="text-xl md:text-2xl font-bold break-all">{formatCurrency(results.monthlyPayment)}</p></CardContent>
