@@ -5,12 +5,17 @@ import { useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
-import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { Info, Download } from 'lucide-react';
+import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip as RechartsTooltip } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsLineTooltip } from 'recharts';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -23,12 +28,14 @@ const formSchema = z.object({
   deposit: z.number().min(0, 'Deposit must be non-negative'),
   loanTerm: z.number().int().min(1, 'Loan term must be at least 1 year'),
   interestRate: z.number().min(0.01, 'Interest rate must be positive'),
+}).refine(data => data.deposit < data.propertyPrice, {
+    message: "Deposit must be less than the property price.",
+    path: ["deposit"],
 });
 
 type FormData = z.infer<typeof formSchema>;
 
 // Simplified 2024 UK Stamp Duty Land Tax (SDLT) calculation for England & NI
-// This is a simplified model and does not account for all circumstances (e.g., first-time buyers, additional properties).
 const calculateStampDuty = (price: number) => {
     let tax = 0;
     if (price > 250000) {
@@ -45,7 +52,6 @@ const calculateStampDuty = (price: number) => {
     }
     return tax;
 }
-
 
 export default function MortgageCalculatorUK() {
   const [results, setResults] = useState<any>(null);
@@ -69,20 +75,30 @@ export default function MortgageCalculatorUK() {
       interestRate,
     } = data;
 
-    if (deposit >= propertyPrice) {
-        setResults({ error: 'Deposit must be less than the property price.' });
-        return;
-    }
-
     const principal = propertyPrice - deposit;
     const monthlyInterestRate = interestRate / 100 / 12;
     const numberOfPayments = loanTerm * 12;
 
     const monthlyPayment = principal * (monthlyInterestRate * Math.pow(1 + monthlyInterestRate, numberOfPayments)) / (Math.pow(1 + monthlyInterestRate, numberOfPayments) - 1);
-
+    
     const totalPaid = monthlyPayment * numberOfPayments;
     const totalInterestPaid = totalPaid - principal;
     const stampDuty = calculateStampDuty(propertyPrice);
+
+    const amortization = [];
+    let remainingBalance = principal;
+
+    for (let i = 1; i <= numberOfPayments; i++) {
+        const interestPayment = remainingBalance * monthlyInterestRate;
+        const principalPayment = monthlyPayment - interestPayment;
+        remainingBalance -= principalPayment;
+        amortization.push({
+            month: i,
+            interestPayment,
+            principalPayment,
+            remainingBalance: remainingBalance > 0 ? remainingBalance : 0,
+        });
+    }
 
     setResults({
       monthlyPayment,
@@ -90,12 +106,21 @@ export default function MortgageCalculatorUK() {
       totalPaid,
       principal,
       stampDuty,
+      amortization,
       error: null,
     });
     setFormData(data);
   };
   
   const formatCurrency = (value: number) => new Intl.NumberFormat('en-GB', { style: 'currency', currency: 'GBP' }).format(value);
+  
+  const pieData = results && !results.error
+    ? [
+        { name: 'Principal & Interest', value: results.monthlyPayment },
+      ].filter(item => item.value > 0)
+    : [];
+
+  const PIE_COLORS = ['hsl(var(--chart-1))'];
   
   const handleExport = (format: 'txt' | 'csv') => {
     if (!results || !formData) return;
@@ -126,91 +151,146 @@ export default function MortgageCalculatorUK() {
   };
 
   return (
-    <form onSubmit={handleSubmit(calculateMortgage)} className="grid md:grid-cols-2 gap-8">
-      {/* Inputs Column */}
-      <div className="space-y-4">
-        <h3 className="text-xl font-semibold">Mortgage Details</h3>
-        
-        <div>
-          <Label>Property Price (£)</Label>
-          <Controller name="propertyPrice" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
-          {errors.propertyPrice && <p className="text-destructive text-sm mt-1">{errors.propertyPrice.message}</p>}
-        </div>
-
-        <div>
-          <Label>Deposit (£)</Label>
-          <Controller name="deposit" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
-          {errors.deposit && <p className="text-destructive text-sm mt-1">{errors.deposit.message}</p>}
-        </div>
-
-        <div>
-          <Label>Loan Term (years)</Label>
-          <Controller name="loanTerm" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value) || 0)} />} />
-          {errors.loanTerm && <p className="text-destructive text-sm mt-1">{errors.loanTerm.message}</p>}
-        </div>
-
-        <div>
-          <Label>Interest Rate (%)</Label>
-          <Controller name="interestRate" control={control} render={({ field }) => <Input type="number" step="0.01" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
-          {errors.interestRate && <p className="text-destructive text-sm mt-1">{errors.interestRate.message}</p>}
-        </div>
-        
-        <div className="flex gap-2">
-            <Button type="submit" className="flex-1">Calculate</Button>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" disabled={!results}>
-                  <Download className="mr-2 h-4 w-4" /> Export
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent>
-                <DropdownMenuItem onClick={() => handleExport('txt')}>Download as .txt</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handleExport('csv')}>Download as .csv</DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-        </div>
-      </div>
-
-      {/* Results Column */}
-      <div className="space-y-4">
-        <h3 className="text-xl font-semibold">Results</h3>
-        {results ? (
-            results.error ? (
-                <Card className="flex items-center justify-center h-60 bg-muted/50 border-dashed">
-                    <p className="text-destructive">{results.error}</p>
-                </Card>
-            ) : (
-                <div className="space-y-4">
-                    <Card>
-                        <CardContent className="p-4">
-                            <p className="text-sm text-muted-foreground">Monthly Payment</p>
-                            <p className="text-3xl font-bold">{formatCurrency(results.monthlyPayment)}</p>
-                        </CardContent>
-                    </Card>
-
-                    <Card>
-                        <CardContent className="p-4 grid grid-cols-2 gap-2 text-sm">
-                            <div><p className="text-muted-foreground">Loan Amount</p><p className="font-semibold">{formatCurrency(results.principal)}</p></div>
-                            <div><p className="text-muted-foreground">Total Interest Paid</p><p className="font-semibold">{formatCurrency(results.totalInterestPaid)}</p></div>
-                            <div><p className="text-muted-foreground">Total Paid</p><p className="font-semibold">{formatCurrency(results.totalPaid + (formData?.deposit || 0))}</p></div>
-                            <div><p className="text-muted-foreground">Stamp Duty (Est.)</p><p className="font-semibold">{formatCurrency(results.stampDuty)}</p></div>
-                        </CardContent>
-                    </Card>
-                     <Alert variant="default">
-                        <Info className="h-4 w-4" />
-                        <AlertTitle>Disclaimer</AlertTitle>
-                        <AlertDescription className="text-xs">
-                          Stamp Duty calculation is an estimate for England/NI and doesn't account for first-time buyer relief or additional property rates. Always consult a professional.
-                        </AlertDescription>
-                    </Alert>
+    <main className="grid lg:grid-cols-3 gap-8">
+      {/* Left Pane: Inputs */}
+      <section className="lg:col-span-1">
+        <form onSubmit={handleSubmit(calculateMortgage)} className="space-y-4">
+          <Accordion type="single" defaultValue="loan-basics" collapsible className="w-full">
+            <AccordionItem value="loan-basics">
+              <AccordionTrigger>Mortgage Details</AccordionTrigger>
+              <AccordionContent className="space-y-4 px-1">
+                <div>
+                  <Label>Property Price (£)</Label>
+                  <Controller name="propertyPrice" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
+                  {errors.propertyPrice && <p className="text-destructive text-sm mt-1">{errors.propertyPrice.message}</p>}
                 </div>
-            )
+                <div>
+                  <Label>Deposit (£)</Label>
+                  <Controller name="deposit" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
+                  {errors.deposit && <p className="text-destructive text-sm mt-1">{errors.deposit.message}</p>}
+                </div>
+                <div>
+                  <Label>Loan Term (years)</Label>
+                  <Controller name="loanTerm" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value) || 0)} />} />
+                  {errors.loanTerm && <p className="text-destructive text-sm mt-1">{errors.loanTerm.message}</p>}
+                </div>
+                <div>
+                  <Label>Interest Rate (%)</Label>
+                  <Controller name="interestRate" control={control} render={({ field }) => <Input type="number" step="0.01" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
+                  {errors.interestRate && <p className="text-destructive text-sm mt-1">{errors.interestRate.message}</p>}
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
+          
+          <div className="flex gap-2">
+              <Button type="submit" className="flex-1">Calculate</Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" disabled={!results}>
+                    <Download className="mr-2 h-4 w-4" /> Export
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent>
+                  <DropdownMenuItem onClick={() => handleExport('txt')}>Download as .txt</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleExport('csv')}>Download as .csv</DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+          </div>
+        </form>
+      </section>
+
+      {/* Center Pane: Key Results & Charts */}
+      <section className="lg:col-span-1 space-y-4">
+        <h2 className="text-xl font-semibold">Summary</h2>
+        {results && !results.error ? (
+          <div className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base text-center text-muted-foreground">Estimated Monthly Payment</CardTitle>
+              </CardHeader>
+              <CardContent className="text-center">
+                <p className="text-4xl font-bold">{formatCurrency(results.monthlyPayment)}</p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader><CardTitle className="text-base text-center">Loan & Cost Breakdown</CardTitle></CardHeader>
+              <CardContent className="space-y-2 text-sm">
+                 <div className="flex justify-between"><span className="text-muted-foreground">Loan Amount</span><span className="font-semibold">{formatCurrency(results.principal)}</span></div>
+                 <div className="flex justify-between"><span className="text-muted-foreground">Total Interest Paid</span><span className="font-semibold">{formatCurrency(results.totalInterestPaid)}</span></div>
+                 <div className="flex justify-between"><span className="text-muted-foreground">Stamp Duty Land Tax (Est.)</span><span className="font-semibold">{formatCurrency(results.stampDuty)}</span></div>
+                 <div className="flex justify-between font-bold border-t pt-2 mt-2"><span>Total Amount Paid</span><span>{formatCurrency(results.totalPaid + (formData?.deposit || 0))}</span></div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader><CardTitle className="text-base text-center">Loan Balance Over Time</CardTitle></CardHeader>
+              <CardContent className="h-64">
+                <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={results.amortization} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="month" label={{ value: 'Month', position: 'insideBottom', offset: -5 }} />
+                        <YAxis tickFormatter={(tick) => formatCurrency(tick)} />
+                        <RechartsLineTooltip formatter={(value: number) => formatCurrency(value)} />
+                        <Line type="monotone" dataKey="remainingBalance" name="Remaining Balance" stroke="hsl(var(--primary))" dot={false} />
+                    </LineChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+            <Alert variant="default">
+                <Info className="h-4 w-4" />
+                <AlertTitle>Disclaimer</AlertTitle>
+                <AlertDescription className="text-xs">
+                  Stamp Duty calculation is an estimate for England/NI and doesn't account for first-time buyer relief or additional property rates. Always consult a professional.
+                </AlertDescription>
+            </Alert>
+          </div>
         ) : (
-             <div className="flex items-center justify-center h-60 bg-muted/50 rounded-lg border border-dashed">
-                <p className="text-sm text-muted-foreground">Enter your details and click calculate</p>
-            </div>
+          <Card className="flex items-center justify-center h-full min-h-[30rem] bg-muted/50 border-dashed">
+            <p className="text-sm text-muted-foreground">{results?.error || "Enter details to see results"}</p>
+          </Card>
         )}
-      </div>
-    </form>
+      </section>
+      
+      {/* Right Pane: Amortization Schedule */}
+      <aside className="lg:col-span-1">
+        <h2 className="text-xl font-semibold mb-4">Amortization Schedule</h2>
+         <Card>
+            <CardContent className="p-0">
+                <ScrollArea className="h-[40rem]">
+                    <Table>
+                        <TableHeader className="sticky top-0 bg-muted z-10">
+                            <TableRow>
+                                <TableHead className="w-1/4">Month</TableHead>
+                                <TableHead className="w-1/4 text-right">Principal</TableHead>
+                                <TableHead className="w-1/4 text-right">Interest</TableHead>
+                                <TableHead className="w-1/4 text-right">Balance</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            {results && !results.error ? (
+                                results.amortization.map((row: any) => (
+                                    <TableRow key={row.month}>
+                                        <TableCell>{row.month}</TableCell>
+                                        <TableCell className="text-right">{formatCurrency(row.principalPayment)}</TableCell>
+                                        <TableCell className="text-right">{formatCurrency(row.interestPayment)}</TableCell>
+                                        <TableCell className="text-right">{formatCurrency(row.remainingBalance)}</TableCell>
+                                    </TableRow>
+                                ))
+                            ) : (
+                                <TableRow>
+                                    <TableCell colSpan={4} className="text-center h-96 text-muted-foreground">
+                                        Schedule will appear here.
+                                    </TableCell>
+                                </TableRow>
+                            )}
+                        </TableBody>
+                    </Table>
+                </ScrollArea>
+            </CardContent>
+        </Card>
+      </aside>
+    </main>
   );
 }
+
+    
