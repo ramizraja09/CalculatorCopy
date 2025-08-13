@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
@@ -81,62 +81,69 @@ export default function StudentLoanCalculator() {
   const formatCurrency = (value: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value);
 
   return (
-    <form onSubmit={handleSubmit(calculateLoan)} className="grid md:grid-cols-2 gap-8">
-      {/* Inputs Column */}
-      <div className="space-y-4">
-        <h3 className="text-xl font-semibold">Loan Details</h3>
-        
-        <div>
-          <Label htmlFor="loanAmount">Total Loan Amount ($)</Label>
-          <Controller name="loanAmount" control={control} render={({ field }) => <Input id="loanAmount" type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
-          {errors.loanAmount && <p className="text-destructive text-sm mt-1">{errors.loanAmount.message}</p>}
+    <form onSubmit={handleSubmit(calculateLoan)}>
+      <div className="grid md:grid-cols-2 gap-8">
+        {/* Inputs Column */}
+        <div className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Loan Details</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <Label htmlFor="loanAmount">Total Loan Amount ($)</Label>
+                <Controller name="loanAmount" control={control} render={({ field }) => <Input id="loanAmount" type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
+                {errors.loanAmount && <p className="text-destructive text-sm mt-1">{errors.loanAmount.message}</p>}
+              </div>
+
+              <div>
+                <Label htmlFor="loanTerm">Loan Term (years)</Label>
+                <Controller name="loanTerm" control={control} render={({ field }) => <Input id="loanTerm" type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseInt(e.target.value, 10))} />} />
+                {errors.loanTerm && <p className="text-destructive text-sm mt-1">{errors.loanTerm.message}</p>}
+              </div>
+
+              <div>
+                <Label htmlFor="interestRate">Interest Rate (%)</Label>
+                <Controller name="interestRate" control={control} render={({ field }) => <Input id="interestRate" type="number" step="0.01" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
+                {errors.interestRate && <p className="text-destructive text-sm mt-1">{errors.interestRate.message}</p>}
+              </div>
+              
+              <Button type="submit" className="w-full !mt-6">Calculate</Button>
+            </CardContent>
+          </Card>
         </div>
 
-        <div>
-          <Label htmlFor="loanTerm">Loan Term (years)</Label>
-          <Controller name="loanTerm" control={control} render={({ field }) => <Input id="loanTerm" type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseInt(e.target.value, 10))} />} />
-          {errors.loanTerm && <p className="text-destructive text-sm mt-1">{errors.loanTerm.message}</p>}
+        {/* Results Column */}
+        <div className="space-y-4">
+          <h3 className="text-xl font-semibold">Payment Summary</h3>
+          {results ? (
+              results.error ? (
+                  <Card className="flex items-center justify-center h-60 bg-muted/50 border-dashed">
+                      <p className="text-destructive">{results.error}</p>
+                  </Card>
+              ) : (
+                  <div className="space-y-4">
+                      <Card>
+                          <CardContent className="p-4">
+                              <p className="text-sm text-muted-foreground">Estimated Monthly Payment</p>
+                              <p className="text-3xl font-bold">{formatCurrency(results.monthlyPayment)}</p>
+                          </CardContent>
+                      </Card>
+
+                      <Card>
+                          <CardContent className="p-4 grid grid-cols-2 gap-2 text-sm">
+                              <div><p className="text-muted-foreground">Total Interest Paid</p><p className="font-semibold">{formatCurrency(results.totalInterestPaid)}</p></div>
+                              <div><p className="text-muted-foreground">Total Paid</p><p className="font-semibold">{formatCurrency(results.totalPaid)}</p></div>
+                          </CardContent>
+                      </Card>
+                  </div>
+              )
+          ) : (
+              <div className="flex items-center justify-center h-60 bg-muted/50 rounded-lg border border-dashed">
+                  <p className="text-sm text-muted-foreground">Enter loan details to see your payment plan</p>
+              </div>
+          )}
         </div>
-
-        <div>
-          <Label htmlFor="interestRate">Interest Rate (%)</Label>
-          <Controller name="interestRate" control={control} render={({ field }) => <Input id="interestRate" type="number" step="0.01" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
-          {errors.interestRate && <p className="text-destructive text-sm mt-1">{errors.interestRate.message}</p>}
-        </div>
-        
-        <Button type="submit" className="w-full">Calculate</Button>
-      </div>
-
-      {/* Results Column */}
-      <div className="space-y-4">
-        <h3 className="text-xl font-semibold">Payment Summary</h3>
-        {results ? (
-            results.error ? (
-                <Card className="flex items-center justify-center h-60 bg-muted/50 border-dashed">
-                    <p className="text-destructive">{results.error}</p>
-                </Card>
-            ) : (
-                <div className="space-y-4">
-                    <Card>
-                        <CardContent className="p-4">
-                            <p className="text-sm text-muted-foreground">Estimated Monthly Payment</p>
-                            <p className="text-3xl font-bold">{formatCurrency(results.monthlyPayment)}</p>
-                        </CardContent>
-                    </Card>
-
-                    <Card>
-                        <CardContent className="p-4 grid grid-cols-2 gap-2 text-sm">
-                            <div><p className="text-muted-foreground">Total Interest Paid</p><p className="font-semibold">{formatCurrency(results.totalInterestPaid)}</p></div>
-                             <div><p className="text-muted-foreground">Total Paid</p><p className="font-semibold">{formatCurrency(results.totalPaid)}</p></div>
-                        </CardContent>
-                    </Card>
-                </div>
-            )
-        ) : (
-             <div className="flex items-center justify-center h-60 bg-muted/50 rounded-lg border border-dashed">
-                <p className="text-sm text-muted-foreground">Enter loan details to see your payment plan</p>
-            </div>
-        )}
       </div>
     </form>
   );

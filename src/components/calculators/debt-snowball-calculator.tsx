@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { useForm, useFieldArray, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
@@ -158,26 +158,33 @@ export default function DebtSnowballCalculator() {
         <div className="grid md:grid-cols-2 gap-8">
             {/* Inputs Column */}
             <div className="space-y-4">
-                <h3 className="text-xl font-semibold">Your Debts</h3>
-                {fields.map((field, index) => (
-                <Card key={field.id} className="p-4 space-y-2 relative">
-                    <div className="grid grid-cols-2 gap-2">
-                    <div><Label>Debt Name</Label><Controller name={`debts.${index}.name`} control={control} render={({ field }) => <Input placeholder="e.g., Visa" {...field} />} /></div>
-                    <div><Label>Balance ($)</Label><Controller name={`debts.${index}.balance`} control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} /></div>
-                    <div><Label>APR (%)</Label><Controller name={`debts.${index}.apr`} control={control} render={({ field }) => <Input type="number" step="0.1" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} /></div>
-                    <div><Label>Min. Payment ($)</Label><Controller name={`debts.${index}.minPayment`} control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} /></div>
-                    </div>
-                    <Button type="button" variant="ghost" size="icon" className="absolute top-1 right-1" onClick={() => remove(index)}><Trash className="h-4 w-4" /></Button>
+                <Card>
+                  <CardHeader><CardTitle>Your Debts</CardTitle></CardHeader>
+                  <CardContent className="space-y-2">
+                    {fields.map((field, index) => (
+                    <Card key={field.id} className="p-4 space-y-2 relative">
+                        <div className="grid grid-cols-2 gap-2">
+                        <div><Label>Debt Name</Label><Controller name={`debts.${index}.name`} control={control} render={({ field }) => <Input placeholder="e.g., Visa" {...field} />} /></div>
+                        <div><Label>Balance ($)</Label><Controller name={`debts.${index}.balance`} control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} /></div>
+                        <div><Label>APR (%)</Label><Controller name={`debts.${index}.apr`} control={control} render={({ field }) => <Input type="number" step="0.1" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} /></div>
+                        <div><Label>Min. Payment ($)</Label><Controller name={`debts.${index}.minPayment`} control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} /></div>
+                        </div>
+                        <Button type="button" variant="ghost" size="icon" className="absolute top-1 right-1" onClick={() => remove(index)}><Trash className="h-4 w-4" /></Button>
+                    </Card>
+                    ))}
+                    {errors.debts && <p className="text-destructive text-sm">{errors.debts.root?.message}</p>}
+                    <Button type="button" variant="outline" onClick={() => append({ name: '', balance: 0, apr: 0, minPayment: 0 })}>Add Debt</Button>
+                  </CardContent>
                 </Card>
-                ))}
-                {errors.debts && <p className="text-destructive text-sm">{errors.debts.root?.message}</p>}
-                <Button type="button" variant="outline" onClick={() => append({ name: '', balance: 0, apr: 0, minPayment: 0 })}>Add Debt</Button>
                 
-                <h3 className="text-xl font-semibold pt-4">Extra Monthly Payment</h3>
-                <div>
-                <Label>Amount ($)</Label>
-                <Controller name="extraPayment" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
-                </div>
+                <Card>
+                  <CardHeader><CardTitle>Extra Monthly Payment</CardTitle></CardHeader>
+                  <CardContent>
+                    <Label>Amount ($)</Label>
+                    <Controller name="extraPayment" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
+                  </CardContent>
+                </Card>
+
                 <div className="flex gap-2">
                     <Button type="submit" className="flex-1">Create Payoff Plan</Button>
                     <DropdownMenu>

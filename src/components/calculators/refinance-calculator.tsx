@@ -90,92 +90,94 @@ export default function RefinanceCalculator() {
   const formatCurrency = (value: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value);
 
   return (
-    <form onSubmit={handleSubmit(calculateRefinance)} className="grid md:grid-cols-2 gap-8">
-      {/* Inputs Column */}
-      <div className="space-y-4">
-        <Card>
-            <CardHeader><CardTitle>Current Loan</CardTitle></CardHeader>
-            <CardContent className="space-y-4">
-                <div>
-                    <Label htmlFor="currentBalance">Current Loan Balance ($)</Label>
-                    <Controller name="currentBalance" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
-                </div>
-                <div>
-                    <Label htmlFor="currentInterestRate">Interest Rate (%)</Label>
-                    <Controller name="currentInterestRate" control={control} render={({ field }) => <Input type="number" step="0.01" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
-                </div>
-                <div>
-                    <Label htmlFor="currentMonthlyPayment">Monthly Payment (Principal & Interest)</Label>
-                    <Controller name="currentMonthlyPayment" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
-                </div>
-            </CardContent>
-        </Card>
-        <Card>
-            <CardHeader><CardTitle>New Loan</CardTitle></CardHeader>
-            <CardContent className="space-y-4">
-                <div>
-                    <Label htmlFor="newInterestRate">New Interest Rate (%)</Label>
-                    <Controller name="newInterestRate" control={control} render={({ field }) => <Input type="number" step="0.01" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
-                </div>
-                <div>
-                    <Label htmlFor="newLoanTerm">New Loan Term (Years)</Label>
-                    <Controller name="newLoanTerm" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseInt(e.target.value, 10))} />} />
-                </div>
-                <div>
-                    <Label htmlFor="closingCosts">Closing Costs ($)</Label>
-                    <Controller name="closingCosts" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
-                </div>
-            </CardContent>
-        </Card>
-        <Button type="submit" className="w-full">Calculate Savings</Button>
-      </div>
+    <form onSubmit={handleSubmit(calculateRefinance)}>
+      <div className="grid md:grid-cols-2 gap-8">
+        {/* Inputs Column */}
+        <div className="space-y-4">
+          <Card>
+              <CardHeader><CardTitle>Current Loan</CardTitle></CardHeader>
+              <CardContent className="space-y-4">
+                  <div>
+                      <Label htmlFor="currentBalance">Current Loan Balance ($)</Label>
+                      <Controller name="currentBalance" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
+                  </div>
+                  <div>
+                      <Label htmlFor="currentInterestRate">Interest Rate (%)</Label>
+                      <Controller name="currentInterestRate" control={control} render={({ field }) => <Input type="number" step="0.01" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
+                  </div>
+                  <div>
+                      <Label htmlFor="currentMonthlyPayment">Monthly Payment (Principal & Interest)</Label>
+                      <Controller name="currentMonthlyPayment" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
+                  </div>
+              </CardContent>
+          </Card>
+          <Card>
+              <CardHeader><CardTitle>New Loan</CardTitle></CardHeader>
+              <CardContent className="space-y-4">
+                  <div>
+                      <Label htmlFor="newInterestRate">New Interest Rate (%)</Label>
+                      <Controller name="newInterestRate" control={control} render={({ field }) => <Input type="number" step="0.01" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
+                  </div>
+                  <div>
+                      <Label htmlFor="newLoanTerm">New Loan Term (Years)</Label>
+                      <Controller name="newLoanTerm" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseInt(e.target.value, 10))} />} />
+                  </div>
+                  <div>
+                      <Label htmlFor="closingCosts">Closing Costs ($)</Label>
+                      <Controller name="closingCosts" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
+                  </div>
+              </CardContent>
+          </Card>
+          <Button type="submit" className="w-full">Calculate Savings</Button>
+        </div>
 
-      {/* Results Column */}
-      <div className="space-y-4">
-        <h3 className="text-xl font-semibold">Refinance Summary</h3>
-        {results ? (
-            results.error ? (
-                 <Card className="flex items-center justify-center h-60 bg-muted/50 border-dashed">
-                    <p className="text-destructive text-center p-4">{results.error}</p>
-                </Card>
-            ) : (
-            <div className="space-y-4">
-                <Card>
-                    <CardContent className="p-4 grid grid-cols-2 gap-4 text-center">
-                         <div>
-                            <p className="text-muted-foreground">New Monthly Payment</p>
-                            <p className="font-semibold text-xl">{formatCurrency(results.newMonthlyPayment)}</p>
-                        </div>
-                        <div>
-                            <p className="text-muted-foreground">Monthly Savings</p>
-                            <p className={`font-semibold text-xl ${results.monthlySavings > 0 ? 'text-green-600' : 'text-destructive'}`}>{formatCurrency(results.monthlySavings)}</p>
-                        </div>
-                    </CardContent>
-                </Card>
-                <Card>
-                    <CardContent className="p-4 text-center">
-                        <p className="text-muted-foreground">Potential Lifetime Savings</p>
-                        <p className={`font-bold text-3xl ${results.lifetimeSavings > 0 ? 'text-green-600' : 'text-destructive'}`}>
-                            {formatCurrency(results.lifetimeSavings)}
-                        </p>
-                    </CardContent>
-                </Card>
-                 <Alert>
-                    <Info className="h-4 w-4" />
-                    <AlertTitle>Break-Even Point</AlertTitle>
-                    <AlertDescription className="text-xs">
-                        {isFinite(results.breakEvenMonths) 
-                         ? `It will take approximately ${Math.ceil(results.breakEvenMonths)} months to recoup the closing costs with your monthly savings.`
-                         : `With these terms, you won't save money monthly, so a break-even point cannot be calculated.`
-                        }
-                    </AlertDescription>
-                </Alert>
-            </div>
-        )) : (
-             <div className="flex items-center justify-center h-60 bg-muted/50 rounded-lg border border-dashed">
-                <p className="text-sm text-muted-foreground">Enter your loan details to compare</p>
-            </div>
-        )}
+        {/* Results Column */}
+        <div className="space-y-4">
+          <h3 className="text-xl font-semibold">Refinance Summary</h3>
+          {results ? (
+              results.error ? (
+                  <Card className="flex items-center justify-center h-60 bg-muted/50 border-dashed">
+                      <p className="text-destructive text-center p-4">{results.error}</p>
+                  </Card>
+              ) : (
+              <div className="space-y-4">
+                  <Card>
+                      <CardContent className="p-4 grid grid-cols-2 gap-4 text-center">
+                          <div>
+                              <p className="text-muted-foreground">New Monthly Payment</p>
+                              <p className="font-semibold text-xl">{formatCurrency(results.newMonthlyPayment)}</p>
+                          </div>
+                          <div>
+                              <p className="text-muted-foreground">Monthly Savings</p>
+                              <p className={`font-semibold text-xl ${results.monthlySavings > 0 ? 'text-green-600' : 'text-destructive'}`}>{formatCurrency(results.monthlySavings)}</p>
+                          </div>
+                      </CardContent>
+                  </Card>
+                  <Card>
+                      <CardContent className="p-4 text-center">
+                          <p className="text-muted-foreground">Potential Lifetime Savings</p>
+                          <p className={`font-bold text-3xl ${results.lifetimeSavings > 0 ? 'text-green-600' : 'text-destructive'}`}>
+                              {formatCurrency(results.lifetimeSavings)}
+                          </p>
+                      </CardContent>
+                  </Card>
+                  <Alert>
+                      <Info className="h-4 w-4" />
+                      <AlertTitle>Break-Even Point</AlertTitle>
+                      <AlertDescription className="text-xs">
+                          {isFinite(results.breakEvenMonths) 
+                          ? `It will take approximately ${Math.ceil(results.breakEvenMonths)} months to recoup the closing costs with your monthly savings.`
+                          : `With these terms, you won't save money monthly, so a break-even point cannot be calculated.`
+                          }
+                      </AlertDescription>
+                  </Alert>
+              </div>
+          )) : (
+              <div className="flex items-center justify-center h-60 bg-muted/50 rounded-lg border border-dashed">
+                  <p className="text-sm text-muted-foreground">Enter your loan details to compare</p>
+              </div>
+          )}
+        </div>
       </div>
     </form>
   );
