@@ -55,6 +55,7 @@ const PIE_COLORS = ['hsl(var(--chart-1))', 'hsl(var(--chart-2))'];
 
 function RepaymentCalculator() {
     const [results, setResults] = useState<any>(null);
+    const [formData, setFormData] = useState<RepaymentFormData | null>(null);
     const { control, handleSubmit, watch, formState: { errors } } = useForm<RepaymentFormData>({
         resolver: zodResolver(repaymentSchema),
         defaultValues: {
@@ -134,6 +135,44 @@ function RepaymentCalculator() {
             pieData: [{ name: 'Principal', value: balance }, { name: 'Interest', value: totalInterest }],
             error: null,
         });
+        setFormData(data);
+    };
+
+    const handleExport = (format: 'txt' | 'csv') => {
+        if (!results || !formData) return;
+        
+        let content = '';
+        const filename = `student-loan-repayment.${format}`;
+        const { balance, interestRate, payoffStrategy, monthlyPayment, payoffYears, payoffMonths } = formData;
+        const payoffTime = `${results.payoffTimeYears > 0 ? `${results.payoffTimeYears}y ` : ''}${results.payoffTimeMonths > 0 ? `${results.payoffTimeMonths}m` : ''}`.trim();
+
+        if (format === 'txt') {
+          content = `Student Loan Repayment Calculation\n\nInputs:\n`;
+          content += `- Loan Balance: ${formatCurrency(balance)}\n- APR: ${interestRate}%\n- Strategy: ${payoffStrategy}\n`;
+          if (payoffStrategy === 'fixedPayment') content += `- Desired Monthly Payment: ${formatCurrency(monthlyPayment!)}\n`;
+          if (payoffStrategy === 'targetDate') content += `- Payoff in: ${payoffYears || 0} years, ${payoffMonths || 0} months\n`;
+          
+          content += `\nResults:\n- Actual Monthly Payment: ${formatCurrency(results.monthlyPayment)}\n- Payoff Time: ${payoffTime}\n`;
+          content += `- Total Interest Paid: ${formatCurrency(results.totalInterest)}\n- Total Paid: ${formatCurrency(results.totalPaid)}\n`;
+        } else {
+          content = 'Category,Value\n';
+          content += `Loan Balance,${balance}\nAPR (%),${interestRate}\nStrategy,${payoffStrategy}\n`;
+          if (payoffStrategy === 'fixedPayment') content += `Input Monthly Payment,${monthlyPayment}\n`;
+          if (payoffStrategy === 'targetDate') content += `Input Payoff Term,"${payoffYears || 0}y ${payoffMonths || 0}m"\n`;
+          
+          content += '\nResult Category,Value\n';
+          content += `Actual Monthly Payment,${results.monthlyPayment.toFixed(2)}\nPayoff Time,"${payoffTime}"\nTotal Interest Paid,${results.totalInterest.toFixed(2)}\nTotal Paid,${results.totalPaid.toFixed(2)}\n`;
+        }
+
+        const blob = new Blob([content], { type: `text/${format}` });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
     };
 
     return (
@@ -160,7 +199,20 @@ function RepaymentCalculator() {
                             {errors.monthlyPayment && <p className="text-destructive text-sm">{errors.monthlyPayment.message}</p>}
                         </CardContent>
                     </Card>
-                    <Button type="submit" className="w-full">Calculate Repayment</Button>
+                    <div className="flex gap-2">
+                        <Button type="submit" className="flex-1">Calculate Repayment</Button>
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="outline" disabled={!results}>
+                                <Download className="mr-2 h-4 w-4" /> Export
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent>
+                                <DropdownMenuItem onClick={() => handleExport('txt')}>Download as .txt</DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => handleExport('csv')}>Download as .csv</DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    </div>
                 </div>
 
                 <div className="space-y-4">
@@ -217,6 +269,8 @@ function RepaymentCalculator() {
 
 function ProjectionCalculator() {
     const [results, setResults] = useState<any>(null);
+    const [formData, setFormData] = useState<ProjectionFormData | null>(null);
+
     const { control, handleSubmit } = useForm<ProjectionFormData>({
         resolver: zodResolver(projectionSchema),
         defaultValues: {
@@ -267,6 +321,37 @@ function ProjectionCalculator() {
             totalBorrowed,
             pieData: [{ name: 'Amount Borrowed', value: totalBorrowed }, { name: 'Interest Accrued', value: totalInterest }],
         });
+        setFormData(data);
+    };
+
+    const handleExport = (format: 'txt' | 'csv') => {
+        if (!results || !formData) return;
+        
+        let content = '';
+        const filename = `student-loan-projection.${format}`;
+        const { yearsToGraduate, estimatedLoanAmount, currentLoanBalance, gracePeriod, interestRate, payInterestInSchool } = formData;
+
+        if (format === 'txt') {
+            content = `Student Loan Projection\n\nInputs:\n`;
+            content += `- Years to Graduate: ${yearsToGraduate}\n- Annual Loan Amount: ${formatCurrency(estimatedLoanAmount)}\n- Current Balance: ${formatCurrency(currentLoanBalance)}\n`;
+            content += `- Grace Period: ${gracePeriod} months\n- Interest Rate: ${interestRate}%\n- Pay Interest in School: ${payInterestInSchool}\n\n`;
+            content += `Results:\n- Balance at Graduation: ${formatCurrency(results.balanceAtGraduation)}\n- Balance after Grace Period: ${formatCurrency(results.balanceAfterGrace)}\n- Total Interest Accrued: ${formatCurrency(results.totalInterest)}\n`;
+        } else {
+            content = 'Category,Value\n';
+            content += `Years to Graduate,${yearsToGraduate}\nAnnual Loan Amount,${estimatedLoanAmount}\nCurrent Balance,${currentLoanBalance}\nGrace Period (months),${gracePeriod}\nInterest Rate (%),${interestRate}\nPay Interest in School,${payInterestInSchool}\n\n`;
+            content += 'Result Category,Value\n';
+            content += `Balance at Graduation,${results.balanceAtGraduation.toFixed(2)}\nBalance after Grace Period,${results.balanceAfterGrace.toFixed(2)}\nTotal Interest Accrued,${results.totalInterest.toFixed(2)}\n`;
+        }
+
+        const blob = new Blob([content], { type: `text/${format}` });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
     };
 
     return (
@@ -287,11 +372,24 @@ function ProjectionCalculator() {
                             <div><Label>Pay interest while in school?</Label><Controller name="payInterestInSchool" control={control} render={({ field }) => (<RadioGroup onValueChange={field.onChange} defaultValue={field.value} className="flex gap-4 pt-2"><div className="flex items-center space-x-2"><RadioGroupItem value="yes" id="yes" /><Label htmlFor="yes">Yes</Label></div><div className="flex items-center space-x-2"><RadioGroupItem value="no" id="no" /><Label htmlFor="no">No</Label></div></RadioGroup>)} /></div>
                         </CardContent>
                     </Card>
-                    <Button type="submit" className="w-full">Calculate Projection</Button>
+                    <div className="flex gap-2">
+                        <Button type="submit" className="flex-1">Calculate Projection</Button>
+                         <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="outline" disabled={!results}>
+                                <Download className="mr-2 h-4 w-4" /> Export
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent>
+                                <DropdownMenuItem onClick={() => handleExport('txt')}>Download as .txt</DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => handleExport('csv')}>Download as .csv</DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    </div>
                 </div>
                  <div className="space-y-4">
                     <h3 className="text-xl font-semibold">Loan Projection</h3>
-                    {results && (
+                    {results ? (
                         <div className="space-y-4">
                             <Card>
                                 <CardContent className="p-4 grid grid-cols-2 gap-2 text-sm">
@@ -314,6 +412,10 @@ function ProjectionCalculator() {
                                     </ResponsiveContainer>
                                 </CardContent>
                             </Card>
+                        </div>
+                    ) : (
+                         <div className="flex items-center justify-center h-full bg-muted/50 rounded-lg border border-dashed p-8">
+                            <p className="text-sm text-muted-foreground">Enter projection details to see results</p>
                         </div>
                     )}
                  </div>
