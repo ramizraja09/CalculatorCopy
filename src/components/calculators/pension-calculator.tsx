@@ -188,7 +188,7 @@ export default function PensionCalculator() {
                             <LineChart data={results.schedule} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
                               <CartesianGrid strokeDasharray="3 3" />
                               <XAxis dataKey="age" name="Age" />
-                              <YAxis tickFormatter={(value) => formatCurrency(value)} />
+                              <YAxis tickFormatter={(value: number) => formatCurrency(value)} />
                               <Tooltip formatter={(value: number) => formatCurrency(value)} />
                               <Legend />
                               <Line type="monotone" dataKey="balance" name="Pension Value" stroke="hsl(var(--primary))" dot={false} />
