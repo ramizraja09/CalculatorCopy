@@ -118,109 +118,115 @@ export default function LoanCalculator() {
   };
 
   return (
-    <form onSubmit={handleSubmit(calculateLoan)} className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-      {/* Inputs Column */}
-      <div className="lg:col-span-1 space-y-4">
-        <Card>
-          <CardHeader>
-            <CardTitle>Loan Details</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div>
-              <Label htmlFor="loanAmount">Loan Amount ($)</Label>
-              <Controller name="loanAmount" control={control} render={({ field }) => <Input id="loanAmount" type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
-              {errors.loanAmount && <p className="text-destructive text-sm mt-1">{errors.loanAmount.message}</p>}
-            </div>
+    <form onSubmit={handleSubmit(calculateLoan)}>
+      <div className="grid md:grid-cols-2 gap-8">
+        {/* Inputs Column */}
+        <div className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Loan Details</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <Label htmlFor="loanAmount">Loan Amount ($)</Label>
+                <Controller name="loanAmount" control={control} render={({ field }) => <Input id="loanAmount" type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
+                {errors.loanAmount && <p className="text-destructive text-sm mt-1">{errors.loanAmount.message}</p>}
+              </div>
 
-            <div>
-              <Label htmlFor="loanTerm">Loan Term (years)</Label>
-              <Controller name="loanTerm" control={control} render={({ field }) => <Input id="loanTerm" type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseInt(e.target.value, 10))} />} />
-              {errors.loanTerm && <p className="text-destructive text-sm mt-1">{errors.loanTerm.message}</p>}
-            </div>
+              <div>
+                <Label htmlFor="loanTerm">Loan Term (years)</Label>
+                <Controller name="loanTerm" control={control} render={({ field }) => <Input id="loanTerm" type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseInt(e.target.value, 10))} />} />
+                {errors.loanTerm && <p className="text-destructive text-sm mt-1">{errors.loanTerm.message}</p>}
+              </div>
 
-            <div>
-              <Label htmlFor="interestRate">Interest Rate (%)</Label>
-              <Controller name="interestRate" control={control} render={({ field }) => <Input id="interestRate" type="number" step="0.01" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
-              {errors.interestRate && <p className="text-destructive text-sm mt-1">{errors.interestRate.message}</p>}
-            </div>
-            
-            <div className="flex gap-2 pt-2">
-                <Button type="submit" className="flex-1">Calculate</Button>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="outline" disabled={!results}>
-                      <Download className="mr-2 h-4 w-4" /> Export
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent>
-                    <DropdownMenuItem onClick={() => handleExport('txt')}>Download as .txt</DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => handleExport('csv')}>Download as .csv</DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-            </div>
-          </CardContent>
-        </Card>
+              <div>
+                <Label htmlFor="interestRate">Interest Rate (%)</Label>
+                <Controller name="interestRate" control={control} render={({ field }) => <Input id="interestRate" type="number" step="0.01" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
+                {errors.interestRate && <p className="text-destructive text-sm mt-1">{errors.interestRate.message}</p>}
+              </div>
+              
+              <div className="flex gap-2 pt-2">
+                  <Button type="submit" className="flex-1">Calculate</Button>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="outline" disabled={!results}>
+                        <Download className="mr-2 h-4 w-4" /> Export
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent>
+                      <DropdownMenuItem onClick={() => handleExport('txt')}>Download as .txt</DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleExport('csv')}>Download as .csv</DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Results Column */}
+        <div className="space-y-4">
+          <h2 className="text-xl font-semibold">Summary</h2>
+          {results ? (
+              results.error ? (
+                  <Card className="flex items-center justify-center h-full min-h-64 bg-muted/50 border-dashed">
+                      <p className="text-destructive text-center p-4">{results.error}</p>
+                  </Card>
+              ) : (
+                  <div className="space-y-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                          <Card>
+                              <CardHeader><CardTitle className="text-sm text-muted-foreground">Monthly Payment</CardTitle></CardHeader>
+                              <CardContent><p className="text-base font-bold break-all">{formatCurrency(results.monthlyPayment)}</p></CardContent>
+                          </Card>
+                          <Card>
+                              <CardHeader><CardTitle className="text-sm text-muted-foreground">Total Interest</CardTitle></CardHeader>
+                              <CardContent><p className="text-base font-bold break-all">{formatCurrency(results.totalInterestPaid)}</p></CardContent>
+                          </Card>
+                          <Card>
+                              <CardHeader><CardTitle className="text-sm text-muted-foreground">Total Paid</CardTitle></CardHeader>
+                              <CardContent><p className="text-base font-bold break-all">{formatCurrency(results.totalPaid)}</p></CardContent>
+                          </Card>
+                      </div>
+                  </div>
+              )
+          ) : (
+              <Card className="flex items-center justify-center h-full min-h-64 bg-muted/50 border-dashed">
+                  <p className="text-sm text-muted-foreground">Enter loan details to see the payment plan</p>
+              </Card>
+          )}
+        </div>
       </div>
-
-      {/* Results Column */}
-      <div className="lg:col-span-2 space-y-4">
-        <h2 className="text-xl font-semibold">Summary</h2>
-        {results ? (
-            results.error ? (
-                <Card className="flex items-center justify-center h-full min-h-64 bg-muted/50 border-dashed">
-                    <p className="text-destructive text-center p-4">{results.error}</p>
-                </Card>
-            ) : (
-                <div className="space-y-4">
-                    <div className="grid grid-cols-3 gap-4">
-                        <Card>
-                            <CardHeader><CardTitle className="text-sm text-muted-foreground">Monthly Payment</CardTitle></CardHeader>
-                            <CardContent><p className="text-base font-bold break-all">{formatCurrency(results.monthlyPayment)}</p></CardContent>
-                        </Card>
-                         <Card>
-                            <CardHeader><CardTitle className="text-sm text-muted-foreground">Total Interest</CardTitle></CardHeader>
-                            <CardContent><p className="text-base font-bold break-all">{formatCurrency(results.totalInterestPaid)}</p></CardContent>
-                        </Card>
-                         <Card>
-                            <CardHeader><CardTitle className="text-sm text-muted-foreground">Total Paid</CardTitle></CardHeader>
-                            <CardContent><p className="text-base font-bold break-all">{formatCurrency(results.totalPaid)}</p></CardContent>
-                        </Card>
-                    </div>
-                    <Card>
-                      <CardHeader><CardTitle>Amortization Schedule</CardTitle></CardHeader>
-                      <CardContent>
-                        <ScrollArea className="h-[30rem]">
-                            <Table>
-                                <TableHeader className="sticky top-0 bg-muted">
-                                    <TableRow>
-                                        <TableHead className="w-1/4">Month</TableHead>
-                                        <TableHead className="w-1/4 text-right">Principal</TableHead>
-                                        <TableHead className="w-1/4 text-right">Interest</TableHead>
-                                        <TableHead className="w-1/4 text-right">Balance</TableHead>
+      {results && !results.error && (
+        <div className="col-span-1 md:col-span-2 mt-8">
+            <h2 className="text-xl font-semibold mb-4">Amortization Schedule</h2>
+            <Card>
+                <CardContent className="p-0">
+                    <ScrollArea className="h-[30rem]">
+                        <Table>
+                            <TableHeader className="sticky top-0 bg-muted">
+                                <TableRow>
+                                    <TableHead className="w-1/4">Month</TableHead>
+                                    <TableHead className="w-1/4 text-right">Principal</TableHead>
+                                    <TableHead className="w-1/4 text-right">Interest</TableHead>
+                                    <TableHead className="w-1/4 text-right">Balance</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {results.amortization.map((row: any) => (
+                                    <TableRow key={row.month}>
+                                        <TableCell>{row.month}</TableCell>
+                                        <TableCell className="text-right">{formatCurrency(row.principalPayment)}</TableCell>
+                                        <TableCell className="text-right">{formatCurrency(row.interestPayment)}</TableCell>
+                                        <TableCell className="text-right">{formatCurrency(row.remainingBalance)}</TableCell>
                                     </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {results.amortization.map((row: any) => (
-                                        <TableRow key={row.month}>
-                                            <TableCell>{row.month}</TableCell>
-                                            <TableCell className="text-right">{formatCurrency(row.principalPayment)}</TableCell>
-                                            <TableCell className="text-right">{formatCurrency(row.interestPayment)}</TableCell>
-                                            <TableCell className="text-right">{formatCurrency(row.remainingBalance)}</TableCell>
-                                        </TableRow>
-                                    ))}
-                                </TableBody>
-                            </Table>
-                        </ScrollArea>
-                      </CardContent>
-                    </Card>
-                </div>
-            )
-        ) : (
-             <Card className="flex items-center justify-center h-full min-h-64 bg-muted/50 border-dashed">
-                <p className="text-sm text-muted-foreground">Enter loan details to see the payment plan</p>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </ScrollArea>
+                </CardContent>
             </Card>
-        )}
-      </div>
+        </div>
+      )}
     </form>
   );
 }

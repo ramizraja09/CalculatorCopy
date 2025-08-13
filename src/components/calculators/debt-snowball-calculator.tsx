@@ -154,57 +154,68 @@ export default function DebtSnowballCalculator() {
   };
 
   return (
-    <form onSubmit={handleSubmit(calculateSnowball)} className="grid md:grid-cols-2 gap-8">
-      {/* Inputs Column */}
-      <div className="space-y-4">
-        <h3 className="text-xl font-semibold">Your Debts</h3>
-        {fields.map((field, index) => (
-          <Card key={field.id} className="p-4 space-y-2 relative">
-            <div className="grid grid-cols-2 gap-2">
-              <div><Label>Debt Name</Label><Controller name={`debts.${index}.name`} control={control} render={({ field }) => <Input placeholder="e.g., Visa" {...field} />} /></div>
-              <div><Label>Balance ($)</Label><Controller name={`debts.${index}.balance`} control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} /></div>
-              <div><Label>APR (%)</Label><Controller name={`debts.${index}.apr`} control={control} render={({ field }) => <Input type="number" step="0.1" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} /></div>
-              <div><Label>Min. Payment ($)</Label><Controller name={`debts.${index}.minPayment`} control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} /></div>
-            </div>
-             <Button type="button" variant="ghost" size="icon" className="absolute top-1 right-1" onClick={() => remove(index)}><Trash className="h-4 w-4" /></Button>
-          </Card>
-        ))}
-         {errors.debts && <p className="text-destructive text-sm">{errors.debts.root?.message}</p>}
-        <Button type="button" variant="outline" onClick={() => append({ name: '', balance: 0, apr: 0, minPayment: 0 })}>Add Debt</Button>
-        
-        <h3 className="text-xl font-semibold pt-4">Extra Monthly Payment</h3>
-        <div>
-          <Label>Amount ($)</Label>
-          <Controller name="extraPayment" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
-        </div>
-        <div className="flex gap-2">
-            <Button type="submit" className="flex-1">Create Payoff Plan</Button>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" disabled={!results}>
-                  <Download className="mr-2 h-4 w-4" /> Export
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent>
-                <DropdownMenuItem onClick={() => handleExport('txt')}>Download as .txt</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handleExport('csv')}>Download as .csv</DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-        </div>
-      </div>
-
-      {/* Results Column */}
-      <div className="space-y-4">
-        <h3 className="text-xl font-semibold">Payoff Plan</h3>
-        {results ? (
+    <form onSubmit={handleSubmit(calculateSnowball)}>
+        <div className="grid md:grid-cols-2 gap-8">
+            {/* Inputs Column */}
             <div className="space-y-4">
-                <Card><CardContent className="p-4 grid grid-cols-2 gap-2 text-center">
-                    <div><p className="text-muted-foreground">Debt-Free In</p><p className="font-semibold">{Math.floor(results.totalMonths/12)} years, {results.totalMonths % 12} months</p></div>
-                    <div><p className="text-muted-foreground">Total Interest Paid</p><p className="font-semibold">{formatCurrency(results.totalInterestPaid)}</p></div>
-                </CardContent></Card>
-                 <Card>
+                <h3 className="text-xl font-semibold">Your Debts</h3>
+                {fields.map((field, index) => (
+                <Card key={field.id} className="p-4 space-y-2 relative">
+                    <div className="grid grid-cols-2 gap-2">
+                    <div><Label>Debt Name</Label><Controller name={`debts.${index}.name`} control={control} render={({ field }) => <Input placeholder="e.g., Visa" {...field} />} /></div>
+                    <div><Label>Balance ($)</Label><Controller name={`debts.${index}.balance`} control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} /></div>
+                    <div><Label>APR (%)</Label><Controller name={`debts.${index}.apr`} control={control} render={({ field }) => <Input type="number" step="0.1" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} /></div>
+                    <div><Label>Min. Payment ($)</Label><Controller name={`debts.${index}.minPayment`} control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} /></div>
+                    </div>
+                    <Button type="button" variant="ghost" size="icon" className="absolute top-1 right-1" onClick={() => remove(index)}><Trash className="h-4 w-4" /></Button>
+                </Card>
+                ))}
+                {errors.debts && <p className="text-destructive text-sm">{errors.debts.root?.message}</p>}
+                <Button type="button" variant="outline" onClick={() => append({ name: '', balance: 0, apr: 0, minPayment: 0 })}>Add Debt</Button>
+                
+                <h3 className="text-xl font-semibold pt-4">Extra Monthly Payment</h3>
+                <div>
+                <Label>Amount ($)</Label>
+                <Controller name="extraPayment" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
+                </div>
+                <div className="flex gap-2">
+                    <Button type="submit" className="flex-1">Create Payoff Plan</Button>
+                    <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <Button variant="outline" disabled={!results}>
+                        <Download className="mr-2 h-4 w-4" /> Export
+                        </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent>
+                        <DropdownMenuItem onClick={() => handleExport('txt')}>Download as .txt</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleExport('csv')}>Download as .csv</DropdownMenuItem>
+                    </DropdownMenuContent>
+                    </DropdownMenu>
+                </div>
+            </div>
+
+            {/* Results Column */}
+            <div className="space-y-4">
+                <h3 className="text-xl font-semibold">Summary</h3>
+                {results ? (
+                    <Card>
+                        <CardContent className="p-4 grid grid-cols-2 gap-2 text-center">
+                            <div><p className="text-muted-foreground">Debt-Free In</p><p className="font-semibold">{Math.floor(results.totalMonths/12)} years, {results.totalMonths % 12} months</p></div>
+                            <div><p className="text-muted-foreground">Total Interest Paid</p><p className="font-semibold">{formatCurrency(results.totalInterestPaid)}</p></div>
+                        </CardContent>
+                    </Card>
+                ) : (
+                    <div className="flex items-center justify-center h-60 bg-muted/50 rounded-lg border border-dashed">
+                        <p className="text-sm text-muted-foreground">Add your debts to create a payoff plan</p>
+                    </div>
+                )}
+            </div>
+        </div>
+        {results && (
+            <div className="md:col-span-2 mt-8">
+                <h3 className="text-xl font-semibold mb-4">Payoff Schedule</h3>
+                <Card>
                     <CardContent className="p-2">
-                        <h4 className="font-semibold mb-2 p-2">Payoff Schedule</h4>
                         <ScrollArea className="h-[40rem]">
                             <Table>
                                 <TableHeader className="sticky top-0 bg-muted">
@@ -228,12 +239,7 @@ export default function DebtSnowballCalculator() {
                     </CardContent>
                 </Card>
             </div>
-        ) : (
-             <div className="flex items-center justify-center h-60 bg-muted/50 rounded-lg border border-dashed">
-                <p className="text-sm text-muted-foreground">Add your debts to create a payoff plan</p>
-            </div>
         )}
-      </div>
     </form>
   );
 }

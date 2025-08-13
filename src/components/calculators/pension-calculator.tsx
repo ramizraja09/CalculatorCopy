@@ -128,82 +128,87 @@ export default function PensionCalculator() {
 
 
   return (
-    <form onSubmit={handleSubmit(calculatePension)} className="grid md:grid-cols-2 gap-8">
-      {/* Inputs Column */}
-      <div className="space-y-4">
-        <h3 className="text-xl font-semibold">Your Details</h3>
-        <div className="grid grid-cols-2 gap-4">
-            <div><Label>Current Age</Label><Controller name="currentAge" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseInt(e.target.value, 10))} />} /></div>
-            <div><Label>Retirement Age</Label><Controller name="retirementAge" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseInt(e.target.value, 10))} />} /></div>
+    <form onSubmit={handleSubmit(calculatePension)}>
+      <div className="grid md:grid-cols-2 gap-8">
+        {/* Inputs Column */}
+        <div className="space-y-4">
+          <h3 className="text-xl font-semibold">Your Details</h3>
+          <div className="grid grid-cols-2 gap-4">
+              <div><Label>Current Age</Label><Controller name="currentAge" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseInt(e.target.value, 10))} />} /></div>
+              <div><Label>Retirement Age</Label><Controller name="retirementAge" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseInt(e.target.value, 10))} />} /></div>
+          </div>
+          {errors.retirementAge && <p className="text-destructive text-sm mt-1">{errors.retirementAge.message}</p>}
+          
+          <h3 className="text-xl font-semibold pt-4">Pension & Contributions</h3>
+          <div><Label>Current Pension Pot ($)</Label><Controller name="currentPensionPot" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} /></div>
+          <div><Label>Monthly Contribution ($)</Label><Controller name="monthlyContribution" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} /></div>
+          
+          <h3 className="text-xl font-semibold pt-4">Assumptions</h3>
+          <div><Label>Annual Growth Rate (%)</Label><Controller name="annualGrowthRate" control={control} render={({ field }) => <Input type="number" step="0.1" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} /></div>
+          <div><Label>Annuity Rate at Retirement (%)</Label><Controller name="annuityRate" control={control} render={({ field }) => <Input type="number" step="0.1" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} /></div>
+          
+          <div className="flex gap-2">
+              <Button type="submit" className="flex-1">Calculate</Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" disabled={!results}>
+                    <Download className="mr-2 h-4 w-4" /> Export
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent>
+                  <DropdownMenuItem onClick={() => handleExport('txt')}>Download as .txt</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleExport('csv')}>Download as .csv</DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+          </div>
         </div>
-        {errors.retirementAge && <p className="text-destructive text-sm mt-1">{errors.retirementAge.message}</p>}
-        
-        <h3 className="text-xl font-semibold pt-4">Pension & Contributions</h3>
-        <div><Label>Current Pension Pot ($)</Label><Controller name="currentPensionPot" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} /></div>
-        <div><Label>Monthly Contribution ($)</Label><Controller name="monthlyContribution" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} /></div>
-        
-        <h3 className="text-xl font-semibold pt-4">Assumptions</h3>
-        <div><Label>Annual Growth Rate (%)</Label><Controller name="annualGrowthRate" control={control} render={({ field }) => <Input type="number" step="0.1" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} /></div>
-        <div><Label>Annuity Rate at Retirement (%)</Label><Controller name="annuityRate" control={control} render={({ field }) => <Input type="number" step="0.1" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} /></div>
-        
-        <div className="flex gap-2">
-            <Button type="submit" className="flex-1">Calculate</Button>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" disabled={!results}>
-                  <Download className="mr-2 h-4 w-4" /> Export
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent>
-                <DropdownMenuItem onClick={() => handleExport('txt')}>Download as .txt</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handleExport('csv')}>Download as .csv</DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+
+        {/* Results Column */}
+        <div className="space-y-4">
+          <h3 className="text-xl font-semibold">Retirement Projections</h3>
+          {results ? (
+              <div className="space-y-4">
+                  <Card>
+                      <CardContent className="p-4 text-center">
+                          <p className="text-sm text-muted-foreground">Projected Pension Pot</p>
+                          <p className="text-3xl font-bold">{formatCurrency(results.projectedPensionPot)}</p>
+                      </CardContent>
+                  </Card>
+                  <Card>
+                      <CardContent className="p-4 text-center">
+                          <p className="text-sm text-muted-foreground">Estimated Annual Income</p>
+                          <p className="text-3xl font-bold">{formatCurrency(results.estimatedAnnualIncome)}</p>
+                      </CardContent>
+                  </Card>
+              </div>
+          ) : (
+              <div className="flex items-center justify-center h-60 bg-muted/50 rounded-lg border border-dashed">
+                  <p className="text-sm text-muted-foreground">Enter your pension details to see projections</p>
+              </div>
+          )}
         </div>
       </div>
-
-      {/* Results Column */}
-      <div className="space-y-4">
-        <h3 className="text-xl font-semibold">Retirement Projections</h3>
-        {results ? (
-            <div className="space-y-4">
-                 <Card>
-                    <CardContent className="p-4 text-center">
-                        <p className="text-sm text-muted-foreground">Projected Pension Pot</p>
-                        <p className="text-3xl font-bold">{formatCurrency(results.projectedPensionPot)}</p>
-                    </CardContent>
-                </Card>
-                <Card>
-                    <CardContent className="p-4 text-center">
-                        <p className="text-sm text-muted-foreground">Estimated Annual Income</p>
-                        <p className="text-3xl font-bold">{formatCurrency(results.estimatedAnnualIncome)}</p>
-                    </CardContent>
-                </Card>
-
-                <Card>
-                    <CardContent className="p-4">
-                        <h4 className="font-semibold mb-4 text-center">Pension Growth</h4>
-                        <div className="h-60">
-                          <ResponsiveContainer width="100%" height="100%">
-                            <LineChart data={results.schedule} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
-                              <CartesianGrid strokeDasharray="3 3" />
-                              <XAxis dataKey="age" name="Age" />
-                              <YAxis tickFormatter={(value) => typeof value === 'number' ? formatCurrency(value) : ''} />
-                              <Tooltip formatter={(value: number) => formatCurrency(value)} />
-                              <Legend />
-                              <Line type="monotone" dataKey="balance" name="Pension Value" stroke="hsl(var(--primary))" dot={false} />
-                            </LineChart>
-                          </ResponsiveContainer>
-                        </div>
-                    </CardContent>
-                </Card>
-            </div>
-        ) : (
-             <div className="flex items-center justify-center h-60 bg-muted/50 rounded-lg border border-dashed">
-                <p className="text-sm text-muted-foreground">Enter your pension details to see projections</p>
-            </div>
-        )}
-      </div>
+      {results && (
+        <div className="md:col-span-2 mt-8">
+            <h3 className="text-xl font-semibold mb-4">Pension Growth</h3>
+            <Card>
+                <CardContent className="p-4">
+                    <div className="h-96">
+                        <ResponsiveContainer width="100%" height="100%">
+                        <LineChart data={results.schedule} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
+                            <CartesianGrid strokeDasharray="3 3" />
+                            <XAxis dataKey="age" name="Age" />
+                            <YAxis tickFormatter={(value) => typeof value === 'number' ? formatCurrency(value) : ''} />
+                            <Tooltip formatter={(value: number) => formatCurrency(value)} />
+                            <Legend />
+                            <Line type="monotone" dataKey="balance" name="Pension Value" stroke="hsl(var(--primary))" dot={false} />
+                        </LineChart>
+                        </ResponsiveContainer>
+                    </div>
+                </CardContent>
+            </Card>
+        </div>
+      )}
     </form>
   );
 }

@@ -104,77 +104,88 @@ export default function NetWorthCalculator() {
   };
 
   return (
-    <form onSubmit={handleSubmit(processSubmit)} className="grid md:grid-cols-2 gap-8">
-      {/* Inputs Column */}
-      <div className="space-y-4">
-        <Card>
-            <CardHeader><CardTitle>Assets</CardTitle></CardHeader>
-            <CardContent className="space-y-2">
-                {assetFields.map((field, index) => (
-                    <div key={field.id} className="flex gap-2 items-center">
-                        <Label htmlFor={`assets.${index}.name`} className="sr-only">Asset Name</Label>
-                        <Controller name={`assets.${index}.name`} control={control} render={({ field }) => <Input placeholder="Asset Name" {...field} />} />
-                        <Label htmlFor={`assets.${index}.amount`} className="sr-only">Asset Amount</Label>
-                        <Controller name={`assets.${index}.amount`} control={control} render={({ field }) => <Input type="number" placeholder="0" className="w-32" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
-                        <Button type="button" variant="ghost" size="icon" onClick={() => removeAsset(index)}><Trash className="h-4 w-4" /></Button>
-                    </div>
-                ))}
-                <Button type="button" variant="outline" size="sm" onClick={() => appendAsset({ name: '', amount: 0 })}>Add Asset</Button>
-            </CardContent>
-        </Card>
-        <Card>
-            <CardHeader><CardTitle>Liabilities</CardTitle></CardHeader>
-            <CardContent className="space-y-2">
-                 {liabilityFields.map((field, index) => (
-                    <div key={field.id} className="flex gap-2 items-center">
-                        <Label htmlFor={`liabilities.${index}.name`} className="sr-only">Liability Name</Label>
-                        <Controller name={`liabilities.${index}.name`} control={control} render={({ field }) => <Input placeholder="Liability Name" {...field} />} />
-                        <Label htmlFor={`liabilities.${index}.amount`} className="sr-only">Liability Amount</Label>
-                        <Controller name={`liabilities.${index}.amount`} control={control} render={({ field }) => <Input type="number" placeholder="0" className="w-32" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
-                        <Button type="button" variant="ghost" size="icon" onClick={() => removeLiability(index)}><Trash className="h-4 w-4" /></Button>
-                    </div>
-                ))}
-                <Button type="button" variant="outline" size="sm" onClick={() => appendLiability({ name: '', amount: 0 })}>Add Liability</Button>
-            </CardContent>
-        </Card>
-        <div className="flex gap-2">
-            <Button type="submit" className="flex-1">Calculate Net Worth</Button>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" disabled={!results}>
-                  <Download className="mr-2 h-4 w-4" /> Export
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent>
-                <DropdownMenuItem onClick={() => handleExport('txt')}>Download as .txt</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handleExport('csv')}>Download as .csv</DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-        </div>
-      </div>
-
-      {/* Results Column */}
-      <div className="space-y-4">
-        <h3 className="text-xl font-semibold">Your Net Worth</h3>
-        {results ? (
+    <form onSubmit={handleSubmit(processSubmit)}>
+        <div className="grid md:grid-cols-2 gap-8">
+            {/* Inputs Column */}
             <div className="space-y-4">
                 <Card>
-                    <CardContent className="p-4 text-center">
-                        <p className="text-sm text-muted-foreground">Total Net Worth</p>
-                        <p className="text-3xl font-bold">{formatCurrency(results.netWorth)}</p>
-                    </CardContent>
-                </Card>
-                 <Card>
-                    <CardContent className="p-4 grid grid-cols-2 gap-2 text-sm">
-                         <div><p className="text-muted-foreground">Total Assets</p><p className="font-semibold text-green-600">{formatCurrency(results.totalAssets)}</p></div>
-                         <div><p className="text-muted-foreground">Total Liabilities</p><p className="font-semibold text-destructive">{formatCurrency(results.totalLiabilities)}</p></div>
+                    <CardHeader><CardTitle>Assets</CardTitle></CardHeader>
+                    <CardContent className="space-y-2">
+                        {assetFields.map((field, index) => (
+                            <div key={field.id} className="flex gap-2 items-center">
+                                <Label htmlFor={`assets.${index}.name`} className="sr-only">Asset Name</Label>
+                                <Controller name={`assets.${index}.name`} control={control} render={({ field }) => <Input placeholder="Asset Name" {...field} />} />
+                                <Label htmlFor={`assets.${index}.amount`} className="sr-only">Asset Amount</Label>
+                                <Controller name={`assets.${index}.amount`} control={control} render={({ field }) => <Input type="number" placeholder="0" className="w-32" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
+                                <Button type="button" variant="ghost" size="icon" onClick={() => removeAsset(index)}><Trash className="h-4 w-4" /></Button>
+                            </div>
+                        ))}
+                        <Button type="button" variant="outline" size="sm" onClick={() => appendAsset({ name: '', amount: 0 })}>Add Asset</Button>
                     </CardContent>
                 </Card>
                 <Card>
+                    <CardHeader><CardTitle>Liabilities</CardTitle></CardHeader>
+                    <CardContent className="space-y-2">
+                        {liabilityFields.map((field, index) => (
+                            <div key={field.id} className="flex gap-2 items-center">
+                                <Label htmlFor={`liabilities.${index}.name`} className="sr-only">Liability Name</Label>
+                                <Controller name={`liabilities.${index}.name`} control={control} render={({ field }) => <Input placeholder="Liability Name" {...field} />} />
+                                <Label htmlFor={`liabilities.${index}.amount`} className="sr-only">Liability Amount</Label>
+                                <Controller name={`liabilities.${index}.amount`} control={control} render={({ field }) => <Input type="number" placeholder="0" className="w-32" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
+                                <Button type="button" variant="ghost" size="icon" onClick={() => removeLiability(index)}><Trash className="h-4 w-4" /></Button>
+                            </div>
+                        ))}
+                        <Button type="button" variant="outline" size="sm" onClick={() => appendLiability({ name: '', amount: 0 })}>Add Liability</Button>
+                    </CardContent>
+                </Card>
+                <div className="flex gap-2">
+                    <Button type="submit" className="flex-1">Calculate Net Worth</Button>
+                    <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <Button variant="outline" disabled={!results}>
+                        <Download className="mr-2 h-4 w-4" /> Export
+                        </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent>
+                        <DropdownMenuItem onClick={() => handleExport('txt')}>Download as .txt</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleExport('csv')}>Download as .csv</DropdownMenuItem>
+                    </DropdownMenuContent>
+                    </DropdownMenu>
+                </div>
+            </div>
+
+            {/* Results Column */}
+            <div className="space-y-4">
+                <h3 className="text-xl font-semibold">Your Net Worth</h3>
+                {results ? (
+                    <div className="space-y-4">
+                        <Card>
+                            <CardContent className="p-4 text-center">
+                                <p className="text-sm text-muted-foreground">Total Net Worth</p>
+                                <p className="text-3xl font-bold">{formatCurrency(results.netWorth)}</p>
+                            </CardContent>
+                        </Card>
+                        <Card>
+                            <CardContent className="p-4 grid grid-cols-2 gap-2 text-sm">
+                                <div><p className="text-muted-foreground">Total Assets</p><p className="font-semibold text-green-600">{formatCurrency(results.totalAssets)}</p></div>
+                                <div><p className="text-muted-foreground">Total Liabilities</p><p className="font-semibold text-destructive">{formatCurrency(results.totalLiabilities)}</p></div>
+                            </CardContent>
+                        </Card>
+                    </div>
+                ) : (
+                    <div className="flex items-center justify-center h-60 bg-muted/50 rounded-lg border border-dashed">
+                        <p className="text-sm text-muted-foreground">Enter your assets and liabilities to calculate</p>
+                    </div>
+                )}
+            </div>
+        </div>
+        {results && (
+             <div className="md:col-span-2 mt-8">
+                <h3 className="text-xl font-semibold mb-4">Assets vs. Liabilities</h3>
+                <Card>
                     <CardContent className="p-4">
-                        <h4 className="font-semibold mb-4 text-center">Assets vs. Liabilities</h4>
-                        <div className="h-48">
-                          <ResponsiveContainer width="100%" height="100%">
+                        <div className="h-80">
+                        <ResponsiveContainer width="100%" height="100%">
                             <BarChart data={results.chartData} layout="vertical" barSize={60}>
                               <CartesianGrid strokeDasharray="3 3" />
                               <XAxis type="number" tickFormatter={(value) => formatCurrency(value)} />
@@ -189,12 +200,7 @@ export default function NetWorthCalculator() {
                     </CardContent>
                 </Card>
             </div>
-        ) : (
-             <div className="flex items-center justify-center h-60 bg-muted/50 rounded-lg border border-dashed">
-                <p className="text-sm text-muted-foreground">Enter your assets and liabilities to calculate</p>
-            </div>
         )}
-      </div>
     </form>
   );
 }

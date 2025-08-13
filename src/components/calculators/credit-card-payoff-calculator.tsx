@@ -174,102 +174,112 @@ export default function CreditCardPayoffCalculator() {
   };
 
   return (
-    <form onSubmit={handleSubmit(calculatePayoff)} className="grid md:grid-cols-2 gap-8">
-      {/* Inputs */}
-      <div className="space-y-4">
-        <h3 className="text-xl font-semibold">Inputs</h3>
-        <div>
-          <Label htmlFor="balance">Credit Card Balance ($)</Label>
-          <Controller name="balance" control={control} render={({ field }) => <Input id="balance" type="number" step="0.01" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
-          {errors.balance && <p className="text-destructive text-sm mt-1">{errors.balance.message}</p>}
+    <form onSubmit={handleSubmit(calculatePayoff)}>
+      <div className="grid md:grid-cols-2 gap-8">
+        {/* Inputs */}
+        <div className="space-y-4">
+          <h3 className="text-xl font-semibold">Inputs</h3>
+          <div>
+            <Label htmlFor="balance">Credit Card Balance ($)</Label>
+            <Controller name="balance" control={control} render={({ field }) => <Input id="balance" type="number" step="0.01" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
+            {errors.balance && <p className="text-destructive text-sm mt-1">{errors.balance.message}</p>}
+          </div>
+
+          <div>
+            <Label htmlFor="apr">Interest Rate (APR %)</Label>
+            <Controller name="apr" control={control} render={({ field }) => <Input id="apr" type="number" step="0.01" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
+            {errors.apr && <p className="text-destructive text-sm mt-1">{errors.apr.message}</p>}
+          </div>
+          
+          <Controller
+              name="payoffStrategy"
+              control={control}
+              render={({ field }) => (
+              <RadioGroup onValueChange={field.onChange} defaultValue={field.value} className="grid grid-cols-2 gap-4">
+                  <div>
+                      <RadioGroupItem value="fixedPayment" id="fixedPayment" className="peer sr-only" />
+                      <Label htmlFor="fixedPayment" className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary">
+                          Pay a Fixed Amount
+                      </Label>
+                  </div>
+                  <div>
+                      <RadioGroupItem value="targetDate" id="targetDate" className="peer sr-only" />
+                      <Label htmlFor="targetDate" className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary">
+                          Payoff by a Date
+                      </Label>
+                  </div>
+              </RadioGroup>
+          )}/>
+
+          {payoffStrategy === 'fixedPayment' && (
+              <div>
+                <Label htmlFor="monthlyPayment">Monthly Payment ($)</Label>
+                <Controller name="monthlyPayment" control={control} render={({ field }) => <Input id="monthlyPayment" type="number" step="10" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
+                {errors.monthlyPayment && <p className="text-destructive text-sm mt-1">{errors.monthlyPayment.message}</p>}
+              </div>
+          )}
+          {payoffStrategy === 'targetDate' && (
+              <div>
+                <Label htmlFor="payoffMonths">Payoff in (months)</Label>
+                <Controller name="payoffMonths" control={control} render={({ field }) => <Input id="payoffMonths" type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseInt(e.target.value, 10))} />} />
+                {errors.payoffMonths && <p className="text-destructive text-sm mt-1">{errors.payoffMonths.message}</p>}
+              </div>
+          )}
+          
+          <div className="flex gap-2">
+              <Button type="submit" className="flex-1">Calculate Payoff</Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" disabled={!results}>
+                    <Download className="mr-2 h-4 w-4" /> Export
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent>
+                  <DropdownMenuItem onClick={() => handleExport('txt')}>Download as .txt</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleExport('csv')}>Download as .csv</DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+          </div>
         </div>
 
-        <div>
-          <Label htmlFor="apr">Interest Rate (APR %)</Label>
-          <Controller name="apr" control={control} render={({ field }) => <Input id="apr" type="number" step="0.01" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
-          {errors.apr && <p className="text-destructive text-sm mt-1">{errors.apr.message}</p>}
-        </div>
-        
-        <Controller
-            name="payoffStrategy"
-            control={control}
-            render={({ field }) => (
-            <RadioGroup onValueChange={field.onChange} defaultValue={field.value} className="grid grid-cols-2 gap-4">
-                <div>
-                    <RadioGroupItem value="fixedPayment" id="fixedPayment" className="peer sr-only" />
-                    <Label htmlFor="fixedPayment" className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary">
-                        Pay a Fixed Amount
-                    </Label>
-                </div>
-                 <div>
-                    <RadioGroupItem value="targetDate" id="targetDate" className="peer sr-only" />
-                    <Label htmlFor="targetDate" className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary">
-                        Payoff by a Date
-                    </Label>
-                </div>
-            </RadioGroup>
-        )}/>
-
-        {payoffStrategy === 'fixedPayment' && (
-            <div>
-              <Label htmlFor="monthlyPayment">Monthly Payment ($)</Label>
-              <Controller name="monthlyPayment" control={control} render={({ field }) => <Input id="monthlyPayment" type="number" step="10" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
-              {errors.monthlyPayment && <p className="text-destructive text-sm mt-1">{errors.monthlyPayment.message}</p>}
+        {/* Results */}
+        <div className="space-y-4">
+          <h3 className="text-xl font-semibold">Results</h3>
+          {results ? (
+            results.error ? (
+                  <Card className="flex items-center justify-center h-60 bg-muted/50 border-dashed">
+                      <p className="text-destructive text-center p-4">{results.error}</p>
+                  </Card>
+              ) : (
+            <div className="space-y-4">
+              <Card>
+                  <CardContent className="p-4 text-center">
+                      <p className="text-sm text-muted-foreground">You'll be debt free in</p>
+                      <p className="text-2xl font-bold">
+                          {results.payoffTimeYears > 0 && `${results.payoffTimeYears} ${results.payoffTimeYears === 1 ? 'Year' : 'Years'}`} {results.payoffTimeMonths > 0 && `${results.payoffTimeMonths} ${results.payoffTimeMonths === 1 ? 'Month' : 'Months'}`}
+                      </p>
+                      <p className="text-sm text-muted-foreground">around {results.finalPayoffDate}</p>
+                  </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="p-4 grid grid-cols-2 gap-2 text-sm">
+                  <div><p className="text-muted-foreground">Your Monthly Payment</p><p className="font-semibold">{formatCurrency(results.monthlyPayment)}</p></div>
+                  <div><p className="text-muted-foreground">Total Interest Paid</p><p className="font-semibold">{formatCurrency(results.totalInterest)}</p></div>
+                </CardContent>
+              </Card>
             </div>
-        )}
-        {payoffStrategy === 'targetDate' && (
-            <div>
-              <Label htmlFor="payoffMonths">Payoff in (months)</Label>
-              <Controller name="payoffMonths" control={control} render={({ field }) => <Input id="payoffMonths" type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseInt(e.target.value, 10))} />} />
-              {errors.payoffMonths && <p className="text-destructive text-sm mt-1">{errors.payoffMonths.message}</p>}
+          )) : (
+            <div className="flex items-center justify-center h-60 bg-muted/50 rounded-lg border border-dashed">
+              <p className="text-sm text-muted-foreground">Enter your details to create a payoff plan</p>
             </div>
-        )}
-        
-        <div className="flex gap-2">
-            <Button type="submit" className="flex-1">Calculate Payoff</Button>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" disabled={!results}>
-                  <Download className="mr-2 h-4 w-4" /> Export
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent>
-                <DropdownMenuItem onClick={() => handleExport('txt')}>Download as .txt</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handleExport('csv')}>Download as .csv</DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+          )}
         </div>
       </div>
-
-      {/* Results */}
-      <div className="space-y-4">
-        <h3 className="text-xl font-semibold">Results</h3>
-        {results ? (
-          results.error ? (
-                <Card className="flex items-center justify-center h-60 bg-muted/50 border-dashed">
-                    <p className="text-destructive text-center p-4">{results.error}</p>
-                </Card>
-            ) : (
-          <div className="space-y-4">
-            <Card>
-                <CardContent className="p-4 text-center">
-                    <p className="text-sm text-muted-foreground">You'll be debt free in</p>
-                    <p className="text-2xl font-bold">
-                        {results.payoffTimeYears > 0 && `${results.payoffTimeYears} ${results.payoffTimeYears === 1 ? 'Year' : 'Years'}`} {results.payoffTimeMonths > 0 && `${results.payoffTimeMonths} ${results.payoffTimeMonths === 1 ? 'Month' : 'Months'}`}
-                    </p>
-                    <p className="text-sm text-muted-foreground">around {results.finalPayoffDate}</p>
-                </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="p-4 grid grid-cols-2 gap-2 text-sm">
-                <div><p className="text-muted-foreground">Your Monthly Payment</p><p className="font-semibold">{formatCurrency(results.monthlyPayment)}</p></div>
-                <div><p className="text-muted-foreground">Total Interest Paid</p><p className="font-semibold">{formatCurrency(results.totalInterest)}</p></div>
-              </CardContent>
-            </Card>
-
+      {results && !results.error && (
+        <div className="md:col-span-2 mt-8">
+            <h3 className="text-xl font-semibold mb-4">Payoff Schedule</h3>
             <Card>
               <CardContent className="p-4">
-                  <h4 className="font-semibold mb-2">Payoff Schedule</h4>
                   <ScrollArea className="h-96">
                       <Table>
                           <TableHeader className="sticky top-0 bg-muted">
@@ -294,13 +304,8 @@ export default function CreditCardPayoffCalculator() {
                   </ScrollArea>
               </CardContent>
             </Card>
-          </div>
-        )) : (
-          <div className="flex items-center justify-center h-60 bg-muted/50 rounded-lg border border-dashed">
-            <p className="text-sm text-muted-foreground">Enter your details to create a payoff plan</p>
-          </div>
-        )}
-      </div>
+        </div>
+      )}
     </form>
   );
 }
