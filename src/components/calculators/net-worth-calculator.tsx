@@ -8,6 +8,7 @@ import * as z from 'zod';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
 import { Trash, Download } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import {
@@ -111,7 +112,9 @@ export default function NetWorthCalculator() {
             <CardContent className="space-y-2">
                 {assetFields.map((field, index) => (
                     <div key={field.id} className="flex gap-2 items-center">
+                        <Label htmlFor={`assets.${index}.name`} className="sr-only">Asset Name</Label>
                         <Controller name={`assets.${index}.name`} control={control} render={({ field }) => <Input placeholder="Asset Name" {...field} />} />
+                        <Label htmlFor={`assets.${index}.amount`} className="sr-only">Asset Amount</Label>
                         <Controller name={`assets.${index}.amount`} control={control} render={({ field }) => <Input type="number" placeholder="Amount" className="w-32" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
                         <Button type="button" variant="ghost" size="icon" onClick={() => removeAsset(index)}><Trash className="h-4 w-4" /></Button>
                     </div>
@@ -124,7 +127,9 @@ export default function NetWorthCalculator() {
             <CardContent className="space-y-2">
                  {liabilityFields.map((field, index) => (
                     <div key={field.id} className="flex gap-2 items-center">
+                        <Label htmlFor={`liabilities.${index}.name`} className="sr-only">Liability Name</Label>
                         <Controller name={`liabilities.${index}.name`} control={control} render={({ field }) => <Input placeholder="Liability Name" {...field} />} />
+                        <Label htmlFor={`liabilities.${index}.amount`} className="sr-only">Liability Amount</Label>
                         <Controller name={`liabilities.${index}.amount`} control={control} render={({ field }) => <Input type="number" placeholder="Amount" className="w-32" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
                         <Button type="button" variant="ghost" size="icon" onClick={() => removeLiability(index)}><Trash className="h-4 w-4" /></Button>
                     </div>
@@ -167,13 +172,14 @@ export default function NetWorthCalculator() {
                 </Card>
                 <Card>
                     <CardContent className="p-4">
-                        <div className="h-24">
+                        <h4 className="font-semibold mb-4 text-center">Assets vs. Liabilities</h4>
+                        <div className="h-48">
                           <ResponsiveContainer width="100%" height="100%">
-                            <BarChart data={results.chartData} layout="vertical" barGap={-15}>
+                            <BarChart data={results.chartData} layout="vertical" barSize={60}>
                               <CartesianGrid strokeDasharray="3 3" />
-                              <XAxis type="number" hide />
+                              <XAxis type="number" tickFormatter={(value) => formatCurrency(value)} />
                               <YAxis type="category" dataKey="name" hide />
-                              <Tooltip formatter={(value: number) => formatCurrency(value)} />
+                              <Tooltip formatter={(value: number) => formatCurrency(Math.abs(value))} />
                               <Legend />
                               <Bar dataKey="assets" name="Assets" fill="hsl(var(--chart-2))" stackId="a" />
                               <Bar dataKey="liabilities" name="Liabilities" fill="hsl(var(--destructive))" stackId="a" />

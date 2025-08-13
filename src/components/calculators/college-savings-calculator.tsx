@@ -152,7 +152,7 @@ export default function CollegeSavingsCalculator() {
                     <CardContent className="p-4 grid grid-cols-2 gap-2 text-sm">
                          <div><p className="text-muted-foreground">Projected Total Cost</p><p className="font-semibold">{formatCurrency(results.totalFutureCost)}</p></div>
                          <div><p className="text-muted-foreground">Projected Savings</p><p className="font-semibold">{formatCurrency(results.fvOfCurrentSavings)}</p></div>
-                         <div><p className="text-muted-foreground">Shortfall</p><p className="font-semibold">{formatCurrency(results.shortfall)}</p></div>
+                         <div className="col-span-2"><p className="text-muted-foreground">Shortfall</p><p className="font-semibold">{formatCurrency(results.shortfall)}</p></div>
                     </CardContent>
                 </Card>
              </div>

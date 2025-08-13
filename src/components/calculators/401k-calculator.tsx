@@ -70,15 +70,21 @@ export default function Four01kCalculator() {
     const schedule = [{ age: currentAge, balance }];
 
     for (let year = 1; year <= yearsToRetirement; year++) {
+      let currentYearSalary = annualSalary; // In a more complex model, this could increase annually
+      const currentEmployeeContributionMonthly = (currentYearSalary * (contributionPercent / 100)) / 12;
+      const currentEmployerMatchable = (currentYearSalary * (matchUpToPercent / 100)) / 12;
+      const currentEmployerMatch = Math.min(currentEmployeeContributionMonthly, currentEmployerMatchable) * (employerMatchPercent / 100);
+      const currentTotalMonthly = currentEmployeeContributionMonthly + currentEmployerMatch;
+
       for (let month = 1; month <= 12; month++) {
-        balance = balance * (1 + monthlyRate) + totalMonthlyContribution;
+        balance = balance * (1 + monthlyRate) + currentTotalMonthly;
       }
       schedule.push({ age: currentAge + year, balance });
     }
 
     setResults({
       finalBalance: balance,
-      totalContributions: currentBalance + (totalMonthlyContribution * 12 * yearsToRetirement),
+      totalContributions: currentBalance + (totalMonthlyContribution * 12 * yearsToRetirement), // Simplified total
       schedule,
       error: null,
     });

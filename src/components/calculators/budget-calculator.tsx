@@ -38,7 +38,7 @@ const defaultExpenses = [
     { name: 'Phone/Internet', amount: 100 },
 ];
 
-const PIE_COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#ffc658', '#d0ed57', '#a4de6c'];
+const PIE_COLORS = ['hsl(var(--chart-1))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))', 'hsl(var(--chart-4))', 'hsl(var(--chart-5))', '#ffc658', '#d0ed57', '#a4de6c'];
 
 export default function BudgetCalculator() {
   const [results, setResults] = useState<any>(null);
@@ -127,7 +127,9 @@ export default function BudgetCalculator() {
             <CardContent className="space-y-2">
                 {fields.map((field, index) => (
                     <div key={field.id} className="flex gap-2 items-center">
+                         <Label htmlFor={`expenses.${index}.name`} className="sr-only">Expense Name</Label>
                         <Controller name={`expenses.${index}.name`} control={control} render={({ field }) => <Input placeholder="Expense Name" {...field} />} />
+                         <Label htmlFor={`expenses.${index}.amount`} className="sr-only">Expense Amount</Label>
                         <Controller name={`expenses.${index}.amount`} control={control} render={({ field }) => <Input type="number" placeholder="Amount" className="w-32" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
                         <Button type="button" variant="ghost" size="icon" onClick={() => remove(index)}><Trash className="h-4 w-4" /></Button>
                     </div>

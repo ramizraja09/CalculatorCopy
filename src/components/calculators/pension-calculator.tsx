@@ -163,13 +163,13 @@ export default function PensionCalculator() {
             <div className="space-y-4">
                  <Card>
                     <CardContent className="p-4 text-center">
-                        <p className="text-sm text-muted-foreground">Projected Pension Pot at Retirement</p>
+                        <p className="text-sm text-muted-foreground">Projected Pension Pot</p>
                         <p className="text-3xl font-bold">{formatCurrency(results.projectedPensionPot)}</p>
                     </CardContent>
                 </Card>
                 <Card>
                     <CardContent className="p-4 text-center">
-                        <p className="text-sm text-muted-foreground">Estimated Annual Income in Retirement</p>
+                        <p className="text-sm text-muted-foreground">Estimated Annual Income</p>
                         <p className="text-3xl font-bold">{formatCurrency(results.estimatedAnnualIncome)}</p>
                     </CardContent>
                 </Card>
