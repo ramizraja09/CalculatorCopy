@@ -18,7 +18,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, Legend } from 'recharts';
 
 
 const formSchema = z.object({
@@ -62,7 +62,7 @@ export default function AmortizationCalculator() {
     
     const schedule = [];
     let remainingBalance = principal;
-    let yearlyData: { [key: number]: { interest: number, principal: number } } = {};
+    let yearlyData: { [key: number]: { interest: number, principal: number, endBalance: number } } = {};
 
     for (let i = 1; i <= numberOfPayments; i++) {
         const interestPayment = remainingBalance * monthlyInterestRate;
@@ -71,10 +71,11 @@ export default function AmortizationCalculator() {
         
         const year = Math.ceil(i / 12);
         if (!yearlyData[year]) {
-          yearlyData[year] = { interest: 0, principal: 0 };
+          yearlyData[year] = { interest: 0, principal: 0, endBalance: 0 };
         }
         yearlyData[year].interest += interestPayment;
         yearlyData[year].principal += principalPayment;
+        yearlyData[year].endBalance = remainingBalance > 0 ? remainingBalance : 0;
 
         schedule.push({
             month: i,
@@ -108,16 +109,16 @@ export default function AmortizationCalculator() {
       content = `Amortization Calculation\n\nInputs:\n`;
       content += `- Loan Amount: ${formatCurrency(loanAmount)}\n- Loan Term: ${loanTerm} years\n- Interest Rate: ${interestRate}%\n\n`;
       content += `Results:\n- Monthly Payment: ${formatCurrency(results.monthlyPayment)}\n- Total Interest Paid: ${formatCurrency(results.totalInterestPaid)}\n- Total Paid: ${formatCurrency(results.totalPaid)}\n\n`;
-      content += `Schedule:\nYear,Principal Paid,Interest Paid\n`;
+      content += `Schedule:\nYear,Principal Paid,Interest Paid,Ending Balance\n`;
       results.yearlyData.forEach((row: any) => {
-        content += `${row.year},${formatCurrency(row.principal)},${formatCurrency(row.interest)}\n`;
+        content += `${row.year},${formatCurrency(row.principal)},${formatCurrency(row.interest)},${formatCurrency(row.endBalance)}\n`;
       });
     } else {
       content = 'Category,Value\nLoan Amount,' + loanAmount + '\nLoan Term (years),' + loanTerm + '\nInterest Rate (%),' + interestRate + '\n\n';
       content += 'Result Category,Value\nMonthly Payment,' + results.monthlyPayment.toFixed(2) + '\nTotal Interest Paid,' + results.totalInterestPaid.toFixed(2) + '\nTotal Paid,' + results.totalPaid.toFixed(2) + '\n\n';
-      content += 'Year,Principal Paid,Interest Paid\n';
+      content += 'Year,Principal Paid,Interest Paid,Ending Balance\n';
       results.yearlyData.forEach((row: any) => {
-        content += `${row.year},${row.principal.toFixed(2)},${row.interest.toFixed(2)}\n`;
+        content += `${row.year},${row.principal.toFixed(2)},${row.interest.toFixed(2)},${row.endBalance.toFixed(2)}\n`;
       });
     }
 
@@ -202,48 +203,50 @@ export default function AmortizationCalculator() {
         </div>
         
         {results && !results.error && (
-            <div className="md:col-span-2 mt-8 space-y-4">
-                <h3 className="text-xl font-semibold">Amortization Schedule</h3>
+            <div className="md:col-span-2 mt-8 space-y-8">
                 <Card>
-                    <CardHeader><CardTitle className="text-base text-center">Loan Balance Over Time</CardTitle></CardHeader>
+                    <CardHeader><CardTitle className="text-lg text-center">Loan Balance Over Time</CardTitle></CardHeader>
                     <CardContent className="h-80">
                         <ResponsiveContainer width="100%" height="100%">
-                            <LineChart data={results.schedule} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
+                            <LineChart data={results.yearlyData} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
                                 <CartesianGrid strokeDasharray="3 3" />
-                                <XAxis dataKey="month" label={{ value: 'Month', position: 'insideBottom', offset: -5 }} />
+                                <XAxis dataKey="year" label={{ value: 'Year', position: 'insideBottom', offset: -5 }} />
                                 <YAxis tickFormatter={(value) => typeof value === 'number' ? formatCurrency(value) : ''} />
                                 <RechartsTooltip formatter={(value: number) => formatCurrency(value)} />
-                                <Line type="monotone" dataKey="remainingBalance" name="Remaining Balance" stroke="hsl(var(--primary))" dot={false} />
+                                <Legend />
+                                <Line type="monotone" dataKey="endBalance" name="Remaining Balance" stroke="hsl(var(--chart-1))" dot={false} />
+                                <Line type="monotone" dataKey="interest" name="Interest Paid This Year" stroke="hsl(var(--chart-2))" dot={false} />
                             </LineChart>
                         </ResponsiveContainer>
                     </CardContent>
                 </Card>
                 
                 <Card>
-                <CardContent className="p-0">
-                    <ScrollArea className="h-[40rem]">
-                        <Table>
-                            <TableHeader className="sticky top-0 bg-muted">
-                                <TableRow>
-                                    <TableHead className="w-1/4">Month</TableHead>
-                                    <TableHead className="w-1/4 text-right">Principal</TableHead>
-                                    <TableHead className="w-1/4 text-right">Interest</TableHead>
-                                    <TableHead className="w-1/4 text-right">Balance</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {results.schedule.map((row: any) => (
-                                    <TableRow key={row.month}>
-                                        <TableCell>{row.month}</TableCell>
-                                        <TableCell className="text-right">{formatCurrency(row.principalPayment)}</TableCell>
-                                        <TableCell className="text-right">{formatCurrency(row.interestPayment)}</TableCell>
-                                        <TableCell className="text-right">{formatCurrency(row.remainingBalance)}</TableCell>
+                    <CardHeader><CardTitle className="text-xl">Amortization Schedule (Annual)</CardTitle></CardHeader>
+                    <CardContent className="p-0">
+                        <ScrollArea className="h-[40rem]">
+                            <Table>
+                                <TableHeader className="sticky top-0 bg-muted">
+                                    <TableRow>
+                                        <TableHead className="w-1/4">Year</TableHead>
+                                        <TableHead className="w-1/4 text-right">Principal Paid</TableHead>
+                                        <TableHead className="w-1/4 text-right">Interest Paid</TableHead>
+                                        <TableHead className="w-1/4 text-right">Ending Balance</TableHead>
                                     </TableRow>
-                                ))}
-                            </TableBody>
-                        </Table>
-                    </ScrollArea>
-                </CardContent>
+                                </TableHeader>
+                                <TableBody>
+                                    {results.yearlyData.map((row: any) => (
+                                        <TableRow key={row.year}>
+                                            <TableCell>{row.year}</TableCell>
+                                            <TableCell className="text-right">{formatCurrency(row.principal)}</TableCell>
+                                            <TableCell className="text-right">{formatCurrency(row.interest)}</TableCell>
+                                            <TableCell className="text-right">{formatCurrency(row.endBalance)}</TableCell>
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        </ScrollArea>
+                    </CardContent>
                 </Card>
             </div>
         )}
