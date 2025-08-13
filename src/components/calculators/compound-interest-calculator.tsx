@@ -10,10 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { Download } from 'lucide-react';
+import { Download, ArrowRight } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -21,103 +18,77 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 
+const compoundPeriods: { [key: string]: number } = {
+  annually: 1,
+  semiannually: 2,
+  quarterly: 4,
+  monthly: 12,
+  semimonthly: 24,
+  biweekly: 26,
+  weekly: 52,
+  daily: 365,
+  continuously: Infinity,
+};
+
 const formSchema = z.object({
-  initialPrincipal: z.number().min(0, 'Initial principal must be non-negative'),
-  monthlyContribution: z.number().min(0, 'Monthly contribution must be non-negative'),
-  interestRate: z.number().min(0, 'Interest rate must be non-negative'),
-  years: z.number().int().min(1, 'Must invest for at least 1 year'),
-  compoundFrequency: z.enum(['annually', 'semiannually', 'quarterly', 'monthly']),
+  inputInterest: z.number().min(0, 'Interest rate cannot be negative'),
+  inputCompound: z.string(),
+  outputCompound: z.string(),
 });
 
 type FormData = z.infer<typeof formSchema>;
 
 export default function CompoundInterestCalculator() {
-  const [results, setResults] = useState<any>(null);
+  const [result, setResult] = useState<number | null>(null);
   const [formData, setFormData] = useState<FormData | null>(null);
 
-  const { control, handleSubmit, formState: { errors } } = useForm<FormData>({
+  const { control, handleSubmit } = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      initialPrincipal: 1000,
-      monthlyContribution: 100,
-      interestRate: 7,
-      years: 10,
-      compoundFrequency: 'annually',
+      inputInterest: 6,
+      inputCompound: 'monthly',
+      outputCompound: 'annually',
     },
   });
 
-  const calculateCompoundInterest = (data: FormData) => {
-    const { initialPrincipal, monthlyContribution, interestRate, years, compoundFrequency } = data;
+  const convertInterest = (data: FormData) => {
+    const { inputInterest, inputCompound, outputCompound } = data;
+    const rate = inputInterest / 100;
+    const n_in = compoundPeriods[inputCompound];
+    const n_out = compoundPeriods[outputCompound];
 
-    const annualRate = interestRate / 100;
-    const compoundMap: { [key: string]: number } = {
-      annually: 1,
-      semiannually: 2,
-      quarterly: 4,
-      monthly: 12,
-    };
-    const n = compoundMap[compoundFrequency];
-    const schedule = [];
-    let balance = initialPrincipal;
-    let totalContributions = initialPrincipal;
-    
-    schedule.push({
-      year: 0,
-      endBalance: initialPrincipal,
-      totalContributions: initialPrincipal,
-      totalInterest: 0,
-    });
-    
-    for (let year = 1; year <= years; year++) {
-      let yearStartBalance = balance;
-      for (let month = 1; month <= 12; month++) {
-        balance += monthlyContribution;
-      }
-      
-      const interestForYear = balance * (Math.pow(1 + annualRate / n, n) - 1);
-      balance += interestForYear;
-      
-      totalContributions += monthlyContribution * 12;
-      const currentTotalInterest = balance - totalContributions;
-
-      schedule.push({
-        year,
-        endBalance: balance,
-        totalContributions,
-        totalInterest: currentTotalInterest > 0 ? currentTotalInterest : 0,
-      });
+    // First, convert the input rate to an effective annual rate (APY)
+    let apy;
+    if (n_in === Infinity) { // Continuously compounded
+      apy = Math.exp(rate) - 1;
+    } else { // Discretely compounded
+      apy = Math.pow(1 + rate / n_in, n_in) - 1;
     }
 
-    setResults({
-      finalBalance: balance,
-      totalContributions,
-      totalInterest: balance - totalContributions,
-      schedule,
-      error: null,
-    });
+    // Then, convert the APY to the desired output rate
+    let outputRate;
+    if (n_out === Infinity) { // To continuously compounded
+      outputRate = Math.log(1 + apy);
+    } else { // To discretely compounded
+      outputRate = n_out * (Math.pow(1 + apy, 1 / n_out) - 1);
+    }
+
+    setResult(outputRate * 100);
     setFormData(data);
   };
-
-  const formatCurrency = (value: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value);
   
   const handleExport = (format: 'txt' | 'csv') => {
-    if (!results || !formData) return;
+    if (result === null || !formData) return;
     
     let content = '';
-    const filename = `compound-interest-calculation.${format}`;
-    const { initialPrincipal, monthlyContribution, interestRate, years, compoundFrequency } = formData;
+    const filename = `interest-conversion.${format}`;
+    const { inputInterest, inputCompound, outputCompound } = formData;
 
     if (format === 'txt') {
-      content = `Compound Interest Calculation\n\nInputs:\n`;
-      content += `- Initial Principal: ${formatCurrency(initialPrincipal)}\n- Monthly Contribution: ${formatCurrency(monthlyContribution)}\n- Annual Interest Rate: ${interestRate}%\n`;
-      content += `- Length of Time: ${years} years\n- Compound Frequency: ${compoundFrequency}\n\n`;
-      content += `Results:\n- Future Value: ${formatCurrency(results.finalBalance)}\n- Total Contributions: ${formatCurrency(results.totalContributions)}\n- Total Interest: ${formatCurrency(results.totalInterest)}\n`;
+      content = `Interest Rate Conversion\n\nInputs:\n- Input Interest: ${inputInterest}%\n- Input Compounding: ${inputCompound}\n- Output Compounding: ${outputCompound}\n\nResult:\n- Converted Rate: ${result.toFixed(5)}%`;
     } else {
-      content = 'Category,Value\n';
-      content += `Initial Principal,${initialPrincipal}\nMonthly Contribution,${monthlyContribution}\nAnnual Interest Rate (%),${interestRate}\n`;
-      content += `Length of Time (years),${years}\nCompound Frequency,${compoundFrequency}\n\n`;
-      content += 'Result Category,Value\n';
-      content += `Future Value,${results.finalBalance.toFixed(2)}\nTotal Contributions,${results.totalContributions.toFixed(2)}\nTotal Interest,${results.totalInterest.toFixed(2)}\n`;
+      content = 'Input Interest (%),Input Compound,Output Compound,Converted Rate (%)\n';
+      content += `${inputInterest},${inputCompound},${outputCompound},${result.toFixed(5)}`;
     }
 
     const blob = new Blob([content], { type: `text/${format}` });
@@ -132,58 +103,66 @@ export default function CompoundInterestCalculator() {
   };
 
   return (
-    <form onSubmit={handleSubmit(calculateCompoundInterest)} className="grid xl:grid-cols-3 gap-8">
-      {/* Inputs Column */}
-      <div className="xl:col-span-1 space-y-4">
-        <Card>
-          <CardHeader><CardTitle>Investment Details</CardTitle></CardHeader>
-          <CardContent className="space-y-4">
-              <div>
-                <Label htmlFor="initialPrincipal">Initial Principal ($)</Label>
-                <Controller name="initialPrincipal" control={control} render={({ field }) => <Input id="initialPrincipal" type="number" step="0.01" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
-                {errors.initialPrincipal && <p className="text-destructive text-sm mt-1">{errors.initialPrincipal.message}</p>}
+    <Card>
+      <CardHeader>
+        <CardTitle>Interest Rate Converter</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <form onSubmit={handleSubmit(convertInterest)} className="space-y-4">
+          <div className="grid md:grid-cols-2 gap-4 items-end">
+            <div>
+              <Label>Input Interest</Label>
+              <div className="flex items-center gap-2">
+                 <Controller name="inputInterest" control={control} render={({ field }) => <Input type="number" step="0.01" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
+                 <span className="font-semibold">%</span>
               </div>
-
-              <div>
-                <Label htmlFor="monthlyContribution">Monthly Contribution ($)</Label>
-                <Controller name="monthlyContribution" control={control} render={({ field }) => <Input id="monthlyContribution" type="number" step="0.01" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
-                {errors.monthlyContribution && <p className="text-destructive text-sm mt-1">{errors.monthlyContribution.message}</p>}
-              </div>
-
-              <div>
-                <Label htmlFor="interestRate">Annual Interest Rate (%)</Label>
-                <Controller name="interestRate" control={control} render={({ field }) => <Input id="interestRate" type="number" step="0.01" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
-                {errors.interestRate && <p className="text-destructive text-sm mt-1">{errors.interestRate.message}</p>}
-              </div>
-              
-              <div>
-                <Label htmlFor="years">Length of Time (years)</Label>
-                <Controller name="years" control={control} render={({ field }) => <Input id="years" type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseInt(e.target.value, 10))} />} />
-                {errors.years && <p className="text-destructive text-sm mt-1">{errors.years.message}</p>}
-              </div>
-              
-              <div>
-                <Label htmlFor="compoundFrequency">Compound Frequency</Label>
-                <Controller name="compoundFrequency" control={control} render={({ field }) => (
+            </div>
+            <div>
+              <Label>Compound</Label>
+               <Controller name="inputCompound" control={control} render={({ field }) => (
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <SelectTrigger id="compoundFrequency"><SelectValue /></SelectTrigger>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="annually">Annually</SelectItem>
-                      <SelectItem value="semiannually">Semiannually</SelectItem>
-                      <SelectItem value="quarterly">Quarterly</SelectItem>
-                      <SelectItem value="monthly">Monthly</SelectItem>
+                      {Object.keys(compoundPeriods).map(freq => (
+                        <SelectItem key={freq} value={freq} className="capitalize">{freq}</SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 )} />
-              </div>
-          </CardContent>
-        </Card>
-        
-        <div className="flex gap-2">
+            </div>
+          </div>
+          
+          <div className="flex justify-center">
+            <ArrowRight className="h-6 w-6 text-muted-foreground" />
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-4 items-end">
+             <div>
+              <Label>Output Interest</Label>
+              <Card className="h-10 px-3 py-2 text-primary font-bold">
+                {result !== null ? `${result.toFixed(5)}%` : '...'}
+              </Card>
+            </div>
+            <div>
+              <Label>Compound</Label>
+               <Controller name="outputCompound" control={control} render={({ field }) => (
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {Object.keys(compoundPeriods).map(freq => (
+                        <SelectItem key={freq} value={freq} className="capitalize">{freq}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )} />
+            </div>
+          </div>
+
+          <div className="flex gap-2 pt-4">
             <Button type="submit" className="flex-1">Calculate</Button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" disabled={!results}>
+                <Button variant="outline" disabled={result === null}>
                   <Download className="mr-2 h-4 w-4" /> Export
                 </Button>
               </DropdownMenuTrigger>
@@ -192,86 +171,9 @@ export default function CompoundInterestCalculator() {
                 <DropdownMenuItem onClick={() => handleExport('csv')}>Download as .csv</DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
-        </div>
-      </div>
-
-      {/* Results Column */}
-      <div className="xl:col-span-2 space-y-4">
-        <h3 className="text-xl font-semibold">Results</h3>
-        {results ? (
-            results.error ? (
-                <Card className="flex items-center justify-center h-60 bg-muted/50 border-dashed">
-                    <p className="text-destructive">{results.error}</p>
-                </Card>
-            ) : (
-                <div className="space-y-4">
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="text-base text-muted-foreground text-center">Future Value</CardTitle>
-                        </CardHeader>
-                        <CardContent className="text-center">
-                            <p className="text-4xl font-bold">{formatCurrency(results.finalBalance)}</p>
-                        </CardContent>
-                    </Card>
-                    <Card>
-                        <CardContent className="p-4 grid grid-cols-2 gap-2 text-sm text-center">
-                             <div><p className="text-muted-foreground">Total Contributions</p><p className="font-semibold">{formatCurrency(results.totalContributions)}</p></div>
-                             <div><p className="text-muted-foreground">Total Interest</p><p className="font-semibold">{formatCurrency(results.totalInterest)}</p></div>
-                        </CardContent>
-                    </Card>
-
-                    <Card>
-                      <CardHeader><CardTitle className="text-lg">Investment Growth Over Time</CardTitle></CardHeader>
-                      <CardContent className="p-4 h-64">
-                          <ResponsiveContainer width="100%" height="100%">
-                            <LineChart data={results.schedule} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
-                              <CartesianGrid strokeDasharray="3 3" />
-                              <XAxis dataKey="year" label={{ value: 'Year', position: 'insideBottom', offset: -5 }} />
-                              <YAxis tickFormatter={(value) => typeof value === 'number' ? formatCurrency(value) : ''} />
-                              <Tooltip formatter={(value: number, name: string) => (name === "Total Contributions" || name === "Total Balance") ? formatCurrency(value) : value } />
-                              <Legend />
-                              <Line type="monotone" dataKey="endBalance" name="Total Balance" stroke="hsl(var(--primary))" dot={false} />
-                              <Line type="monotone" dataKey="totalContributions" name="Total Contributions" stroke="hsl(var(--secondary-foreground))" dot={false} />
-                            </LineChart>
-                          </ResponsiveContainer>
-                      </CardContent>
-                    </Card>
-                    
-                    <Card>
-                      <CardHeader><CardTitle className="text-lg">Yearly Breakdown</CardTitle></CardHeader>
-                      <CardContent className="p-0">
-                         <ScrollArea className="h-96">
-                              <Table>
-                                  <TableHeader className="sticky top-0 bg-muted">
-                                      <TableRow>
-                                          <TableHead>Year</TableHead>
-                                          <TableHead className="text-right">Contributions</TableHead>
-                                          <TableHead className="text-right">Interest</TableHead>
-                                          <TableHead className="text-right">End Balance</TableHead>
-                                      </TableRow>
-                                  </TableHeader>
-                                  <TableBody>
-                                      {results.schedule.slice(1).map((row: any) => (
-                                          <TableRow key={row.year}>
-                                              <TableCell>{row.year}</TableCell>
-                                              <TableCell className="text-right">{formatCurrency(row.totalContributions)}</TableCell>
-                                              <TableCell className="text-right">{formatCurrency(row.totalInterest)}</TableCell>
-                                              <TableCell className="text-right">{formatCurrency(row.endBalance)}</TableCell>
-                                          </TableRow>
-                                      ))}
-                                  </TableBody>
-                              </Table>
-                          </ScrollArea>
-                      </CardContent>
-                    </Card>
-                </div>
-            )
-        ) : (
-             <div className="flex items-center justify-center h-full min-h-[30rem] bg-muted/50 rounded-lg border border-dashed">
-                <p className="text-sm text-muted-foreground">Enter your details to calculate your investment growth</p>
-            </div>
-        )}
-      </div>
-    </form>
+          </div>
+        </form>
+      </CardContent>
+    </Card>
   );
 }
