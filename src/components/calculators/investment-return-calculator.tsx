@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState } from 'react';
@@ -9,281 +8,178 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
-import { Download } from 'lucide-react';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Info } from 'lucide-react';
+
+// Financial functions
+const calcFV = (rate: number, nper: number, pmt: number, pv: number) => {
+    if (rate === 0) return -(pv + pmt * nper);
+    return -(pv * Math.pow(1 + rate, nper) + pmt * (Math.pow(1 + rate, nper) - 1) / rate);
+};
+
+const calcPMT = (rate: number, nper: number, pv: number, fv: number) => {
+    if (rate === 0) return -(pv + fv) / nper;
+    return -(fv + pv * Math.pow(1 + rate, nper)) * rate / (Math.pow(1 + rate, nper) - 1);
+};
+
+const calcPV = (rate: number, nper: number, pmt: number, fv: number) => {
+    if (rate === 0) return -(fv + pmt * nper);
+    return -( (pmt * (Math.pow(1 + rate, nper) - 1) / rate + fv) / Math.pow(1 + rate, nper) );
+};
+
+const calcNPER = (rate: number, pmt: number, pv: number, fv: number) => {
+    if (rate === 0) {
+        if (pmt === 0) return NaN; // Cannot solve
+        return -(pv + fv) / pmt;
+    }
+    const logVal = (pmt - fv * rate) / (pmt + pv * rate);
+    if (logVal <= 0) return NaN; // No real solution
+    return Math.log(logVal) / Math.log(1 + rate);
+};
+
 
 const formSchema = z.object({
-  startingAmount: z.number().min(0, "Starting amount cannot be negative"),
-  years: z.number().int().min(1, "Must invest for at least 1 year"),
-  returnRate: z.number().min(0, "Return rate cannot be negative"),
-  compoundFrequency: z.string().nonempty(),
-  additionalContribution: z.number().min(0, "Contribution cannot be negative"),
-  contributionFrequency: z.string().nonempty(),
-  contributionTiming: z.enum(['beginning', 'end']),
+  solveFor: z.enum(['fv', 'pmt', 'pv', 'nper', 'rate']),
+  pv: z.number().optional(), // Starting Amount
+  fv: z.number().optional(), // End Amount
+  pmt: z.number().optional(), // Additional Contribution
+  nper: z.number().optional(), // Investment Length (in months)
+  rate: z.number().optional(), // Annual Rate
 });
 
 type FormData = z.infer<typeof formSchema>;
 
-const compoundPeriods: { [key: string]: number } = {
-  annually: 1,
-  semiannually: 2,
-  quarterly: 4,
-  monthly: 12,
-  semimonthly: 24,
-  biweekly: 26,
-  weekly: 52,
-  daily: 365,
-};
-
-const contributionPeriods: { [key: string]: number } = {
-  annually: 1,
-  semiannually: 2,
-  quarterly: 4,
-  monthly: 12,
-};
-
-const PIE_COLORS = ['hsl(var(--chart-1))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))'];
-
 export default function InvestmentReturnCalculator() {
-  const [results, setResults] = useState<any>(null);
-  const [formData, setFormData] = useState<FormData | null>(null);
+  const [results, setResults] = useState<{ [key: string]: string | number | null }>({});
+  const [activeTab, setActiveTab] = useState('fv');
 
-  const { control, handleSubmit, formState: { errors } } = useForm<FormData>({
+  const { control, handleSubmit, setValue, getValues } = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      startingAmount: 20000,
-      years: 10,
-      returnRate: 6,
-      compoundFrequency: 'annually',
-      additionalContribution: 12000,
-      contributionFrequency: 'annually',
-      contributionTiming: 'end',
+      solveFor: 'fv',
+      pv: 1000,
+      pmt: 100,
+      nper: 120, // 10 years
+      rate: 7,
+      fv: 0,
     },
   });
 
-  const formatCurrency = (value: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value);
+  const calculate = () => {
+    const data = getValues();
+    let res: number | string = 0;
+    const { pv = 0, fv = 0, pmt = 0, nper = 0, rate = 0 } = data;
+    const monthlyRate = (rate ?? 0) / 100 / 12;
 
-  const calculateInvestment = (data: FormData) => {
-    const {
-      startingAmount,
-      years,
-      returnRate,
-      compoundFrequency,
-      additionalContribution,
-      contributionFrequency,
-      contributionTiming,
-    } = data;
-    
-    const rate = returnRate / 100;
-    const n = compoundPeriods[compoundFrequency];
-    const p = contributionPeriods[contributionFrequency];
-    const pmt = additionalContribution / p;
-    
-    const schedule = [];
-    let balance = startingAmount;
-    let totalContributions = startingAmount;
-    let totalInterest = 0;
-    let yearlyInterest = 0;
-    let yearlyContribution = 0;
-
-    for (let year = 1; year <= years; year++) {
-      yearlyInterest = 0;
-      yearlyContribution = 0;
-      let yearStartBalance = balance;
-      
-      for(let period = 1; period <= p; period++) {
-        if(contributionTiming === 'beginning') {
-          balance += pmt;
-          yearlyContribution += pmt;
+    try {
+        switch (activeTab) {
+            case 'fv':
+                res = calcFV(monthlyRate, nper, pmt, pv);
+                break;
+            case 'pmt':
+                res = calcPMT(monthlyRate, nper, pv, fv);
+                break;
+            case 'pv':
+                res = calcPV(monthlyRate, nper, pmt, fv);
+                break;
+            case 'nper':
+                res = calcNPER(monthlyRate, pmt, pv, fv);
+                if (isNaN(res)) throw new Error("Cannot calculate periods with these values.");
+                break;
+            case 'rate':
+                res = 'Rate calculation is complex and not yet implemented.';
+                break;
         }
 
-        const periodsInContributionInterval = n / p;
-        for(let i = 0; i < periodsInContributionInterval; i++) {
-           const interestThisPeriod = balance * (rate / n);
-           balance += interestThisPeriod;
-           yearlyInterest += interestThisPeriod;
-        }
+        const newResults = {...results};
 
-        if(contributionTiming === 'end') {
-          balance += pmt;
-          yearlyContribution += pmt;
+        if (typeof res === 'number') {
+            if (activeTab === 'nper') {
+                 const years = Math.floor(res / 12);
+                 const months = Math.round(res % 12);
+                 newResults[activeTab] = `${years} years, ${months} months`;
+            } else {
+                 newResults[activeTab] = (Math.abs(res)).toFixed(2);
+            }
+        } else {
+            newResults[activeTab] = res;
         }
-      }
-      
-      totalContributions += yearlyContribution;
-      totalInterest += yearlyInterest;
-      
-      schedule.push({
-        year,
-        startBalance: yearStartBalance,
-        deposits: yearlyContribution,
-        interestEarned: yearlyInterest,
-        endBalance: balance,
-        totalInterest,
-        totalContributions
-      });
+        setResults(newResults);
+
+    } catch (error: any) {
+       setResults({ ...results, [activeTab]: `Error: ${error.message}` });
     }
-
-    setResults({
-      endBalance: balance,
-      startingAmount,
-      totalContributions: totalContributions - startingAmount,
-      totalInterest,
-      schedule,
-      pieData: [
-        { name: 'Starting Amount', value: startingAmount },
-        { name: 'Total Contributions', value: totalContributions - startingAmount },
-        { name: 'Total Interest', value: totalInterest },
-      ],
-    });
-    setFormData(data);
   };
-  
-  const handleExport = (format: 'txt' | 'csv') => {
-    if (!results || !formData) return;
-    
-    let content = '';
-    const filename = `investment-return-calculation.${format}`;
 
-    if (format === 'txt') {
-      content = `Investment Return Calculation\n\nInputs:\n`;
-      Object.entries(formData).forEach(([key, value]) => content += `- ${key}: ${value}\n`);
-      content += `\nResults:\n`;
-      content += `- End Balance: ${formatCurrency(results.endBalance)}\n`;
-      content += `- Starting Amount: ${formatCurrency(results.startingAmount)}\n`;
-      content += `- Total Contributions: ${formatCurrency(results.totalContributions)}\n`;
-      content += `- Total Interest: ${formatCurrency(results.totalInterest)}\n`;
-    } else {
-      content = 'Category,Value\n';
-      Object.entries(formData).forEach(([key, value]) => content += `${key},${value}\n`);
-      content += '\nResult Category,Value\n';
-      content += `End Balance,${results.endBalance.toFixed(2)}\n`;
-      content += `Starting Amount,${results.startingAmount.toFixed(2)}\n`;
-      content += `Total Contributions,${results.totalContributions.toFixed(2)}\n`;
-      content += `Total Interest,${results.totalInterest.toFixed(2)}\n`;
-    }
-
-    const blob = new Blob([content], { type: `text/${format}` });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-  };
+  const isInputDisabled = (field: keyof FormData) => activeTab === field;
+  const formatCurrency = (value: string | number | null) => {
+    if (value === null || value === undefined || typeof value !== 'string') return '';
+    const num = parseFloat(value);
+    if (isNaN(num)) return value; // Return original string if not a number (e.g., error messages)
+    return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(num);
+  }
 
   return (
-    <form onSubmit={handleSubmit(calculateInvestment)}>
-      <div className="grid lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-1 space-y-4">
-          <Card>
-            <CardHeader><CardTitle>Investment Details</CardTitle></CardHeader>
-            <CardContent className="space-y-4">
-              <div><Label>Starting Amount ($)</Label><Controller name="startingAmount" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} /></div>
-              <div><Label>After (years)</Label><Controller name="years" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value, 10) || 0)} />} /></div>
-              <div><Label>Return Rate (%)</Label><Controller name="returnRate" control={control} render={({ field }) => <Input type="number" step="0.1" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} /></div>
-              <div><Label>Compound</Label><Controller name="compoundFrequency" control={control} render={({ field }) => (<Select onValueChange={field.onChange} defaultValue={field.value}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{Object.keys(compoundPeriods).map(freq => <SelectItem key={freq} value={freq} className="capitalize">{freq}</SelectItem>)}</SelectContent></Select>)} /></div>
-              <div><Label>Additional Contribution ($)</Label><Controller name="additionalContribution" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} /></div>
-              <div><Label>Contribution Frequency</Label><Controller name="contributionFrequency" control={control} render={({ field }) => (<Select onValueChange={field.onChange} defaultValue={field.value}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{Object.keys(contributionPeriods).map(freq => <SelectItem key={freq} value={freq} className="capitalize">{freq}</SelectItem>)}</SelectContent></Select>)} /></div>
-              <div><Label>Contribute at the...</Label><Controller name="contributionTiming" control={control} render={({ field }) => (
-                  <RadioGroup onValueChange={field.onChange} defaultValue={field.value} className="flex gap-4 pt-2">
-                      <div className="flex items-center space-x-2"><RadioGroupItem value="beginning" id="beginning" /><Label htmlFor="beginning">Beginning</Label></div>
-                      <div className="flex items-center space-x-2"><RadioGroupItem value="end" id="end" /><Label htmlFor="end">End</Label></div>
-                  </RadioGroup>
-              )} /></div>
-            </CardContent>
-          </Card>
-          <div className="flex gap-2">
-            <Button type="submit" className="flex-1">Calculate</Button>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild><Button variant="outline" disabled={!results}><Download className="mr-2 h-4 w-4" /> Export</Button></DropdownMenuTrigger>
-              <DropdownMenuContent><DropdownMenuItem onClick={() => handleExport('txt')}>Download .txt</DropdownMenuItem><DropdownMenuItem onClick={() => handleExport('csv')}>Download .csv</DropdownMenuItem></DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-        </div>
-
-        <div className="lg:col-span-2 space-y-4">
-          <h3 className="text-xl font-semibold">Results</h3>
-          {results ? (
-            <div className="space-y-4">
-              <Card>
-                <CardContent className="p-4 grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
-                  <div><p className="text-sm text-muted-foreground">End Balance</p><p className="font-bold text-lg">{formatCurrency(results.endBalance)}</p></div>
-                  <div><p className="text-sm text-muted-foreground">Starting Amount</p><p className="font-bold text-lg">{formatCurrency(results.startingAmount)}</p></div>
-                  <div><p className="text-sm text-muted-foreground">Total Contributions</p><p className="font-bold text-lg">{formatCurrency(results.totalContributions)}</p></div>
-                  <div><p className="text-sm text-muted-foreground">Total Interest</p><p className="font-bold text-lg">{formatCurrency(results.totalInterest)}</p></div>
-                </CardContent>
-              </Card>
-              <div className="grid md:grid-cols-2 gap-4">
-                  <Card><CardHeader><CardTitle className="text-base text-center">Balance Breakdown</CardTitle></CardHeader>
-                    <CardContent className="h-48">
-                        <ResponsiveContainer width="100%" height="100%">
-                            <PieChart>
-                                <Pie data={results.pieData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={60} label>
-                                    {results.pieData.map((_entry: any, index: number) => <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />)}
-                                </Pie>
-                                <RechartsTooltip formatter={(value: number) => formatCurrency(value)} />
-                                <Legend iconType="circle" />
-                            </PieChart>
-                        </ResponsiveContainer>
-                    </CardContent>
-                  </Card>
-                  <Card><CardHeader><CardTitle className="text-base text-center">Growth Over Time</CardTitle></CardHeader>
-                    <CardContent className="h-48">
-                        <ResponsiveContainer width="100%" height="100%">
-                            <BarChart data={results.schedule} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
-                                <CartesianGrid strokeDasharray="3 3" />
-                                <XAxis dataKey="year" />
-                                <YAxis tickFormatter={(val) => `$${(val/1000)}k`} />
-                                <RechartsTooltip formatter={(value: number) => formatCurrency(value)} />
-                                <Legend />
-                                <Bar dataKey="startBalance" stackId="a" fill="hsl(var(--chart-1))" name="Starting Amount" />
-                                <Bar dataKey="deposits" stackId="a" fill="hsl(var(--chart-2))" name="Contributions" />
-                                <Bar dataKey="interestEarned" stackId="a" fill="hsl(var(--chart-3))" name="Interest" />
-                            </BarChart>
-                        </ResponsiveContainer>
-                    </CardContent>
-                  </Card>
+    <Tabs defaultValue="fv" onValueChange={setActiveTab} className="w-full">
+      <TabsList className="grid w-full grid-cols-2 md:grid-cols-5">
+        <TabsTrigger value="fv">End Amount</TabsTrigger>
+        <TabsTrigger value="pmt">Contribution</TabsTrigger>
+        <TabsTrigger value="pv">Starting Amount</TabsTrigger>
+        <TabsTrigger value="nper">Investment Length</TabsTrigger>
+        <TabsTrigger value="rate" disabled>Return Rate</TabsTrigger>
+      </TabsList>
+      
+      <Card className="mt-4">
+        <CardHeader>
+          <CardTitle className="capitalize">Calculate {
+            {fv: "End Amount (Future Value)", pmt: "Additional Contribution (Payment)", pv: "Starting Amount (Present Value)", nper: "Investment Length (Periods)", rate: "Return Rate"}[activeTab]
+          }</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={(e) => { e.preventDefault(); calculate(); }} className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="pv">Starting Amount ($)</Label>
+                <Controller name="pv" control={control} render={({ field }) => <Input type="number" step="any" {...field} disabled={isInputDisabled('pv')} value={isInputDisabled('pv') ? results.pv || '' : field.value} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
+              </div>
+              <div>
+                <Label htmlFor="pmt">Additional Contribution ($/month)</Label>
+                <Controller name="pmt" control={control} render={({ field }) => <Input type="number" step="any" {...field} disabled={isInputDisabled('pmt')} value={isInputDisabled('pmt') ? results.pmt || '' : field.value} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))}/>} />
+              </div>
+              <div>
+                <Label htmlFor="nper">Investment Length (months)</Label>
+                <Controller name="nper" control={control} render={({ field }) => <Input type="number" {...field} disabled={isInputDisabled('nper')} value={isInputDisabled('nper') ? results.nper || '' : field.value} onChange={e => field.onChange(e.target.value === '' ? '' : parseInt(e.target.value, 10))}/>} />
+              </div>
+              <div>
+                <Label htmlFor="rate">Annual Return Rate (%)</Label>
+                <Controller name="rate" control={control} render={({ field }) => <Input type="number" step="any" {...field} disabled={isInputDisabled('rate')} value={isInputDisabled('rate') ? results.rate || '' : field.value} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))}/>} />
+              </div>
+              <div>
+                <Label htmlFor="fv">End Amount ($)</Label>
+                <Controller name="fv" control={control} render={({ field }) => <Input type="number" step="any" {...field} disabled={isInputDisabled('fv')} value={isInputDisabled('fv') ? results.fv || '' : field.value} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))}/>} />
               </div>
             </div>
-          ) : (
-            <div className="flex items-center justify-center h-full min-h-[30rem] bg-muted/50 rounded-lg border border-dashed"><p>Enter details to see results</p></div>
-          )}
-        </div>
-      </div>
-      {results && (
-        <div className="lg:col-span-3 mt-4">
-            <h3 className="text-xl font-semibold mb-4">Accumulation Schedule</h3>
-             <Card>
-                <CardContent className="p-0">
-                    <ScrollArea className="h-96">
-                        <Table><TableHeader className="sticky top-0 bg-muted">
-                            <TableRow><TableHead>Year</TableHead><TableHead className="text-right">Deposits</TableHead><TableHead className="text-right">Interest</TableHead><TableHead className="text-right">Ending Balance</TableHead></TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {results.schedule.map((row: any) => (
-                                    <TableRow key={row.year}><TableCell>{row.year}</TableCell><TableCell className="text-right">{formatCurrency(row.deposits)}</TableCell><TableCell className="text-right">{formatCurrency(row.interestEarned)}</TableCell><TableCell className="text-right">{formatCurrency(row.endBalance)}</TableCell></TableRow>
-                                ))}
-                            </TableBody>
-                        </Table>
-                    </ScrollArea>
-                </CardContent>
-             </Card>
-        </div>
-      )}
-    </form>
+            
+            <Button type="submit" className="w-full">Calculate</Button>
+
+            {results[activeTab] && (
+                <Alert className="mt-4">
+                    <Info className="h-4 w-4" />
+                    <AlertTitle>Result</AlertTitle>
+                    <AlertDescription className="text-lg font-bold">
+                        {
+                           activeTab === 'nper' ? results[activeTab] : 
+                           activeTab === 'rate' ? results[activeTab] :
+                           formatCurrency(results[activeTab])
+                        }
+                    </AlertDescription>
+                </Alert>
+            )}
+
+          </form>
+        </CardContent>
+      </Card>
+    </Tabs>
   );
 }
-
