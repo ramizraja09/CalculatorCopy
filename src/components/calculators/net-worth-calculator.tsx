@@ -115,7 +115,7 @@ export default function NetWorthCalculator() {
                         <Label htmlFor={`assets.${index}.name`} className="sr-only">Asset Name</Label>
                         <Controller name={`assets.${index}.name`} control={control} render={({ field }) => <Input placeholder="Asset Name" {...field} />} />
                         <Label htmlFor={`assets.${index}.amount`} className="sr-only">Asset Amount</Label>
-                        <Controller name={`assets.${index}.amount`} control={control} render={({ field }) => <Input type="number" placeholder="Amount" className="w-32" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
+                        <Controller name={`assets.${index}.amount`} control={control} render={({ field }) => <Input type="number" placeholder="0" className="w-32" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
                         <Button type="button" variant="ghost" size="icon" onClick={() => removeAsset(index)}><Trash className="h-4 w-4" /></Button>
                     </div>
                 ))}
@@ -130,7 +130,7 @@ export default function NetWorthCalculator() {
                         <Label htmlFor={`liabilities.${index}.name`} className="sr-only">Liability Name</Label>
                         <Controller name={`liabilities.${index}.name`} control={control} render={({ field }) => <Input placeholder="Liability Name" {...field} />} />
                         <Label htmlFor={`liabilities.${index}.amount`} className="sr-only">Liability Amount</Label>
-                        <Controller name={`liabilities.${index}.amount`} control={control} render={({ field }) => <Input type="number" placeholder="Amount" className="w-32" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
+                        <Controller name={`liabilities.${index}.amount`} control={control} render={({ field }) => <Input type="number" placeholder="0" className="w-32" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
                         <Button type="button" variant="ghost" size="icon" onClick={() => removeLiability(index)}><Trash className="h-4 w-4" /></Button>
                     </div>
                 ))}

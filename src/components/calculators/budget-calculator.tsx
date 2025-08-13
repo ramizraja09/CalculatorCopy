@@ -119,7 +119,7 @@ export default function BudgetCalculator() {
             <CardHeader><CardTitle>Monthly Income</CardTitle></CardHeader>
             <CardContent>
                 <Label htmlFor="monthlyIncome">Total Monthly Net Income ($)</Label>
-                <Controller name="monthlyIncome" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
+                <Controller name="monthlyIncome" control={control} render={({ field }) => <Input type="number" placeholder="5000" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
             </CardContent>
         </Card>
         <Card>
@@ -130,7 +130,7 @@ export default function BudgetCalculator() {
                          <Label htmlFor={`expenses.${index}.name`} className="sr-only">Expense Name</Label>
                         <Controller name={`expenses.${index}.name`} control={control} render={({ field }) => <Input placeholder="Expense Name" {...field} />} />
                          <Label htmlFor={`expenses.${index}.amount`} className="sr-only">Expense Amount</Label>
-                        <Controller name={`expenses.${index}.amount`} control={control} render={({ field }) => <Input type="number" placeholder="Amount" className="w-32" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
+                        <Controller name={`expenses.${index}.amount`} control={control} render={({ field }) => <Input type="number" placeholder="0" className="w-32" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
                         <Button type="button" variant="ghost" size="icon" onClick={() => remove(index)}><Trash className="h-4 w-4" /></Button>
                     </div>
                 ))}
