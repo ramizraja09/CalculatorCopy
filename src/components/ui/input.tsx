@@ -14,6 +14,8 @@ const Input = React.forwardRef<HTMLInputElement, React.ComponentProps<"input">>(
         )}
         ref={ref}
         {...props}
+        // Add numeric pattern for better mobile numeric input handling
+        pattern={type === "number" ? "[0-9]*" : undefined}
       />
     )
   }
