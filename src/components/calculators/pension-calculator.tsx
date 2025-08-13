@@ -62,8 +62,14 @@ export default function PensionCalculator() {
     const monthsToRetirement = yearsToRetirement * 12;
     const monthlyRate = annualGrowthRate / 100 / 12;
 
+    let fvOfContributions = 0;
+    if (monthlyRate > 0) {
+        fvOfContributions = monthlyContribution * ( (Math.pow(1 + monthlyRate, monthsToRetirement) - 1) / monthlyRate );
+    } else {
+        fvOfContributions = monthlyContribution * monthsToRetirement;
+    }
+
     const fvOfCurrentPot = currentPensionPot * Math.pow(1 + monthlyRate, monthsToRetirement);
-    const fvOfContributions = monthlyContribution * ( (Math.pow(1 + monthlyRate, monthsToRetirement) - 1) / monthlyRate );
     const projectedPensionPot = fvOfCurrentPot + fvOfContributions;
     const estimatedAnnualIncome = projectedPensionPot * (annuityRate / 100);
 

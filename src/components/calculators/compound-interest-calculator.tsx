@@ -132,9 +132,9 @@ export default function CompoundInterestCalculator() {
   };
 
   return (
-    <form onSubmit={handleSubmit(calculateCompoundInterest)} className="grid md:grid-cols-2 gap-8">
+    <form onSubmit={handleSubmit(calculateCompoundInterest)} className="grid lg:grid-cols-3 gap-8">
       {/* Inputs Column */}
-      <div className="space-y-4">
+      <div className="lg:col-span-1 space-y-4">
         <Card>
           <CardHeader><CardTitle>Investment Details</CardTitle></CardHeader>
           <CardContent className="space-y-4">
@@ -196,7 +196,7 @@ export default function CompoundInterestCalculator() {
       </div>
 
       {/* Results Column */}
-      <div className="space-y-4">
+      <div className="lg:col-span-2 space-y-4">
         <h3 className="text-xl font-semibold">Results</h3>
         {results ? (
             results.error ? (
@@ -221,7 +221,7 @@ export default function CompoundInterestCalculator() {
                     </Card>
 
                     <Card>
-                      <CardHeader><CardTitle>Investment Growth Over Time</CardTitle></CardHeader>
+                      <CardHeader><CardTitle className="text-lg">Investment Growth Over Time</CardTitle></CardHeader>
                       <CardContent className="p-4 h-64">
                           <ResponsiveContainer width="100%" height="100%">
                             <LineChart data={results.schedule} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
@@ -238,7 +238,7 @@ export default function CompoundInterestCalculator() {
                     </Card>
                     
                     <Card>
-                      <CardHeader><CardTitle>Yearly Breakdown</CardTitle></CardHeader>
+                      <CardHeader><CardTitle className="text-lg">Yearly Breakdown</CardTitle></CardHeader>
                       <CardContent className="p-0">
                          <ScrollArea className="h-96">
                               <Table>

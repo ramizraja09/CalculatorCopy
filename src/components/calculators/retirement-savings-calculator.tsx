@@ -72,11 +72,22 @@ export default function RetirementSavingsCalculator() {
 
     // Calculate projected savings
     const fvOfCurrentSavings = currentSavings * Math.pow(1 + monthlyPreRetirementRate, monthsToRetirement);
-    const fvOfContributions = monthlyContribution * ( (Math.pow(1 + monthlyPreRetirementRate, monthsToRetirement) - 1) / monthlyPreRetirementRate );
+
+    let fvOfContributions = 0;
+    if (monthlyPreRetirementRate > 0) {
+        fvOfContributions = monthlyContribution * ( (Math.pow(1 + monthlyPreRetirementRate, monthsToRetirement) - 1) / monthlyPreRetirementRate );
+    } else {
+        fvOfContributions = monthlyContribution * monthsToRetirement;
+    }
     const projectedNestEgg = fvOfCurrentSavings + fvOfContributions;
 
     // Calculate required savings (PV of an annuity)
-    const requiredNestEgg = (desiredAnnualIncome / 12) * ( (1 - Math.pow(1 + monthlyPostRetirementRate, -(drawdownYears * 12))) / monthlyPostRetirementRate );
+    let requiredNestEgg = 0;
+    if (monthlyPostRetirementRate > 0) {
+        requiredNestEgg = (desiredAnnualIncome / 12) * ( (1 - Math.pow(1 + monthlyPostRetirementRate, -(drawdownYears * 12))) / monthlyPostRetirementRate );
+    } else {
+        requiredNestEgg = (desiredAnnualIncome / 12) * (drawdownYears * 12);
+    }
     
     const shortfall = requiredNestEgg - projectedNestEgg;
 

@@ -60,7 +60,6 @@ export default function InvestmentCalculator() {
     const schedule = [];
     let balance = initialPrincipal;
     let totalContributions = initialPrincipal;
-    let totalInterest = 0;
     
     schedule.push({
       year: 0,
@@ -72,11 +71,11 @@ export default function InvestmentCalculator() {
     for (let year = 1; year <= years; year++) {
       let yearStartBalance = balance;
       for (let month = 1; month <= 12; month++) {
-        yearStartBalance += monthlyContribution;
+        balance += monthlyContribution;
       }
       
-      const interestForYear = yearStartBalance * (Math.pow(1 + annualRate / n, n) - 1);
-      balance = yearStartBalance + interestForYear;
+      const interestForYear = balance * (Math.pow(1 + annualRate / n, n) - 1);
+      balance += interestForYear;
       
       totalContributions += monthlyContribution * 12;
       const currentTotalInterest = balance - totalContributions;
@@ -133,9 +132,9 @@ export default function InvestmentCalculator() {
   };
 
   return (
-    <form onSubmit={handleSubmit(calculateCompoundInterest)} className="grid md:grid-cols-2 gap-8">
+    <form onSubmit={handleSubmit(calculateCompoundInterest)} className="grid lg:grid-cols-3 gap-8">
       {/* Inputs Column */}
-      <div className="space-y-4">
+      <div className="lg:col-span-1 space-y-4">
         <h3 className="text-xl font-semibold">Inputs</h3>
         
         <div>
@@ -194,7 +193,7 @@ export default function InvestmentCalculator() {
       </div>
 
       {/* Results Column */}
-      <div className="space-y-4">
+      <div className="lg:col-span-2 space-y-4">
         <h3 className="text-xl font-semibold">Results</h3>
         {results ? (
             results.error ? (
@@ -218,7 +217,7 @@ export default function InvestmentCalculator() {
 
                     <Card>
                       <CardContent className="p-4">
-                        <h4 className="font-semibold mb-4">Investment Growth Over Time</h4>
+                        <h4 className="font-semibold mb-4 text-center">Investment Growth Over Time</h4>
                         <div className="h-60">
                           <ResponsiveContainer width="100%" height="100%">
                             <LineChart data={results.schedule} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
@@ -227,8 +226,8 @@ export default function InvestmentCalculator() {
                               <YAxis tickFormatter={(value) => formatCurrency(value)} />
                               <Tooltip formatter={(value: number, name: string) => (name === "Total Contributions" || name === "Total Balance") ? formatCurrency(value) : value } />
                               <Legend />
-                              <Line type="monotone" dataKey="endBalance" name="Total Balance" stroke="hsl(var(--primary))" />
-                              <Line type="monotone" dataKey="totalContributions" name="Total Contributions" stroke="hsl(var(--secondary-foreground))" />
+                              <Line type="monotone" dataKey="endBalance" name="Total Balance" stroke="hsl(var(--primary))" dot={false} />
+                              <Line type="monotone" dataKey="totalContributions" name="Total Contributions" stroke="hsl(var(--secondary-foreground))" dot={false} />
                             </LineChart>
                           </ResponsiveContainer>
                         </div>
