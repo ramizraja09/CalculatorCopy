@@ -151,9 +151,9 @@ export default function MortgageCalculatorUK() {
   };
 
   return (
-    <main className="grid lg:grid-cols-3 gap-8">
+    <main className="grid md:grid-cols-2 xl:grid-cols-3 gap-8">
       {/* Left Pane: Inputs */}
-      <section className="lg:col-span-1">
+      <section className="md:col-span-1">
         <form onSubmit={handleSubmit(calculateMortgage)} className="space-y-4">
           <Accordion type="single" defaultValue="loan-basics" collapsible className="w-full">
             <AccordionItem value="loan-basics">
@@ -201,7 +201,7 @@ export default function MortgageCalculatorUK() {
       </section>
 
       {/* Center Pane: Key Results & Charts */}
-      <section className="lg:col-span-1 space-y-4">
+      <section className="md:col-span-1 space-y-4">
         <h2 className="text-xl font-semibold">Summary</h2>
         {results && !results.error ? (
           <div className="space-y-4">
@@ -252,7 +252,7 @@ export default function MortgageCalculatorUK() {
       </section>
       
       {/* Right Pane: Amortization Schedule */}
-      <aside className="lg:col-span-1">
+      <aside className="md:col-span-2 xl:col-span-1">
         <h2 className="text-xl font-semibold mb-4">Amortization Schedule</h2>
          <Card>
             <CardContent className="p-0">
