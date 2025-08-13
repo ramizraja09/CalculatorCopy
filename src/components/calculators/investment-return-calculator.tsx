@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from 'react';
@@ -8,9 +9,15 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Info } from 'lucide-react';
+import { Info, Download } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 // Financial functions
 const calcFV = (rate: number, nper: number, pmt: number, pv: number) => {
@@ -53,6 +60,8 @@ type FormData = z.infer<typeof formSchema>;
 export default function InvestmentReturnCalculator() {
   const [results, setResults] = useState<{ [key: string]: string | number | null }>({});
   const [activeTab, setActiveTab] = useState('fv');
+  const [lastCalculatedData, setLastCalculatedData] = useState<FormData | null>(null);
+
 
   const { control, handleSubmit, setValue, getValues } = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -106,19 +115,62 @@ export default function InvestmentReturnCalculator() {
             newResults[activeTab] = res;
         }
         setResults(newResults);
+        setLastCalculatedData(data); // Store data for export
 
     } catch (error: any) {
        setResults({ ...results, [activeTab]: `Error: ${error.message}` });
+       setLastCalculatedData(null);
     }
   };
 
   const isInputDisabled = (field: keyof FormData) => activeTab === field;
   const formatCurrency = (value: string | number | null) => {
-    if (value === null || value === undefined || typeof value !== 'string') return '';
-    const num = parseFloat(value);
-    if (isNaN(num)) return value; // Return original string if not a number (e.g., error messages)
+    if (value === null || value === undefined) return '';
+    const num = parseFloat(String(value));
+    if (isNaN(num)) return String(value); // Return original string if not a number
     return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(num);
   }
+
+  const handleExport = (format: 'txt' | 'csv') => {
+    if (!lastCalculatedData || !results[activeTab]) return;
+
+    let content = '';
+    const filename = `tvm-calculation.${format}`;
+
+    const { pv, fv, pmt, nper, rate } = lastCalculatedData;
+    const resultValue = results[activeTab];
+
+    if (format === 'txt') {
+        content = `Time Value of Money Calculation\n\n`;
+        content += `Solving for: ${activeTab.toUpperCase()}\n\n`;
+        content += `Inputs:\n`;
+        content += `- Present Value (PV): ${pv !== undefined ? formatCurrency(pv) : 'N/A'}\n`;
+        content += `- Future Value (FV): ${fv !== undefined ? formatCurrency(fv) : 'N/A'}\n`;
+        content += `- Payment (PMT): ${pmt !== undefined ? formatCurrency(pmt) : 'N/A'}\n`;
+        content += `- Periods (NPER): ${nper !== undefined ? `${nper} months` : 'N/A'}\n`;
+        content += `- Annual Rate: ${rate !== undefined ? `${rate}%` : 'N/A'}\n\n`;
+        content += `Result:\n- ${activeTab.toUpperCase()}: ${resultValue}\n`;
+    } else { // csv
+        content = 'Category,Value\n';
+        content += `Solving For,${activeTab.toUpperCase()}\n`;
+        content += `Present Value (PV),${pv || ''}\n`;
+        content += `Future Value (FV),${fv || ''}\n`;
+        content += `Payment (PMT),${pmt || ''}\n`;
+        content += `Periods (NPER),${nper || ''}\n`;
+        content += `Annual Rate (%),${rate || ''}\n`;
+        content += `Result,"${resultValue}"\n`;
+    }
+
+    const blob = new Blob([content], { type: `text/${format}` });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
 
   return (
     <Tabs defaultValue="fv" onValueChange={setActiveTab} className="w-full">
@@ -141,15 +193,15 @@ export default function InvestmentReturnCalculator() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="pv">Starting Amount ($)</Label>
-                <Controller name="pv" control={control} render={({ field }) => <Input type="number" step="any" {...field} disabled={isInputDisabled('pv')} value={isInputDisabled('pv') ? results.pv || '' : field.value} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
+                <Controller name="pv" control={control} render={({ field }) => <Input type="number" step="any" {...field} disabled={isInputDisabled('pv')} value={isInputDisabled('pv') ? (results.pv ? formatCurrency(results.pv).replace(/[^0-9.-]+/g,"") : '') : field.value} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
               </div>
               <div>
                 <Label htmlFor="pmt">Additional Contribution ($/month)</Label>
-                <Controller name="pmt" control={control} render={({ field }) => <Input type="number" step="any" {...field} disabled={isInputDisabled('pmt')} value={isInputDisabled('pmt') ? results.pmt || '' : field.value} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))}/>} />
+                <Controller name="pmt" control={control} render={({ field }) => <Input type="number" step="any" {...field} disabled={isInputDisabled('pmt')} value={isInputDisabled('pmt') ? (results.pmt ? formatCurrency(results.pmt).replace(/[^0-9.-]+/g,"") : '') : field.value} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))}/>} />
               </div>
               <div>
                 <Label htmlFor="nper">Investment Length (months)</Label>
-                <Controller name="nper" control={control} render={({ field }) => <Input type="number" {...field} disabled={isInputDisabled('nper')} value={isInputDisabled('nper') ? results.nper || '' : field.value} onChange={e => field.onChange(e.target.value === '' ? '' : parseInt(e.target.value, 10))}/>} />
+                <Controller name="nper" control={control} render={({ field }) => <Input type="number" {...field} disabled={isInputDisabled('nper')} value={isInputDisabled('nper') ? (typeof results.nper === 'string' ? results.nper.split(' ')[0] : '') : field.value} onChange={e => field.onChange(e.target.value === '' ? '' : parseInt(e.target.value, 10))}/>} />
               </div>
               <div>
                 <Label htmlFor="rate">Annual Return Rate (%)</Label>
@@ -157,11 +209,24 @@ export default function InvestmentReturnCalculator() {
               </div>
               <div>
                 <Label htmlFor="fv">End Amount ($)</Label>
-                <Controller name="fv" control={control} render={({ field }) => <Input type="number" step="any" {...field} disabled={isInputDisabled('fv')} value={isInputDisabled('fv') ? results.fv || '' : field.value} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))}/>} />
+                <Controller name="fv" control={control} render={({ field }) => <Input type="number" step="any" {...field} disabled={isInputDisabled('fv')} value={isInputDisabled('fv') ? (results.fv ? formatCurrency(results.fv).replace(/[^0-9.-]+/g,"") : '') : field.value} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))}/>} />
               </div>
             </div>
             
-            <Button type="submit" className="w-full">Calculate</Button>
+            <div className="flex gap-2">
+                <Button type="submit" className="flex-1">Calculate</Button>
+                 <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <Button variant="outline" disabled={!lastCalculatedData}>
+                            <Download className="mr-2 h-4 w-4" /> Export
+                        </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent>
+                        <DropdownMenuItem onClick={() => handleExport('txt')}>Download as .txt</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleExport('csv')}>Download as .csv</DropdownMenuItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
+            </div>
 
             {results[activeTab] && (
                 <Alert className="mt-4">
