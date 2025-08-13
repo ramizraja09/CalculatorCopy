@@ -171,7 +171,7 @@ export default function UnitConverter() {
           </div>
           <div>
             <Label>Value</Label>
-            <Controller name="value" control={control} render={({ field }) => <Input type="number" step="any" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
+            <Controller name="value" control={control} render={({ field }) => <Input type="number" step="any" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
           </div>
            <div className="flex gap-2">
               <Button type="submit" className="flex-1">Convert</Button>

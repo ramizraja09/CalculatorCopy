@@ -46,7 +46,7 @@ export default function BandwidthCalculator() {
         <div>
           <Label>File Size</Label>
           <div className="flex gap-2">
-            <Controller name="fileSize" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
+            <Controller name="fileSize" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
             <Controller name="fileUnit" control={control} render={({ field }) => (
                 <Select onValueChange={field.onChange} defaultValue={field.value}><SelectTrigger className="w-[120px]"><SelectValue /></SelectTrigger><SelectContent>{['KB', 'MB', 'GB', 'TB'].map(u => <SelectItem key={u} value={u}>{u}</SelectItem>)}</SelectContent></Select>
             )} />
@@ -55,7 +55,7 @@ export default function BandwidthCalculator() {
         <div>
           <Label>Bandwidth (Speed)</Label>
           <div className="flex gap-2">
-            <Controller name="speed" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
+            <Controller name="speed" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
             <Controller name="speedUnit" control={control} render={({ field }) => (
                 <Select onValueChange={field.onChange} defaultValue={field.value}><SelectTrigger className="w-[120px]"><SelectValue /></SelectTrigger><SelectContent>{['kbps', 'mbps', 'gbps'].map(u => <SelectItem key={u} value={u}>{u}</SelectItem>)}</SelectContent></Select>
             )} />
