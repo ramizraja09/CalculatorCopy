@@ -104,15 +104,15 @@ export default function AreaCalculator() {
           )} />
         </div>
         {shape === 'rectangle' && <>
-            <div><Label>Length</Label><Controller name="length" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} /></div>
-            <div><Label>Width</Label><Controller name="width" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} /></div>
+            <div><Label>Length</Label><Controller name="length" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} /></div>
+            <div><Label>Width</Label><Controller name="width" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} /></div>
         </>}
         {shape === 'circle' && <>
-            <div><Label>Radius</Label><Controller name="radius" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} /></div>
+            <div><Label>Radius</Label><Controller name="radius" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} /></div>
         </>}
         {shape === 'triangle' && <>
-            <div><Label>Base</Label><Controller name="base" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} /></div>
-            <div><Label>Height</Label><Controller name="height" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} /></div>
+            <div><Label>Base</Label><Controller name="base" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} /></div>
+            <div><Label>Height</Label><Controller name="height" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} /></div>
         </>}
         {errors.length && <p className="text-destructive text-sm mt-1">{errors.length.message}</p>}
         <div className="flex gap-2">

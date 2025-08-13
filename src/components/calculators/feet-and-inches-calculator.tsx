@@ -79,8 +79,8 @@ export default function FeetAndInchesCalculator() {
       <div className="flex flex-col items-center gap-4">
         {/* Measurement 1 */}
         <div className="grid grid-cols-2 gap-2 w-full max-w-xs">
-            <div><Label className="text-xs">Feet</Label><Controller name="ft1" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value, 10) || 0)} />} /></div>
-            <div><Label className="text-xs">Inches</Label><Controller name="in1" control={control} render={({ field }) => <Input type="number" step="any" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} /></div>
+            <div><Label className="text-xs">Feet</Label><Controller name="ft1" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseInt(e.target.value, 10))} />} /></div>
+            <div><Label className="text-xs">Inches</Label><Controller name="in1" control={control} render={({ field }) => <Input type="number" step="any" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} /></div>
         </div>
         {/* Operator */}
         <Controller name="op" control={control} render={({ field }) => (
@@ -91,8 +91,8 @@ export default function FeetAndInchesCalculator() {
         )}/>
         {/* Measurement 2 */}
         <div className="grid grid-cols-2 gap-2 w-full max-w-xs">
-            <div><Label className="text-xs">Feet</Label><Controller name="ft2" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value, 10) || 0)} />} /></div>
-            <div><Label className="text-xs">Inches</Label><Controller name="in2" control={control} render={({ field }) => <Input type="number" step="any" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} /></div>
+            <div><Label className="text-xs">Feet</Label><Controller name="ft2" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseInt(e.target.value, 10))} />} /></div>
+            <div><Label className="text-xs">Inches</Label><Controller name="in2" control={control} render={({ field }) => <Input type="number" step="any" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} /></div>
         </div>
       </div>
        <div className="flex justify-center gap-2">

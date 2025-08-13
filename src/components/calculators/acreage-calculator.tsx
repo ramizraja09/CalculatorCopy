@@ -69,8 +69,8 @@ export default function AcreageCalculator() {
     <form onSubmit={handleSubmit(calculateAcreage)} className="grid md:grid-cols-2 gap-8">
       <div className="space-y-4">
         <h3 className="text-xl font-semibold">Plot Dimensions (in feet)</h3>
-        <div><Label>Length (ft)</Label><Controller name="length" control={control} render={({ field }) => <Input type="number" step="any" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} /></div>
-        <div><Label>Width (ft)</Label><Controller name="width" control={control} render={({ field }) => <Input type="number" step="any" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} /></div>
+        <div><Label>Length (ft)</Label><Controller name="length" control={control} render={({ field }) => <Input type="number" step="any" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} /></div>
+        <div><Label>Width (ft)</Label><Controller name="width" control={control} render={({ field }) => <Input type="number" step="any" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} /></div>
         <div className="flex gap-2">
             <Button type="submit" className="flex-1">Calculate Acreage</Button>
             <DropdownMenu>

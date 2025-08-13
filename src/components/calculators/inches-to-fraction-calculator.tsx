@@ -89,7 +89,7 @@ export default function InchesToFractionCalculator() {
     <form onSubmit={handleSubmit(convert)} className="grid md:grid-cols-2 gap-8">
       <div className="space-y-4">
         <h3 className="text-xl font-semibold">Enter Decimal Inches</h3>
-        <div><Label>Inches</Label><Controller name="decimal" control={control} render={({ field }) => <Input type="number" step="any" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} /></div>
+        <div><Label>Inches</Label><Controller name="decimal" control={control} render={({ field }) => <Input type="number" step="any" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} /></div>
         <div className="flex gap-2">
             <Button type="submit" className="flex-1">Convert to Fraction</Button>
             <DropdownMenu>

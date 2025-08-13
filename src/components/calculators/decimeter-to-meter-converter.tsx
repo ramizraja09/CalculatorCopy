@@ -81,7 +81,7 @@ export default function DecimeterToMeterConverter() {
         <div>
           <Label>From</Label>
           <div className="flex gap-2">
-            <Controller name="value" control={control} render={({ field }) => <Input type="number" step="any" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
+            <Controller name="value" control={control} render={({ field }) => <Input type="number" step="any" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
             <Controller name="unit" control={control} render={({ field }) => (
               <Select onValueChange={field.onChange} value={field.value}>
                 <SelectTrigger><SelectValue /></SelectTrigger>

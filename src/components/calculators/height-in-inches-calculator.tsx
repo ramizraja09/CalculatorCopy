@@ -69,8 +69,8 @@ export default function HeightInInchesCalculator() {
       <div className="space-y-4">
         <h3 className="text-xl font-semibold">Enter Height</h3>
         <div className="flex gap-4">
-          <div><Label>Feet</Label><Controller name="feet" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value, 10) || 0)} />} /></div>
-          <div><Label>Inches</Label><Controller name="inches" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} /></div>
+          <div><Label>Feet</Label><Controller name="feet" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseInt(e.target.value, 10))} />} /></div>
+          <div><Label>Inches</Label><Controller name="inches" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} /></div>
         </div>
         <div className="flex gap-2">
             <Button type="submit" className="flex-1">Convert to Inches</Button>

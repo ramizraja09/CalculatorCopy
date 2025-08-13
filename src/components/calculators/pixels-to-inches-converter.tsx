@@ -68,8 +68,8 @@ export default function PixelsToInchesConverter() {
     <form onSubmit={handleSubmit(convert)} className="grid md:grid-cols-2 gap-8">
       <div className="space-y-4">
         <h3 className="text-xl font-semibold">Input</h3>
-        <div><Label>Pixels (px)</Label><Controller name="pixels" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value, 10) || 0)} />} /></div>
-        <div><Label>Dots Per Inch (DPI/PPI)</Label><Controller name="dpi" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value, 10) || 0)} />} /></div>
+        <div><Label>Pixels (px)</Label><Controller name="pixels" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseInt(e.target.value, 10))} />} /></div>
+        <div><Label>Dots Per Inch (DPI/PPI)</Label><Controller name="dpi" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseInt(e.target.value, 10))} />} /></div>
         <div className="flex gap-2">
             <Button type="submit" className="flex-1">Convert</Button>
             <DropdownMenu>
