@@ -42,17 +42,16 @@ const getCategory = (heatIndex: number) => {
 
 export default function HeatIndexCalculator() {
   const [results, setResults] = useState<any>(null);
-  const [formData, setFormData] = useState<FormData | null>(null);
 
-  const { control, handleSubmit, watch } = useForm<FormData>({
+  const { control, watch } = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: { temperature: 85, unit: 'F', humidity: 70 },
   });
 
-  const watchedValues = watch();
+  const formData = watch();
 
   useEffect(() => {
-    const { temperature, unit, humidity } = watchedValues;
+    const { temperature, unit, humidity } = formData;
     const tempF = unit === 'F' ? temperature : (temperature * 9/5) + 32;
 
     if(tempF >= 80 && humidity >= 40) {
@@ -65,8 +64,7 @@ export default function HeatIndexCalculator() {
     } else {
         setResults(null);
     }
-    setFormData(watchedValues);
-  }, [watchedValues]);
+  }, [formData]);
 
   const handleExport = (format: 'txt' | 'csv') => {
     if (!results || !formData) return;

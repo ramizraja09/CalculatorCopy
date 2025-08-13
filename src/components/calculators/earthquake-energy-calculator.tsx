@@ -35,28 +35,31 @@ const energyLevels = [
 
 export default function EarthquakeEnergyCalculator() {
   const [results, setResults] = useState<any>(null);
-  const [formData, setFormData] = useState<FormData | null>(null);
 
-  const { control, handleSubmit, watch } = useForm<FormData>({
+  const { control, watch } = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: { magnitude: 5.0 },
   });
 
-  const magnitude = watch('magnitude');
+  const formData = watch();
 
   useEffect(() => {
-    // Gutenberg-Richter formula: log10(E) = 1.5 * M + 4.8
-    const energyJoules = Math.pow(10, 1.5 * magnitude + 4.8);
-    const energyTntKg = energyJoules / 4.184e9; // 1 ton TNT = 4.184e9 Joules
-    const energyKilotons = energyTntKg / 1000;
+    const { magnitude } = formData;
+    if (magnitude >= 0 && magnitude <= 10) {
+      // Gutenberg-Richter formula: log10(E) = 1.5 * M + 4.8
+      const energyJoules = Math.pow(10, 1.5 * magnitude + 4.8);
+      const energyTntKg = energyJoules / 4.184e9; // 1 ton TNT = 4.184e9 Joules
+      const energyKilotons = energyTntKg / 1000;
 
-    setResults({
-        joules: energyJoules.toExponential(2),
-        tntKg: energyTntKg.toExponential(2),
-        kilotons: energyKilotons.toExponential(2),
-    });
-    setFormData({magnitude});
-  }, [magnitude]);
+      setResults({
+          joules: energyJoules.toExponential(2),
+          tntKg: energyTntKg.toExponential(2),
+          kilotons: energyKilotons.toExponential(2),
+      });
+    } else {
+      setResults(null);
+    }
+  }, [formData]);
 
   const handleExport = (format: 'txt' | 'csv') => {
     if (!results || !formData) return;
@@ -91,7 +94,7 @@ export default function EarthquakeEnergyCalculator() {
         </div>
         <div className="pt-4">
             <Label>Energy Release Scale</Label>
-            <Progress value={(magnitude / 10) * 100} className="w-full mt-2" />
+            <Progress value={(formData.magnitude / 10) * 100} className="w-full mt-2" />
             <div className="w-full flex justify-between text-xs text-muted-foreground mt-1">
                 {energyLevels.map(level => <span key={level.mag}>{level.label}</span>)}
             </div>

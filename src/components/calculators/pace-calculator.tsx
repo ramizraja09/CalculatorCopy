@@ -38,9 +38,6 @@ export default function PaceCalculator() {
   const formData = watch();
 
   useEffect(() => {
-    // Only run calculations on the client
-    if (!isClient) return;
-
     const { distance, distanceUnit, timeHours, timeMinutes, timeSeconds } = formData;
     if (distance > 0 && (timeHours > 0 || timeMinutes > 0 || timeSeconds > 0)) {
         const totalTimeSeconds = (timeHours * 3600) + (timeMinutes * 60) + timeSeconds;
@@ -62,7 +59,7 @@ export default function PaceCalculator() {
     } else {
         setResults(null);
     }
-  }, [formData, isClient]);
+  }, [formData]);
 
 
   return (

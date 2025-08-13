@@ -35,17 +35,16 @@ const efficiencyFactors = {
 
 export default function BatteryLifeCalculator() {
   const [results, setResults] = useState<any>(null);
-  const [formData, setFormData] = useState<FormData | null>(null);
 
-  const { control, handleSubmit, watch } = useForm<FormData>({
+  const { control, watch } = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: { capacity: 2000, consumption: 150, usageHours: 4, batteryType: 'li-ion' },
   });
   
-  const watchedValues = watch();
+  const formData = watch();
 
   useEffect(() => {
-    const { capacity, consumption, usageHours, batteryType } = watchedValues;
+    const { capacity, consumption, usageHours, batteryType } = formData;
     if (capacity > 0 && consumption > 0 && usageHours > 0) {
         const efficiency = efficiencyFactors[batteryType];
         const effectiveCapacity = capacity * efficiency;
@@ -58,8 +57,7 @@ export default function BatteryLifeCalculator() {
     } else {
         setResults(null);
     }
-    setFormData(watchedValues);
-  }, [watchedValues]);
+  }, [formData]);
 
   const handleExport = (format: 'txt' | 'csv') => {
     if (!results || !formData) return;
