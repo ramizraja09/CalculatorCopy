@@ -88,21 +88,21 @@ export default function OvertimePayCalculator() {
         <h3 className="text-xl font-semibold">Pay & Hours</h3>
         <div>
           <Label htmlFor="hourlyRate">Hourly Rate ($)</Label>
-          <Controller name="hourlyRate" control={control} render={({ field }) => <Input id="hourlyRate" type="number" step="0.01" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
+          <Controller name="hourlyRate" control={control} render={({ field }) => <Input id="hourlyRate" type="number" step="0.01" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
         </div>
         <div className="grid grid-cols-2 gap-4">
           <div>
             <Label htmlFor="regularHours">Regular Hours</Label>
-            <Controller name="regularHours" control={control} render={({ field }) => <Input id="regularHours" type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
+            <Controller name="regularHours" control={control} render={({ field }) => <Input id="regularHours" type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
           </div>
           <div>
             <Label htmlFor="overtimeHours">Overtime Hours</Label>
-            <Controller name="overtimeHours" control={control} render={({ field }) => <Input id="overtimeHours" type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
+            <Controller name="overtimeHours" control={control} render={({ field }) => <Input id="overtimeHours" type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
           </div>
         </div>
         <div>
           <Label htmlFor="overtimeMultiplier">Overtime Multiplier (e.g., 1.5 for time-and-a-half)</Label>
-          <Controller name="overtimeMultiplier" control={control} render={({ field }) => <Input id="overtimeMultiplier" type="number" step="0.1" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
+          <Controller name="overtimeMultiplier" control={control} render={({ field }) => <Input id="overtimeMultiplier" type="number" step="0.1" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
         </div>
         <div className="flex gap-2">
             <Button type="submit" className="flex-1">Calculate Pay</Button>

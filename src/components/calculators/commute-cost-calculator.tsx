@@ -88,11 +88,11 @@ export default function CommuteCostCalculator() {
       {/* Inputs Column */}
       <div className="space-y-4">
         <h3 className="text-xl font-semibold">Commute Details</h3>
-        <div><Label>One-Way Distance (miles)</Label><Controller name="distance" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} /></div>
-        <div><Label>Commuting Days Per Week</Label><Controller name="daysPerWeek" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value) || 0)} />} /></div>
+        <div><Label>One-Way Distance (miles)</Label><Controller name="distance" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} /></div>
+        <div><Label>Commuting Days Per Week</Label><Controller name="daysPerWeek" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseInt(e.target.value, 10))} />} /></div>
         <h3 className="text-xl font-semibold pt-4">Vehicle & Fuel</h3>
-        <div><Label>Vehicle Fuel Efficiency (MPG)</Label><Controller name="fuelEfficiency" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} /></div>
-        <div><Label>Price Per Gallon ($)</Label><Controller name="fuelPrice" control={control} render={({ field }) => <Input type="number" step="0.01" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} /></div>
+        <div><Label>Vehicle Fuel Efficiency (MPG)</Label><Controller name="fuelEfficiency" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} /></div>
+        <div><Label>Price Per Gallon ($)</Label><Controller name="fuelPrice" control={control} render={({ field }) => <Input type="number" step="0.01" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} /></div>
         <div className="flex gap-2">
             <Button type="submit" className="flex-1">Calculate Commute Cost</Button>
             <DropdownMenu>

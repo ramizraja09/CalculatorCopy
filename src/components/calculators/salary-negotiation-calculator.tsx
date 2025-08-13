@@ -75,8 +75,8 @@ export default function SalaryNegotiationCalculator() {
       {/* Inputs */}
       <div className="space-y-4">
         <h3 className="text-xl font-semibold">Inputs</h3>
-        <div><Label>Current Annual Salary ($)</Label><Controller name="currentSalary" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value) || 0)} />} /></div>
-        <div><Label>Desired Increase (%)</Label><Controller name="desiredIncrease" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value) || 0)} />} /></div>
+        <div><Label>Current Annual Salary ($)</Label><Controller name="currentSalary" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseInt(e.target.value, 10))} />} /></div>
+        <div><Label>Desired Increase (%)</Label><Controller name="desiredIncrease" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseInt(e.target.value, 10))} />} /></div>
         <div className="flex gap-2">
             <Button type="submit" className="flex-1">Calculate Targets</Button>
             <DropdownMenu>

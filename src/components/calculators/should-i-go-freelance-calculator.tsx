@@ -108,17 +108,17 @@ export default function ShouldIGoFreelanceCalculator() {
         <Card>
             <CardHeader><CardTitle>Current Salaried Job (Annual)</CardTitle></CardHeader>
             <CardContent className="space-y-4">
-                <div><Label>Gross Salary</Label><Controller name="currentSalary" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} /></div>
-                <div><Label>Employer 401k/Retirement Match</Label><Controller name="employer401kMatch" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} /></div>
+                <div><Label>Gross Salary</Label><Controller name="currentSalary" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} /></div>
+                <div><Label>Employer 401k/Retirement Match</Label><Controller name="employer401kMatch" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} /></div>
             </CardContent>
         </Card>
         <Card>
             <CardHeader><CardTitle>Potential Freelance Work</CardTitle></CardHeader>
             <CardContent className="space-y-4">
-                <div><Label>Hourly Rate ($)</Label><Controller name="freelanceRate" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} /></div>
-                <div><Label>Billable Hours Per Week</Label><Controller name="billableHoursPerWeek" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} /></div>
-                <div><Label>Annual Business Expenses</Label><Controller name="businessExpenses" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} /></div>
-                <div><Label>Annual Health Insurance Cost</Label><Controller name="healthInsuranceCost" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} /></div>
+                <div><Label>Hourly Rate ($)</Label><Controller name="freelanceRate" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} /></div>
+                <div><Label>Billable Hours Per Week</Label><Controller name="billableHoursPerWeek" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} /></div>
+                <div><Label>Annual Business Expenses</Label><Controller name="businessExpenses" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} /></div>
+                <div><Label>Annual Health Insurance Cost</Label><Controller name="healthInsuranceCost" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} /></div>
             </CardContent>
         </Card>
         <div className="flex gap-2">

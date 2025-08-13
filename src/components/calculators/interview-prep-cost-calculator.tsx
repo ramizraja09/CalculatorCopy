@@ -99,7 +99,7 @@ export default function InterviewPrepCostCalculator() {
             {fields.map((field, index) => (
               <div key={field.id} className="flex gap-2 items-center">
                 <Controller name={`items.${index}.name`} control={control} render={({ field }) => <Input placeholder="Expense Name" {...field} />} />
-                <Controller name={`items.${index}.cost`} control={control} render={({ field }) => <Input type="number" placeholder="Cost ($)" className="w-32" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
+                <Controller name={`items.${index}.cost`} control={control} render={({ field }) => <Input type="number" placeholder="Cost ($)" className="w-32" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
                 <Button type="button" variant="ghost" size="icon" onClick={() => remove(index)}><Trash className="h-4 w-4" /></Button>
               </div>
             ))}

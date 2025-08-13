@@ -151,13 +151,13 @@ export default function JobOfferComparisonCalculator() {
                {fields.length > 1 && <Button type="button" variant="ghost" size="icon" onClick={() => remove(index)}><Trash className="h-4 w-4" /></Button>}
             </CardHeader>
             <CardContent className="space-y-4">
-              <div><Label>Base Salary ($)</Label><Controller name={`offers.${index}.salary`} control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value) || 0)} />} /></div>
-              <div><Label>Bonus / Commission ($)</Label><Controller name={`offers.${index}.bonus`} control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value) || 0)} />} /></div>
-              <div><Label>Benefits Value ($)</Label><Controller name={`offers.${index}.benefitsValue`} control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value) || 0)} />} /></div>
-              <div><Label>Paid Vacation Days</Label><Controller name={`offers.${index}.vacationDays`} control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value) || 0)} />} /></div>
-              <div><Label>Other Perks ($)</Label><Controller name={`offers.${index}.otherPerks`} control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value) || 0)} />} /></div>
-              <div><Label>Cost of Living Index (%)</Label><Controller name={`offers.${index}.costOfLivingIndex`} control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value) || 0)} />} /></div>
-              <div><Label>Working Hours per Week</Label><Controller name={`offers.${index}.workingHours`} control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value) || 0)} />} /></div>
+              <div><Label>Base Salary ($)</Label><Controller name={`offers.${index}.salary`} control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseInt(e.target.value, 10))} />} /></div>
+              <div><Label>Bonus / Commission ($)</Label><Controller name={`offers.${index}.bonus`} control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseInt(e.target.value, 10))} />} /></div>
+              <div><Label>Benefits Value ($)</Label><Controller name={`offers.${index}.benefitsValue`} control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseInt(e.target.value, 10))} />} /></div>
+              <div><Label>Paid Vacation Days</Label><Controller name={`offers.${index}.vacationDays`} control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseInt(e.target.value, 10))} />} /></div>
+              <div><Label>Other Perks ($)</Label><Controller name={`offers.${index}.otherPerks`} control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseInt(e.target.value, 10))} />} /></div>
+              <div><Label>Cost of Living Index (%)</Label><Controller name={`offers.${index}.costOfLivingIndex`} control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseInt(e.target.value, 10))} />} /></div>
+              <div><Label>Working Hours per Week</Label><Controller name={`offers.${index}.workingHours`} control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseInt(e.target.value, 10))} />} /></div>
             </CardContent>
              {index === betterOfferIndex && (
                  <CardFooter className="bg-primary/10 text-primary-foreground p-3">

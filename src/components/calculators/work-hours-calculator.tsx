@@ -113,7 +113,7 @@ export default function WorkHoursCalculator() {
         <Button type="button" variant="outline" onClick={() => append({ startTime: '09:00', endTime: '17:00' })}>Add Time Entry</Button>
         <div>
           <Label>Total Break Time (minutes)</Label>
-          <Controller name="breakMinutes" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value) || 0)} />} />
+          <Controller name="breakMinutes" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseInt(e.target.value, 10))} />} />
         </div>
         <div className="flex gap-2">
             <Button type="submit" className="flex-1">Calculate Total Hours</Button>

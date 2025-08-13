@@ -73,9 +73,9 @@ export default function FreelanceRateCalculator() {
       {/* Inputs */}
       <div className="space-y-4">
         <h3 className="text-xl font-semibold">Inputs</h3>
-        <div><Label>Desired Annual Salary ($)</Label><Controller name="desiredSalary" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value) || 0)} />} /></div>
-        <div><Label>Total Annual Business Expenses ($)</Label><Controller name="annualExpenses" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value) || 0)} />} /></div>
-        <div><Label>Billable Hours Per Week</Label><Controller name="billableHoursPerWeek" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value) || 0)} />} /></div>
+        <div><Label>Desired Annual Salary ($)</Label><Controller name="desiredSalary" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseInt(e.target.value, 10))} />} /></div>
+        <div><Label>Total Annual Business Expenses ($)</Label><Controller name="annualExpenses" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseInt(e.target.value, 10))} />} /></div>
+        <div><Label>Billable Hours Per Week</Label><Controller name="billableHoursPerWeek" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseInt(e.target.value, 10))} />} /></div>
         <div className="flex gap-2">
             <Button type="submit" className="flex-1">Calculate Rate</Button>
             <DropdownMenu>

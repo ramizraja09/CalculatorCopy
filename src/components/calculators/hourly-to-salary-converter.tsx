@@ -107,13 +107,13 @@ export default function HourlyToSalaryConverter() {
 
         {formData.conversionType === 'hourlyToSalary' ? (
             <div className="space-y-4">
-                <div><Label>Hourly Rate ($)</Label><Controller name="hourlyRate" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} /></div>
-                <div><Label>Hours Per Week</Label><Controller name="hoursPerWeek" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} /></div>
+                <div><Label>Hourly Rate ($)</Label><Controller name="hourlyRate" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} /></div>
+                <div><Label>Hours Per Week</Label><Controller name="hoursPerWeek" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} /></div>
             </div>
         ) : (
              <div className="space-y-4">
-                <div><Label>Annual Salary ($)</Label><Controller name="annualSalary" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} /></div>
-                 <div><Label>Hours Per Week</Label><Controller name="hoursPerWeek" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} /></div>
+                <div><Label>Annual Salary ($)</Label><Controller name="annualSalary" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} /></div>
+                 <div><Label>Hours Per Week</Label><Controller name="hoursPerWeek" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} /></div>
             </div>
         )}
 
