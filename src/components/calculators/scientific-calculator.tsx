@@ -14,16 +14,20 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 
+const SCIENTIFIC_CALCULATOR_HISTORY_KEY = 'scientificCalculatorHistory';
+
 export default function ScientificCalculator() {
   const [display, setDisplay] = useState('0');
   const [expression, setExpression] = useState('');
   const [history, setHistory] = useState<string[]>([]);
   const [isAfterEquals, setIsAfterEquals] = useState(false);
+  const [isClient, setIsClient] = useState(false);
 
   // Load history from localStorage on component mount (client-side only)
   useEffect(() => {
+    setIsClient(true);
     try {
-      const storedHistory = localStorage.getItem('scientificCalculatorHistory');
+      const storedHistory = localStorage.getItem(SCIENTIFIC_CALCULATOR_HISTORY_KEY);
       if (storedHistory) {
         setHistory(JSON.parse(storedHistory));
       }
@@ -34,12 +38,13 @@ export default function ScientificCalculator() {
 
   // Save history to localStorage whenever it changes
   useEffect(() => {
+    if (!isClient) return;
     try {
-        localStorage.setItem('scientificCalculatorHistory', JSON.stringify(history));
+        localStorage.setItem(SCIENTIFIC_CALCULATOR_HISTORY_KEY, JSON.stringify(history));
     } catch (error) {
         console.error("Could not save calculator history:", error);
     }
-  }, [history]);
+  }, [history, isClient]);
 
   const handleButtonClick = (value: string) => {
     setIsAfterEquals(false);

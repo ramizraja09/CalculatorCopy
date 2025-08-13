@@ -5,7 +5,7 @@ import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Mic, Copy, Trash2, History, Download } from 'lucide-react';
+import { Mic, Copy, Trash2, Download } from 'lucide-react';
 import { evaluate } from 'mathjs';
 import {
   DropdownMenu,
@@ -23,17 +23,21 @@ declare global {
   }
 }
 
+const BASIC_CALCULATOR_HISTORY_KEY = 'calculatorHistory';
+
 export default function BasicCalculator() {
   const [display, setDisplay] = useState('0');
   const [expression, setExpression] = useState('');
   const [history, setHistory] = useState<string[]>([]);
   const [isListening, setIsListening] = useState(false);
   const [isAfterEquals, setIsAfterEquals] = useState(false);
+  const [isClient, setIsClient] = useState(false);
 
   // Load history from localStorage on component mount (client-side only)
   useEffect(() => {
+    setIsClient(true);
     try {
-      const storedHistory = localStorage.getItem('calculatorHistory');
+      const storedHistory = localStorage.getItem(BASIC_CALCULATOR_HISTORY_KEY);
       if (storedHistory) {
         setHistory(JSON.parse(storedHistory));
       }
@@ -44,12 +48,13 @@ export default function BasicCalculator() {
 
   // Save history to localStorage whenever it changes
   useEffect(() => {
+    if (!isClient) return;
     try {
-        localStorage.setItem('calculatorHistory', JSON.stringify(history));
+        localStorage.setItem(BASIC_CALCULATOR_HISTORY_KEY, JSON.stringify(history));
     } catch (error) {
         console.error("Could not save calculator history:", error);
     }
-  }, [history]);
+  }, [history, isClient]);
 
 
   const handleInput = (value: string) => {
