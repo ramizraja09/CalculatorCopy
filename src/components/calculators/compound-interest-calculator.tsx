@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
@@ -60,7 +60,6 @@ export default function CompoundInterestCalculator() {
     const schedule = [];
     let balance = initialPrincipal;
     let totalContributions = initialPrincipal;
-    let totalInterest = 0;
     
     schedule.push({
       year: 0,
@@ -72,11 +71,11 @@ export default function CompoundInterestCalculator() {
     for (let year = 1; year <= years; year++) {
       let yearStartBalance = balance;
       for (let month = 1; month <= 12; month++) {
-        yearStartBalance += monthlyContribution;
+        balance += monthlyContribution;
       }
       
-      const interestForYear = yearStartBalance * (Math.pow(1 + annualRate / n, n) - 1);
-      balance = yearStartBalance + interestForYear;
+      const interestForYear = balance * (Math.pow(1 + annualRate / n, n) - 1);
+      balance += interestForYear;
       
       totalContributions += monthlyContribution * 12;
       const currentTotalInterest = balance - totalContributions;
@@ -136,46 +135,49 @@ export default function CompoundInterestCalculator() {
     <form onSubmit={handleSubmit(calculateCompoundInterest)} className="grid md:grid-cols-2 gap-8">
       {/* Inputs Column */}
       <div className="space-y-4">
-        <h3 className="text-xl font-semibold">Inputs</h3>
-        
-        <div>
-          <Label htmlFor="initialPrincipal">Initial Principal ($)</Label>
-          <Controller name="initialPrincipal" control={control} render={({ field }) => <Input id="initialPrincipal" type="number" step="0.01" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
-          {errors.initialPrincipal && <p className="text-destructive text-sm mt-1">{errors.initialPrincipal.message}</p>}
-        </div>
+        <Card>
+          <CardHeader><CardTitle>Investment Details</CardTitle></CardHeader>
+          <CardContent className="space-y-4">
+              <div>
+                <Label htmlFor="initialPrincipal">Initial Principal ($)</Label>
+                <Controller name="initialPrincipal" control={control} render={({ field }) => <Input id="initialPrincipal" type="number" step="0.01" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
+                {errors.initialPrincipal && <p className="text-destructive text-sm mt-1">{errors.initialPrincipal.message}</p>}
+              </div>
 
-        <div>
-          <Label htmlFor="monthlyContribution">Monthly Contribution ($)</Label>
-          <Controller name="monthlyContribution" control={control} render={({ field }) => <Input id="monthlyContribution" type="number" step="0.01" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
-          {errors.monthlyContribution && <p className="text-destructive text-sm mt-1">{errors.monthlyContribution.message}</p>}
-        </div>
+              <div>
+                <Label htmlFor="monthlyContribution">Monthly Contribution ($)</Label>
+                <Controller name="monthlyContribution" control={control} render={({ field }) => <Input id="monthlyContribution" type="number" step="0.01" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
+                {errors.monthlyContribution && <p className="text-destructive text-sm mt-1">{errors.monthlyContribution.message}</p>}
+              </div>
 
-        <div>
-          <Label htmlFor="interestRate">Annual Interest Rate (%)</Label>
-          <Controller name="interestRate" control={control} render={({ field }) => <Input id="interestRate" type="number" step="0.01" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
-          {errors.interestRate && <p className="text-destructive text-sm mt-1">{errors.interestRate.message}</p>}
-        </div>
-        
-        <div>
-          <Label htmlFor="years">Length of Time (years)</Label>
-          <Controller name="years" control={control} render={({ field }) => <Input id="years" type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value) || 0)} />} />
-          {errors.years && <p className="text-destructive text-sm mt-1">{errors.years.message}</p>}
-        </div>
-        
-        <div>
-          <Label htmlFor="compoundFrequency">Compound Frequency</Label>
-          <Controller name="compoundFrequency" control={control} render={({ field }) => (
-            <Select onValueChange={field.onChange} defaultValue={field.value}>
-              <SelectTrigger id="compoundFrequency"><SelectValue /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="annually">Annually</SelectItem>
-                <SelectItem value="semiannually">Semiannually</SelectItem>
-                <SelectItem value="quarterly">Quarterly</SelectItem>
-                <SelectItem value="monthly">Monthly</SelectItem>
-              </SelectContent>
-            </Select>
-          )} />
-        </div>
+              <div>
+                <Label htmlFor="interestRate">Annual Interest Rate (%)</Label>
+                <Controller name="interestRate" control={control} render={({ field }) => <Input id="interestRate" type="number" step="0.01" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
+                {errors.interestRate && <p className="text-destructive text-sm mt-1">{errors.interestRate.message}</p>}
+              </div>
+              
+              <div>
+                <Label htmlFor="years">Length of Time (years)</Label>
+                <Controller name="years" control={control} render={({ field }) => <Input id="years" type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value) || 0)} />} />
+                {errors.years && <p className="text-destructive text-sm mt-1">{errors.years.message}</p>}
+              </div>
+              
+              <div>
+                <Label htmlFor="compoundFrequency">Compound Frequency</Label>
+                <Controller name="compoundFrequency" control={control} render={({ field }) => (
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <SelectTrigger id="compoundFrequency"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="annually">Annually</SelectItem>
+                      <SelectItem value="semiannually">Semiannually</SelectItem>
+                      <SelectItem value="quarterly">Quarterly</SelectItem>
+                      <SelectItem value="monthly">Monthly</SelectItem>
+                    </SelectContent>
+                  </Select>
+                )} />
+              </div>
+          </CardContent>
+        </Card>
         
         <div className="flex gap-2">
             <Button type="submit" className="flex-1">Calculate</Button>
@@ -204,41 +206,41 @@ export default function CompoundInterestCalculator() {
             ) : (
                 <div className="space-y-4">
                     <Card>
-                        <CardContent className="p-4">
-                            <p className="text-sm text-muted-foreground">Future Value</p>
-                            <p className="text-3xl font-bold">{formatCurrency(results.finalBalance)}</p>
+                        <CardHeader>
+                            <CardTitle className="text-base text-muted-foreground text-center">Future Value</CardTitle>
+                        </CardHeader>
+                        <CardContent className="text-center">
+                            <p className="text-4xl font-bold">{formatCurrency(results.finalBalance)}</p>
                         </CardContent>
                     </Card>
                     <Card>
-                        <CardContent className="p-4 grid grid-cols-2 gap-2 text-sm">
+                        <CardContent className="p-4 grid grid-cols-2 gap-2 text-sm text-center">
                              <div><p className="text-muted-foreground">Total Contributions</p><p className="font-semibold">{formatCurrency(results.totalContributions)}</p></div>
                              <div><p className="text-muted-foreground">Total Interest</p><p className="font-semibold">{formatCurrency(results.totalInterest)}</p></div>
                         </CardContent>
                     </Card>
 
                     <Card>
-                      <CardContent className="p-4">
-                        <h4 className="font-semibold mb-4">Investment Growth Over Time</h4>
-                        <div className="h-60">
+                      <CardHeader><CardTitle>Investment Growth Over Time</CardTitle></CardHeader>
+                      <CardContent className="p-4 h-64">
                           <ResponsiveContainer width="100%" height="100%">
                             <LineChart data={results.schedule} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
                               <CartesianGrid strokeDasharray="3 3" />
-                              <XAxis dataKey="year" />
+                              <XAxis dataKey="year" label={{ value: 'Year', position: 'insideBottom', offset: -5 }} />
                               <YAxis tickFormatter={(value) => formatCurrency(value)} />
                               <Tooltip formatter={(value: number, name: string) => (name === "Total Contributions" || name === "Total Balance") ? formatCurrency(value) : value } />
                               <Legend />
-                              <Line type="monotone" dataKey="endBalance" name="Total Balance" stroke="hsl(var(--primary))" />
-                              <Line type="monotone" dataKey="totalContributions" name="Total Contributions" stroke="hsl(var(--secondary-foreground))" />
+                              <Line type="monotone" dataKey="endBalance" name="Total Balance" stroke="hsl(var(--primary))" dot={false} />
+                              <Line type="monotone" dataKey="totalContributions" name="Total Contributions" stroke="hsl(var(--secondary-foreground))" dot={false} />
                             </LineChart>
                           </ResponsiveContainer>
-                        </div>
                       </CardContent>
                     </Card>
                     
                     <Card>
-                      <CardContent className="p-4">
-                        <h4 className="font-semibold mb-2">Yearly Breakdown</h4>
-                         <ScrollArea className="h-48">
+                      <CardHeader><CardTitle>Yearly Breakdown</CardTitle></CardHeader>
+                      <CardContent className="p-0">
+                         <ScrollArea className="h-96">
                               <Table>
                                   <TableHeader className="sticky top-0 bg-muted">
                                       <TableRow>
@@ -265,7 +267,7 @@ export default function CompoundInterestCalculator() {
                 </div>
             )
         ) : (
-             <div className="flex items-center justify-center h-60 bg-muted/50 rounded-lg border border-dashed">
+             <div className="flex items-center justify-center h-full min-h-[30rem] bg-muted/50 rounded-lg border border-dashed">
                 <p className="text-sm text-muted-foreground">Enter your details to calculate your investment growth</p>
             </div>
         )}

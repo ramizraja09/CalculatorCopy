@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
@@ -18,6 +18,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsLineTooltip } from 'recharts';
+
 
 const formSchema = z.object({
   loanAmount: z.number().min(1, 'Loan amount must be greater than 0'),
@@ -131,31 +133,34 @@ export default function AmortizationCalculator() {
   };
 
   return (
-    <form onSubmit={handleSubmit(calculateAmortization)} className="grid md:grid-cols-2 gap-8">
+    <div className="grid md:grid-cols-2 gap-8">
       {/* Inputs Column */}
       <div className="space-y-4">
-        <h3 className="text-xl font-semibold">Inputs</h3>
-        
-        <div>
-          <Label htmlFor="loanAmount">Loan Amount ($)</Label>
-          <Controller name="loanAmount" control={control} render={({ field }) => <Input id="loanAmount" type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
-          {errors.loanAmount && <p className="text-destructive text-sm mt-1">{errors.loanAmount.message}</p>}
-        </div>
+        <Card>
+            <CardHeader><CardTitle>Loan Details</CardTitle></CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <Label htmlFor="loanAmount">Loan Amount ($)</Label>
+                <Controller name="loanAmount" control={control} render={({ field }) => <Input id="loanAmount" type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
+                {errors.loanAmount && <p className="text-destructive text-sm mt-1">{errors.loanAmount.message}</p>}
+              </div>
 
-        <div>
-          <Label htmlFor="loanTerm">Loan Term (years)</Label>
-          <Controller name="loanTerm" control={control} render={({ field }) => <Input id="loanTerm" type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value) || 0)} />} />
-          {errors.loanTerm && <p className="text-destructive text-sm mt-1">{errors.loanTerm.message}</p>}
-        </div>
+              <div>
+                <Label htmlFor="loanTerm">Loan Term (years)</Label>
+                <Controller name="loanTerm" control={control} render={({ field }) => <Input id="loanTerm" type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value) || 0)} />} />
+                {errors.loanTerm && <p className="text-destructive text-sm mt-1">{errors.loanTerm.message}</p>}
+              </div>
 
-        <div>
-          <Label htmlFor="interestRate">Interest Rate (%)</Label>
-          <Controller name="interestRate" control={control} render={({ field }) => <Input id="interestRate" type="number" step="0.01" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
-          {errors.interestRate && <p className="text-destructive text-sm mt-1">{errors.interestRate.message}</p>}
-        </div>
+              <div>
+                <Label htmlFor="interestRate">Interest Rate (%)</Label>
+                <Controller name="interestRate" control={control} render={({ field }) => <Input id="interestRate" type="number" step="0.01" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
+                {errors.interestRate && <p className="text-destructive text-sm mt-1">{errors.interestRate.message}</p>}
+              </div>
+            </CardContent>
+        </Card>
         
         <div className="flex gap-2">
-            <Button type="submit" className="flex-1">Calculate Schedule</Button>
+            <Button type="submit" className="flex-1" onClick={handleSubmit(calculateAmortization)}>Calculate Schedule</Button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" disabled={!results}>
@@ -168,6 +173,24 @@ export default function AmortizationCalculator() {
               </DropdownMenuContent>
             </DropdownMenu>
         </div>
+        
+        {results && !results.error && (
+            <Card>
+                <CardHeader><CardTitle className="text-base text-center">Loan Balance Over Time</CardTitle></CardHeader>
+                <CardContent className="h-64">
+                    <ResponsiveContainer width="100%" height="100%">
+                        <LineChart data={results.schedule} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
+                            <CartesianGrid strokeDasharray="3 3" />
+                            <XAxis dataKey="month" label={{ value: 'Month', position: 'insideBottom', offset: -5 }} />
+                            <YAxis tickFormatter={(tick) => formatCurrency(tick)} />
+                            <RechartsLineTooltip formatter={(value: number) => formatCurrency(value)} />
+                            <Line type="monotone" dataKey="remainingBalance" name="Remaining Balance" stroke="hsl(var(--primary))" dot={false} />
+                        </LineChart>
+                    </ResponsiveContainer>
+                </CardContent>
+            </Card>
+        )}
+
       </div>
 
       {/* Results Column */}
@@ -181,70 +204,44 @@ export default function AmortizationCalculator() {
             ) : (
                 <div className="space-y-4">
                     <Card>
-                        <CardContent className="p-4 grid grid-cols-2 gap-2 text-sm">
-                             <div><p className="text-muted-foreground">Monthly Payment</p><p className="font-semibold">{formatCurrency(results.monthlyPayment)}</p></div>
-                             <div><p className="text-muted-foreground">Total Interest Paid</p><p className="font-semibold">{formatCurrency(results.totalInterestPaid)}</p></div>
-                             <div><p className="text-muted-foreground">Total Paid</p><p className="font-semibold">{formatCurrency(results.totalPaid)}</p></div>
+                        <CardContent className="p-4 grid grid-cols-3 gap-2 text-center">
+                             <div><p className="text-muted-foreground text-sm">Monthly Payment</p><p className="font-semibold text-lg">{formatCurrency(results.monthlyPayment)}</p></div>
+                             <div><p className="text-muted-foreground text-sm">Total Interest</p><p className="font-semibold text-lg">{formatCurrency(results.totalInterestPaid)}</p></div>
+                             <div><p className="text-muted-foreground text-sm">Total Paid</p><p className="font-semibold text-lg">{formatCurrency(results.totalPaid)}</p></div>
                         </CardContent>
                     </Card>
                     
                     <Card>
-                      <CardContent className="p-4">
-                        <h4 className="font-semibold mb-2">Yearly Breakdown</h4>
-                         <ScrollArea className="h-48">
-                              <Table>
-                                  <TableHeader className="sticky top-0 bg-muted">
-                                      <TableRow>
-                                          <TableHead>Year</TableHead>
-                                          <TableHead className="text-right">Principal</TableHead>
-                                          <TableHead className="text-right">Interest</TableHead>
-                                      </TableRow>
-                                  </TableHeader>
-                                  <TableBody>
-                                      {results.yearlyData.map((row: any) => (
-                                          <TableRow key={row.year}>
-                                              <TableCell>{row.year}</TableCell>
-                                              <TableCell className="text-right">{formatCurrency(row.principal)}</TableCell>
-                                              <TableCell className="text-right">{formatCurrency(row.interest)}</TableCell>
-                                          </TableRow>
-                                      ))}
-                                  </TableBody>
-                              </Table>
-                          </ScrollArea>
-                      </CardContent>
-                    </Card>
-
-                    <Card>
-                        <CardContent className="p-4">
-                            <h4 className="font-semibold mb-2">Monthly Amortization Schedule</h4>
-                            <ScrollArea className="h-96">
-                                <Table>
-                                    <TableHeader className="sticky top-0 bg-muted">
-                                        <TableRow>
-                                            <TableHead className="w-1/4">Month</TableHead>
-                                            <TableHead className="w-1/4 text-right">Principal</TableHead>
-                                            <TableHead className="w-1/4 text-right">Interest</TableHead>
-                                            <TableHead className="w-1/4 text-right">Balance</TableHead>
+                      <CardHeader><CardTitle>Amortization Schedule</CardTitle></CardHeader>
+                      <CardContent className="p-0">
+                        <ScrollArea className="h-[40rem]">
+                            <Table>
+                                <TableHeader className="sticky top-0 bg-muted">
+                                    <TableRow>
+                                        <TableHead className="w-1/4">Month</TableHead>
+                                        <TableHead className="w-1/4 text-right">Principal</TableHead>
+                                        <TableHead className="w-1/4 text-right">Interest</TableHead>
+                                        <TableHead className="w-1/4 text-right">Balance</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {results.schedule.map((row: any) => (
+                                        <TableRow key={row.month}>
+                                            <TableCell>{row.month}</TableCell>
+                                            <TableCell className="text-right">{formatCurrency(row.principalPayment)}</TableCell>
+                                            <TableCell className="text-right">{formatCurrency(row.interestPayment)}</TableCell>
+                                            <TableCell className="text-right">{formatCurrency(row.remainingBalance)}</TableCell>
                                         </TableRow>
-                                    </TableHeader>
-                                    <TableBody>
-                                        {results.schedule.map((row: any) => (
-                                            <TableRow key={row.month}>
-                                                <TableCell>{row.month}</TableCell>
-                                                <TableCell className="text-right">{formatCurrency(row.principalPayment)}</TableCell>
-                                                <TableCell className="text-right">{formatCurrency(row.interestPayment)}</TableCell>
-                                                <TableCell className="text-right">{formatCurrency(row.remainingBalance)}</TableCell>
-                                            </TableRow>
-                                        ))}
-                                    </TableBody>
-                                </Table>
-                            </ScrollArea>
-                        </CardContent>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        </ScrollArea>
+                      </CardContent>
                     </Card>
                 </div>
             )
         ) : (
-             <div className="flex items-center justify-center h-60 bg-muted/50 rounded-lg border border-dashed">
+             <div className="flex items-center justify-center h-full min-h-[30rem] bg-muted/50 rounded-lg border border-dashed">
                 <p className="text-sm text-muted-foreground">Enter your loan details to see the amortization schedule</p>
             </div>
         )}

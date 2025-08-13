@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
@@ -101,25 +101,28 @@ export default function InvestmentReturnCalculator() {
     <form onSubmit={handleSubmit(calculateReturn)} className="grid md:grid-cols-2 gap-8">
       {/* Inputs Column */}
       <div className="space-y-4">
-        <h3 className="text-xl font-semibold">Inputs</h3>
-        
-        <div>
-          <Label htmlFor="initialInvestment">Initial Investment ($)</Label>
-          <Controller name="initialInvestment" control={control} render={({ field }) => <Input id="initialInvestment" type="number" step="0.01" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
-          {errors.initialInvestment && <p className="text-destructive text-sm mt-1">{errors.initialInvestment.message}</p>}
-        </div>
+        <Card>
+            <CardHeader><CardTitle>Investment Details</CardTitle></CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <Label htmlFor="initialInvestment">Initial Investment ($)</Label>
+                <Controller name="initialInvestment" control={control} render={({ field }) => <Input id="initialInvestment" type="number" step="0.01" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
+                {errors.initialInvestment && <p className="text-destructive text-sm mt-1">{errors.initialInvestment.message}</p>}
+              </div>
 
-        <div>
-          <Label htmlFor="finalValue">Final Value ($)</Label>
-          <Controller name="finalValue" control={control} render={({ field }) => <Input id="finalValue" type="number" step="0.01" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
-          {errors.finalValue && <p className="text-destructive text-sm mt-1">{errors.finalValue.message}</p>}
-        </div>
+              <div>
+                <Label htmlFor="finalValue">Final Value ($)</Label>
+                <Controller name="finalValue" control={control} render={({ field }) => <Input id="finalValue" type="number" step="0.01" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
+                {errors.finalValue && <p className="text-destructive text-sm mt-1">{errors.finalValue.message}</p>}
+              </div>
 
-        <div>
-          <Label htmlFor="investmentLength">Investment Length (years)</Label>
-          <Controller name="investmentLength" control={control} render={({ field }) => <Input id="investmentLength" type="number" step="0.1" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
-          {errors.investmentLength && <p className="text-destructive text-sm mt-1">{errors.investmentLength.message}</p>}
-        </div>
+              <div>
+                <Label htmlFor="investmentLength">Investment Length (years)</Label>
+                <Controller name="investmentLength" control={control} render={({ field }) => <Input id="investmentLength" type="number" step="0.1" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
+                {errors.investmentLength && <p className="text-destructive text-sm mt-1">{errors.investmentLength.message}</p>}
+              </div>
+            </CardContent>
+        </Card>
         
         <div className="flex gap-2">
             <Button type="submit" className="flex-1">Calculate Return</Button>
@@ -148,47 +151,45 @@ export default function InvestmentReturnCalculator() {
             ) : (
                 <div className="space-y-4">
                     <Card>
+                        <CardHeader><CardTitle className="text-base text-muted-foreground text-center">Total Return</CardTitle></CardHeader>
+                        <CardContent className="text-center">
+                            <p className="text-3xl font-bold text-primary">{formatCurrency(results.totalReturn)}</p>
+                        </CardContent>
+                    </Card>
+                    
+                    <Card>
                         <CardContent className="p-4 grid grid-cols-2 gap-4 text-center">
-                            <div>
-                                <p className="text-sm text-muted-foreground">Total Return</p>
-                                <p className="text-2xl font-bold text-primary">{formatCurrency(results.totalReturn)}</p>
-                            </div>
                              <div>
                                 <p className="text-sm text-muted-foreground">Return on Investment (ROI)</p>
-                                <p className="text-2xl font-bold text-primary">{formatPercent(results.roi)}</p>
+                                <p className="text-xl font-bold">{formatPercent(results.roi)}</p>
+                            </div>
+                             <div>
+                                <p className="text-sm text-muted-foreground">Annualized Return (CAGR)</p>
+                                <p className="text-xl font-bold">{formatPercent(results.cagr)}</p>
                             </div>
                         </CardContent>
                     </Card>
 
                     <Card>
-                        <CardContent className="p-4 text-center">
-                             <p className="text-sm text-muted-foreground">Annualized Return (CAGR)</p>
-                             <p className="text-2xl font-bold">{formatPercent(results.cagr)}</p>
-                        </CardContent>
-                    </Card>
-
-                    <Card>
-                      <CardContent className="p-4">
-                        <h4 className="font-semibold mb-4 text-center">Investment Growth</h4>
-                        <div className="h-60">
-                          <ResponsiveContainer width="100%" height="100%">
-                            <BarChart data={[{ name: 'Value', initial: results.chartData[0].value, final: results.chartData[0].value + results.chartData[1].value }]} layout="vertical" margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
+                      <CardHeader><CardTitle className="text-base">Investment Breakdown</CardTitle></CardHeader>
+                      <CardContent className="p-4 h-64">
+                        <ResponsiveContainer width="100%" height="100%">
+                            <BarChart data={[{ name: 'Value', initial: results.chartData[0].value, return: results.chartData[1].value }]} layout="vertical" margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
                               <CartesianGrid strokeDasharray="3 3" />
                               <XAxis type="number" tickFormatter={(value) => formatCurrency(value)}/>
                               <YAxis type="category" dataKey="name" hide />
                               <Tooltip formatter={(value: number) => formatCurrency(value)} />
                               <Legend />
-                              <Bar dataKey="initial" stackId="a" fill="hsl(var(--primary))" name="Initial Investment" />
-                              <Bar dataKey="final" stackId="a" fill="hsl(var(--chart-2))" name="Final Value" />
+                              <Bar dataKey="initial" stackId="a" fill="hsl(var(--chart-1))" name="Initial Investment" />
+                              <Bar dataKey="return" stackId="a" fill="hsl(var(--chart-2))" name="Total Return" />
                             </BarChart>
                           </ResponsiveContainer>
-                        </div>
                       </CardContent>
                     </Card>
                 </div>
             )
         ) : (
-             <div className="flex items-center justify-center h-60 bg-muted/50 rounded-lg border border-dashed">
+             <div className="flex items-center justify-center h-full min-h-[30rem] bg-muted/50 rounded-lg border border-dashed">
                 <p className="text-sm text-muted-foreground">Enter your investment details to see the returns</p>
             </div>
         )}
