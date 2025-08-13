@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, Suspense } from 'react';
 import { Input } from '@/components/ui/input';
 import { calculators } from '@/lib/calculators';
 import CalculatorCard from '@/components/calculator-card';
@@ -120,15 +120,9 @@ const PageSkeleton = () => (
   );
 
 export default function Home() {
-  const [isClient, setIsClient] = useState(false);
-
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
-
-  if (!isClient) {
-    return <PageSkeleton />;
-  }
-
-  return <HomePageContent />;
+    return (
+      <Suspense fallback={<PageSkeleton />}>
+        <HomePageContent />
+      </Suspense>
+    );
 }

@@ -8,7 +8,6 @@ import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/com
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { Badge } from './ui/badge';
-import { useFavorites } from '@/hooks/use-favorites';
 import { Skeleton } from './ui/skeleton';
 import { useEffect, useState } from 'react';
 
