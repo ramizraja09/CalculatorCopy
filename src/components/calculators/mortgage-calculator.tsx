@@ -178,10 +178,10 @@ export default function MortgageCalculator() {
   };
 
   return (
-    <main className="grid lg:grid-cols-2 gap-8">
+    <main className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
       {/* Left Pane: Inputs */}
-      <section className="space-y-4">
-        <form onSubmit={handleSubmit(calculateMortgage)}>
+      <section className="lg:col-span-1">
+        <form onSubmit={handleSubmit(calculateMortgage)} className="space-y-4">
           <Accordion type="multiple" defaultValue={['loan-basics', 'costs']} className="w-full">
             <AccordionItem value="loan-basics">
               <AccordionTrigger>Loan Basics</AccordionTrigger>
@@ -257,9 +257,9 @@ export default function MortgageCalculator() {
         </form>
       </section>
 
-      {/* Right Pane: Results and Amortization */}
-      <section className="space-y-4">
-        <h2 className="text-xl font-semibold">Summary & Schedule</h2>
+      {/* Center Pane: Key Results & Charts */}
+      <section className="md:col-span-1 space-y-4">
+        <h2 className="text-xl font-semibold">Summary</h2>
         {results && !results.error ? (
           <div className="space-y-4">
             <Card>
@@ -298,33 +298,6 @@ export default function MortgageCalculator() {
                 </ResponsiveContainer>
               </CardContent>
             </Card>
-             <Card>
-                <CardHeader><CardTitle>Amortization Schedule</CardTitle></CardHeader>
-                <CardContent className="p-0">
-                    <ScrollArea className="h-[40rem]">
-                        <Table>
-                            <TableHeader className="sticky top-0 bg-muted z-10">
-                                <TableRow>
-                                    <TableHead className="w-1/4">Month</TableHead>
-                                    <TableHead className="w-1/4 text-right">Principal</TableHead>
-                                    <TableHead className="w-1/4 text-right">Interest</TableHead>
-                                    <TableHead className="w-1/4 text-right">Balance</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {results.amortization.map((row: any) => (
-                                    <TableRow key={row.month}>
-                                        <TableCell>{row.month}</TableCell>
-                                        <TableCell className="text-right">{formatCurrency(row.principalPayment)}</TableCell>
-                                        <TableCell className="text-right">{formatCurrency(row.interestPayment)}</TableCell>
-                                        <TableCell className="text-right">{formatCurrency(row.remainingBalance)}</TableCell>
-                                    </TableRow>
-                                ))}
-                            </TableBody>
-                        </Table>
-                    </ScrollArea>
-                </CardContent>
-            </Card>
           </div>
         ) : (
           <Card className="flex items-center justify-center h-full min-h-[30rem] bg-muted/50 border-dashed">
@@ -332,6 +305,45 @@ export default function MortgageCalculator() {
           </Card>
         )}
       </section>
+      
+      {/* Right Pane: Amortization Schedule */}
+      <aside className="md:col-span-2 lg:col-span-1">
+        <h2 className="text-xl font-semibold mb-4">Amortization Schedule</h2>
+         <Card>
+            <CardContent className="p-0">
+                <ScrollArea className="h-[40rem]">
+                    <Table>
+                        <TableHeader className="sticky top-0 bg-muted z-10">
+                            <TableRow>
+                                <TableHead className="w-1/4">Month</TableHead>
+                                <TableHead className="w-1/4 text-right">Principal</TableHead>
+                                <TableHead className="w-1/4 text-right">Interest</TableHead>
+                                <TableHead className="w-1/4 text-right">Balance</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            {results && !results.error ? (
+                                results.amortization.map((row: any) => (
+                                    <TableRow key={row.month}>
+                                        <TableCell>{row.month}</TableCell>
+                                        <TableCell className="text-right">{formatCurrency(row.principalPayment)}</TableCell>
+                                        <TableCell className="text-right">{formatCurrency(row.interestPayment)}</TableCell>
+                                        <TableCell className="text-right">{formatCurrency(row.remainingBalance)}</TableCell>
+                                    </TableRow>
+                                ))
+                            ) : (
+                                <TableRow>
+                                    <TableCell colSpan={4} className="text-center h-96 text-muted-foreground">
+                                        Schedule will appear here.
+                                    </TableCell>
+                                </TableRow>
+                            )}
+                        </TableBody>
+                    </Table>
+                </ScrollArea>
+            </CardContent>
+        </Card>
+      </aside>
     </main>
   );
 }
