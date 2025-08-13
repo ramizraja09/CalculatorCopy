@@ -9,7 +9,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { Info, Download } from 'lucide-react';
 import {
@@ -17,16 +17,18 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+} from "@/components/ui/dropdown-menu";
 
 const formSchema = z.object({
   currentAge: z.number().int().min(18, "Must be at least 18"),
   retirementAge: z.number().int().min(19, "Must be older than current age"),
   currentSavings: z.number().min(0, "Cannot be negative"),
-  monthlyContribution: z.number().min(0, "Cannot be negative"),
+  currentAnnualIncome: z.number().min(1, "Income must be positive"),
+  annualIncomeIncrease: z.number().min(0, "Cannot be negative"),
+  percentOfIncomeToSave: z.number().min(0, "Cannot be negative"),
   preRetirementROR: z.number().min(0, "Cannot be negative"),
   postRetirementROR: z.number().min(0, "Cannot be negative"),
-  desiredAnnualIncome: z.number().min(1, "Must be positive"),
+  desiredIncomePercent: z.number().min(1, "Must be positive").max(200),
   drawdownYears: z.number().int().min(1, "Must be at least 1 year"),
 }).refine(data => data.retirementAge > data.currentAge, {
   message: "Retirement age must be after current age.",
@@ -45,10 +47,12 @@ export default function RetirementSavingsCalculator() {
       currentAge: 30,
       retirementAge: 65,
       currentSavings: 50000,
-      monthlyContribution: 500,
+      currentAnnualIncome: 80000,
+      annualIncomeIncrease: 3,
+      percentOfIncomeToSave: 15,
       preRetirementROR: 7,
       postRetirementROR: 4,
-      desiredAnnualIncome: 60000,
+      desiredIncomePercent: 80,
       drawdownYears: 25,
     },
   });
@@ -58,30 +62,43 @@ export default function RetirementSavingsCalculator() {
       currentAge,
       retirementAge,
       currentSavings,
-      monthlyContribution,
+      currentAnnualIncome,
+      annualIncomeIncrease,
+      percentOfIncomeToSave,
       preRetirementROR,
       postRetirementROR,
-      desiredAnnualIncome,
+      desiredIncomePercent,
       drawdownYears,
     } = data;
     
     const yearsToRetirement = retirementAge - currentAge;
-    const monthsToRetirement = yearsToRetirement * 12;
     const monthlyPreRetirementRate = preRetirementROR / 100 / 12;
-    const monthlyPostRetirementRate = postRetirementROR / 100 / 12;
 
-    // Calculate projected savings
-    const fvOfCurrentSavings = currentSavings * Math.pow(1 + monthlyPreRetirementRate, monthsToRetirement);
+    const schedule = [];
+    let balance = currentSavings;
+    let income = currentAnnualIncome;
+    let finalSalary = currentAnnualIncome;
 
-    let fvOfContributions = 0;
-    if (monthlyPreRetirementRate > 0) {
-        fvOfContributions = monthlyContribution * ( (Math.pow(1 + monthlyPreRetirementRate, monthsToRetirement) - 1) / monthlyPreRetirementRate );
-    } else {
-        fvOfContributions = monthlyContribution * monthsToRetirement;
+    for (let year = 1; year <= yearsToRetirement; year++) {
+        const monthlyContribution = (income * (percentOfIncomeToSave / 100)) / 12;
+        for (let month = 1; month <= 12; month++) {
+            balance = balance * (1 + monthlyPreRetirementRate) + monthlyContribution;
+        }
+        income *= (1 + annualIncomeIncrease / 100);
+        if (year === yearsToRetirement) {
+            finalSalary = income;
+        }
+        schedule.push({
+            age: currentAge + year,
+            balance: balance,
+        });
     }
-    const projectedNestEgg = fvOfCurrentSavings + fvOfContributions;
 
-    // Calculate required savings (PV of an annuity)
+    const projectedNestEgg = balance;
+    
+    // Calculate required savings
+    const desiredAnnualIncome = finalSalary * (desiredIncomePercent / 100);
+    const monthlyPostRetirementRate = postRetirementROR / 100 / 12;
     let requiredNestEgg = 0;
     if (monthlyPostRetirementRate > 0) {
         requiredNestEgg = (desiredAnnualIncome / 12) * ( (1 - Math.pow(1 + monthlyPostRetirementRate, -(drawdownYears * 12))) / monthlyPostRetirementRate );
@@ -90,19 +107,6 @@ export default function RetirementSavingsCalculator() {
     }
     
     const shortfall = requiredNestEgg - projectedNestEgg;
-
-    // Chart data
-    const schedule = [];
-    let balance = currentSavings;
-    for (let year = 1; year <= yearsToRetirement; year++) {
-        for (let month = 1; month <= 12; month++) {
-            balance = balance * (1 + monthlyPreRetirementRate) + monthlyContribution;
-        }
-        schedule.push({
-            age: currentAge + year,
-            balance: balance,
-        });
-    }
 
     setResults({
       projectedNestEgg,
@@ -167,11 +171,13 @@ export default function RetirementSavingsCalculator() {
           
           <h3 className="text-xl font-semibold pt-4">Savings & Investments</h3>
           <div><Label htmlFor="currentSavings">Current Savings ($)</Label><Controller name="currentSavings" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} /></div>
-          <div><Label htmlFor="monthlyContribution">Monthly Contribution ($)</Label><Controller name="monthlyContribution" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} /></div>
+          <div><Label htmlFor="currentAnnualIncome">Current Annual Income ($)</Label><Controller name="currentAnnualIncome" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} /></div>
+          <div><Label>Annual Income Increase (%)</Label><Controller name="annualIncomeIncrease" control={control} render={({ field }) => <Input type="number" step="0.1" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} /></div>
+          <div><Label>% of Income to Save</Label><Controller name="percentOfIncomeToSave" control={control} render={({ field }) => <Input type="number" step="1" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} /></div>
           <div><Label htmlFor="preRetirementROR">Pre-Retirement Rate of Return (%)</Label><Controller name="preRetirementROR" control={control} render={({ field }) => <Input type="number" step="0.1" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} /></div>
           
           <h3 className="text-xl font-semibold pt-4">Retirement Goals</h3>
-          <div><Label htmlFor="desiredAnnualIncome">Desired Annual Income ($)</Label><Controller name="desiredAnnualIncome" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} /></div>
+          <div><Label htmlFor="desiredIncomePercent">Desired Income (% of final salary)</Label><Controller name="desiredIncomePercent" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} /></div>
           <div><Label htmlFor="drawdownYears">Years in Retirement</Label><Controller name="drawdownYears" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseInt(e.target.value, 10))} />} /></div>
           <div><Label htmlFor="postRetirementROR">Post-Retirement Rate of Return (%)</Label><Controller name="postRetirementROR" control={control} render={({ field }) => <Input type="number" step="0.1" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} /></div>
           
