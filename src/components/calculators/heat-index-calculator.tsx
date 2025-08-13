@@ -1,7 +1,6 @@
 
 "use client";
 
-import { useState, useEffect } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -17,8 +16,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { Progress } from '@/components/ui/progress';
-
 
 const formSchema = z.object({
   temperature: z.number(),
@@ -43,8 +40,6 @@ const getCategory = (heatIndex: number) => {
 }
 
 export default function HeatIndexCalculator() {
-  const [results, setResults] = useState<any>(null);
-
   const { control, watch } = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: { temperature: 85, unit: 'F', humidity: 70 },
@@ -52,21 +47,17 @@ export default function HeatIndexCalculator() {
 
   const formValues = watch();
 
-  useEffect(() => {
-    const { temperature, unit, humidity } = formValues;
-    const tempF = unit === 'F' ? temperature : (temperature * 9/5) + 32;
-
-    if(tempF >= 80 && humidity >= 40) {
-        const heatIndex = calculateHeatIndex(tempF, humidity);
-        setResults({
-            heatIndexF: heatIndex,
-            heatIndexC: (heatIndex - 32) * 5/9,
-            category: getCategory(heatIndex),
-        });
-    } else {
-        setResults(null);
-    }
-  }, [formValues]);
+  let results: { heatIndexF: number; heatIndexC: number; category: { category: string; color: string; }} | null = null;
+  const { temperature, unit, humidity } = formValues;
+  const tempF = unit === 'F' ? temperature : (temperature * 9/5) + 32;
+  if(tempF >= 80 && humidity >= 40) {
+      const heatIndex = calculateHeatIndex(tempF, humidity);
+      results = {
+          heatIndexF: heatIndex,
+          heatIndexC: (heatIndex - 32) * 5/9,
+          category: getCategory(heatIndex),
+      };
+  }
 
   const handleExport = (format: 'txt' | 'csv') => {
     if (!results || !formValues) return;

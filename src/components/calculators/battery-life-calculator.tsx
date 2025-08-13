@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -34,8 +34,6 @@ const efficiencyFactors = {
 }
 
 export default function BatteryLifeCalculator() {
-  const [results, setResults] = useState<any>(null);
-
   const { control, watch } = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: { capacity: 2000, consumption: 150, usageHours: 4, batteryType: 'li-ion' },
@@ -43,21 +41,18 @@ export default function BatteryLifeCalculator() {
   
   const formValues = watch();
 
-  useEffect(() => {
-    const { capacity, consumption, usageHours, batteryType } = formValues;
-    if (capacity > 0 && consumption > 0 && usageHours > 0) {
-        const efficiency = efficiencyFactors[batteryType];
-        const effectiveCapacity = capacity * efficiency;
-        const totalHours = effectiveCapacity / consumption;
-        const totalDays = totalHours / usageHours;
-        setResults({
-            totalHours: totalHours.toFixed(1),
-            totalDays: totalDays.toFixed(1)
-        });
-    } else {
-        setResults(null);
-    }
-  }, [formValues]);
+  let results: { totalHours: string; totalDays: string } | null = null;
+  const { capacity, consumption, usageHours, batteryType } = formValues;
+  if (capacity > 0 && consumption > 0 && usageHours > 0) {
+      const efficiency = efficiencyFactors[batteryType];
+      const effectiveCapacity = capacity * efficiency;
+      const totalHours = effectiveCapacity / consumption;
+      const totalDays = totalHours / usageHours;
+      results = {
+          totalHours: totalHours.toFixed(1),
+          totalDays: totalDays.toFixed(1)
+      };
+  }
 
   const handleExport = (format: 'txt' | 'csv') => {
     if (!results || !formValues) return;

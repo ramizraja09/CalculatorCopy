@@ -1,7 +1,6 @@
 
 "use client";
 
-import { useState, useEffect } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -9,7 +8,6 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Skeleton } from '@/components/ui/skeleton';
 
 const formSchema = z.object({
     distance: z.number().min(0),
@@ -22,44 +20,35 @@ const formSchema = z.object({
 type FormData = z.infer<typeof formSchema>;
 
 export default function PaceCalculator() {
-  const [results, setResults] = useState<any>(null);
-  const [isClient, setIsClient] = useState(false);
   
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
-
   const { control, watch } = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: { distance: 5, distanceUnit: 'km', timeHours: 0, timeMinutes: 25, timeSeconds: 0 },
   });
   
   const formValues = watch();
+  
+  let results: { pacePerMile: string; pacePerKm: string } | null = null;
+  const { distance, distanceUnit, timeHours, timeMinutes, timeSeconds } = formValues;
 
-  useEffect(() => {
-    const { distance, distanceUnit, timeHours, timeMinutes, timeSeconds } = formValues;
-    if (distance > 0 && (timeHours > 0 || timeMinutes > 0 || timeSeconds > 0)) {
-        const totalTimeSeconds = (timeHours * 3600) + (timeMinutes * 60) + timeSeconds;
-        
-        const pacePerMile = distanceUnit === 'miles' ? totalTimeSeconds / distance : (totalTimeSeconds / distance) * 1.60934;
-        const pacePerKm = distanceUnit === 'km' ? totalTimeSeconds / distance : (totalTimeSeconds / distance) / 1.60934;
+  if (distance > 0 && (timeHours > 0 || timeMinutes > 0 || timeSeconds > 0)) {
+      const totalTimeSeconds = (timeHours * 3600) + (timeMinutes * 60) + timeSeconds;
+      
+      const pacePerMile = distanceUnit === 'miles' ? totalTimeSeconds / distance : (totalTimeSeconds / distance) * 1.60934;
+      const pacePerKm = distanceUnit === 'km' ? totalTimeSeconds / distance : (totalTimeSeconds / distance) / 1.60934;
 
-        const formatPace = (seconds: number) => {
-            if (!isFinite(seconds) || seconds <= 0) return '00:00';
-            const min = Math.floor(seconds / 60);
-            const sec = Math.round(seconds % 60);
-            return `${String(min).padStart(2, '0')}:${String(sec).padStart(2, '0')}`;
-        };
+      const formatPace = (seconds: number) => {
+          if (!isFinite(seconds) || seconds <= 0) return '00:00';
+          const min = Math.floor(seconds / 60);
+          const sec = Math.round(seconds % 60);
+          return `${String(min).padStart(2, '0')}:${String(sec).padStart(2, '0')}`;
+      };
 
-        setResults({
-            pacePerMile: formatPace(pacePerMile),
-            pacePerKm: formatPace(pacePerKm),
-        });
-    } else {
-        setResults(null);
-    }
-  }, [formValues]);
-
+      results = {
+          pacePerMile: formatPace(pacePerMile),
+          pacePerKm: formatPace(pacePerKm),
+      };
+  }
 
   return (
     <form onSubmit={(e) => { e.preventDefault(); }} className="grid md:grid-cols-2 gap-8">
@@ -100,12 +89,7 @@ export default function PaceCalculator() {
       {/* Results */}
       <div className="space-y-4">
         <h3 className="text-xl font-semibold">Pace</h3>
-        {!isClient ? (
-           <div className="grid grid-cols-2 gap-4">
-              <Card><CardContent className="p-4 text-center"><Skeleton className="h-12 w-full" /></CardContent></Card>
-              <Card><CardContent className="p-4 text-center"><Skeleton className="h-12 w-full" /></CardContent></Card>
-           </div>
-        ) : results ? (
+        {results ? (
             <div className="grid grid-cols-2 gap-4">
               <Card>
                 <CardContent className="p-4 text-center">

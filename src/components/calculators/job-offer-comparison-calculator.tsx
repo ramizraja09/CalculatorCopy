@@ -55,21 +55,7 @@ export default function JobOfferComparisonCalculator() {
   
   useEffect(() => {
     setIsClient(true);
-    try {
-      const savedData = localStorage.getItem('jobOfferComparisonData');
-      if (savedData) {
-        reset(JSON.parse(savedData));
-      }
-    } catch(e) {
-      console.error("Failed to load data from local storage", e);
-    }
-  }, [reset]);
-
-  useEffect(() => {
-    if(isClient) {
-      localStorage.setItem('jobOfferComparisonData', JSON.stringify(watchedOffers));
-    }
-  }, [watchedOffers, isClient]);
+  }, []);
 
   const formatCurrency = (value: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value);
 
