@@ -120,18 +120,18 @@ export default function LeaseCalculator() {
           <Card>
             <CardHeader><CardTitle>Vehicle & Lease Terms</CardTitle></CardHeader>
             <CardContent className="space-y-4">
-                <div><Label>MSRP ($)</Label><Controller name="msrp" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} /></div>
-                <div><Label>Negotiated Price ($)</Label><Controller name="negotiatedPrice" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} /></div>
-                <div><Label>Lease Term (Months)</Label><Controller name="leaseTerm" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value) || 0)} />} /></div>
-                <div><Label>Residual Value (%)</Label><Controller name="residualValuePercent" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} /></div>
-                <div><Label>Money Factor</Label><Controller name="moneyFactor" control={control} render={({ field }) => <Input type="number" step="0.0001" placeholder="e.g. 0.0025" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} /></div>
+                <div><Label>MSRP ($)</Label><Controller name="msrp" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} /></div>
+                <div><Label>Negotiated Price ($)</Label><Controller name="negotiatedPrice" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} /></div>
+                <div><Label>Lease Term (Months)</Label><Controller name="leaseTerm" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseInt(e.target.value, 10))} />} /></div>
+                <div><Label>Residual Value (%)</Label><Controller name="residualValuePercent" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} /></div>
+                <div><Label>Money Factor</Label><Controller name="moneyFactor" control={control} render={({ field }) => <Input type="number" step="0.0001" placeholder="e.g. 0.0025" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} /></div>
             </CardContent>
           </Card>
           <Card>
              <CardHeader><CardTitle>Payments & Taxes</CardTitle></CardHeader>
              <CardContent className="space-y-4">
-                <div><Label>Down Payment ($)</Label><Controller name="downPayment" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} /></div>
-                <div><Label>Sales Tax Rate (%)</Label><Controller name="salesTaxRate" control={control} render={({ field }) => <Input type="number" step="0.1" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} /></div>
+                <div><Label>Down Payment ($)</Label><Controller name="downPayment" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} /></div>
+                <div><Label>Sales Tax Rate (%)</Label><Controller name="salesTaxRate" control={control} render={({ field }) => <Input type="number" step="0.1" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} /></div>
              </CardContent>
           </Card>
         <div className="flex gap-2">

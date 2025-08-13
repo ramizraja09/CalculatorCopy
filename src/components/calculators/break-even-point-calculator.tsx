@@ -89,19 +89,19 @@ export default function BreakEvenPointCalculator() {
         
         <div>
           <Label htmlFor="fixedCosts">Total Fixed Costs ($)</Label>
-          <Controller name="fixedCosts" control={control} render={({ field }) => <Input id="fixedCosts" type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
+          <Controller name="fixedCosts" control={control} render={({ field }) => <Input id="fixedCosts" type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
           {errors.fixedCosts && <p className="text-destructive text-sm mt-1">{errors.fixedCosts.message}</p>}
         </div>
 
         <div>
           <Label htmlFor="variableCostPerUnit">Variable Cost per Unit ($)</Label>
-          <Controller name="variableCostPerUnit" control={control} render={({ field }) => <Input id="variableCostPerUnit" type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
+          <Controller name="variableCostPerUnit" control={control} render={({ field }) => <Input id="variableCostPerUnit" type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
           {errors.variableCostPerUnit && <p className="text-destructive text-sm mt-1">{errors.variableCostPerUnit.message}</p>}
         </div>
 
         <div>
           <Label htmlFor="sellingPricePerUnit">Selling Price per Unit ($)</Label>
-          <Controller name="sellingPricePerUnit" control={control} render={({ field }) => <Input id="sellingPricePerUnit" type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
+          <Controller name="sellingPricePerUnit" control={control} render={({ field }) => <Input id="sellingPricePerUnit" type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
           {errors.sellingPricePerUnit && <p className="text-destructive text-sm mt-1">{errors.sellingPricePerUnit.message}</p>}
         </div>
         

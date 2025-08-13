@@ -85,9 +85,9 @@ export default function SubscriptionProfitabilityCalculator() {
       {/* Inputs Column */}
       <div className="space-y-4">
         <h3 className="text-xl font-semibold">Subscription Metrics</h3>
-        <div><Label>Monthly Subscription Price ($)</Label><Controller name="subscriptionPrice" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} /></div>
-        <div><Label>Customer Acquisition Cost (CAC) ($)</Label><Controller name="acquisitionCost" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} /></div>
-        <div><Label>Monthly Churn Rate (%)</Label><Controller name="churnRate" control={control} render={({ field }) => <Input type="number" step="0.1" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} /></div>
+        <div><Label>Monthly Subscription Price ($)</Label><Controller name="subscriptionPrice" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} /></div>
+        <div><Label>Customer Acquisition Cost (CAC) ($)</Label><Controller name="acquisitionCost" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} /></div>
+        <div><Label>Monthly Churn Rate (%)</Label><Controller name="churnRate" control={control} render={({ field }) => <Input type="number" step="0.1" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} /></div>
         <div className="flex gap-2">
             <Button type="submit" className="flex-1">Calculate</Button>
             <DropdownMenu>

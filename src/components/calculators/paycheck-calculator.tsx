@@ -117,7 +117,7 @@ export default function PaycheckCalculator() {
         <Card>
           <CardHeader><CardTitle>Income & Filing Status</CardTitle></CardHeader>
           <CardContent className="space-y-4">
-            <div><Label>Gross Annual Income ($)</Label><Controller name="grossIncome" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} /></div>
+            <div><Label>Gross Annual Income ($)</Label><Controller name="grossIncome" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} /></div>
             <div><Label>Filing Status</Label><Controller name="filingStatus" control={control} render={({ field }) => ( <Select onValueChange={field.onChange} defaultValue={field.value}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="single">Single</SelectItem><SelectItem value="married_jointly">Married Filing Jointly</SelectItem></SelectContent></Select> )} /></div>
             <div><Label>Pay Frequency</Label><Controller name="payFrequency" control={control} render={({ field }) => ( <Select onValueChange={field.onChange} defaultValue={field.value}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="annually">Annually</SelectItem><SelectItem value="monthly">Monthly</SelectItem><SelectItem value="bi_weekly">Bi-Weekly</SelectItem><SelectItem value="weekly">Weekly</SelectItem></SelectContent></Select> )} /></div>
           </CardContent>
@@ -125,7 +125,7 @@ export default function PaycheckCalculator() {
          <Card>
           <CardHeader><CardTitle>Deductions</CardTitle></CardHeader>
           <CardContent>
-            <div><Label>Total Annual Pre-Tax Deductions ($)</Label><Controller name="preTaxDeductions" control={control} render={({ field }) => <Input type="number" placeholder="401k, health insurance, etc." {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} /></div>
+            <div><Label>Total Annual Pre-Tax Deductions ($)</Label><Controller name="preTaxDeductions" control={control} render={({ field }) => <Input type="number" placeholder="401k, health insurance, etc." {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} /></div>
           </CardContent>
         </Card>
         <div className="flex gap-2">

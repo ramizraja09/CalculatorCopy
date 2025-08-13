@@ -59,7 +59,7 @@ export default function TipCalculator() {
         
         <div>
           <Label htmlFor="billAmount">Bill Amount ($)</Label>
-          <Controller name="billAmount" control={control} render={({ field }) => <Input id="billAmount" type="number" step="0.01" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
+          <Controller name="billAmount" control={control} render={({ field }) => <Input id="billAmount" type="number" step="0.01" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
           {errors.billAmount && <p className="text-destructive text-sm mt-1">{errors.billAmount.message}</p>}
         </div>
 
@@ -82,7 +82,7 @@ export default function TipCalculator() {
 
         <div>
           <Label htmlFor="numberOfPeople">Split Between (people)</Label>
-          <Controller name="numberOfPeople" control={control} render={({ field }) => <Input id="numberOfPeople" type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value) || 0)} />} />
+          <Controller name="numberOfPeople" control={control} render={({ field }) => <Input id="numberOfPeople" type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseInt(e.target.value, 10))} />} />
           {errors.numberOfPeople && <p className="text-destructive text-sm mt-1">{errors.numberOfPeople.message}</p>}
         </div>
         

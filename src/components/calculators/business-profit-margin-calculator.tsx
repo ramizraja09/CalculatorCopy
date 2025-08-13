@@ -92,18 +92,18 @@ export default function BusinessProfitMarginCalculator() {
         
         <div>
           <Label htmlFor="revenue">Total Revenue ($)</Label>
-          <Controller name="revenue" control={control} render={({ field }) => <Input id="revenue" type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
+          <Controller name="revenue" control={control} render={({ field }) => <Input id="revenue" type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
           {errors.revenue && <p className="text-destructive text-sm mt-1">{errors.revenue.message}</p>}
         </div>
 
         <div>
           <Label htmlFor="cogs">Cost of Goods Sold (COGS) ($)</Label>
-          <Controller name="cogs" control={control} render={({ field }) => <Input id="cogs" type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
+          <Controller name="cogs" control={control} render={({ field }) => <Input id="cogs" type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
         </div>
 
         <div>
           <Label htmlFor="operatingExpenses">Operating Expenses ($)</Label>
-          <Controller name="operatingExpenses" control={control} render={({ field }) => <Input id="operatingExpenses" type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
+          <Controller name="operatingExpenses" control={control} render={({ field }) => <Input id="operatingExpenses" type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
         </div>
         
         <div className="flex gap-2">

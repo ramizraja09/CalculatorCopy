@@ -161,22 +161,22 @@ export default function MortgageCalculatorUK() {
               <AccordionContent className="space-y-4 px-1">
                 <div>
                   <Label>Property Price (£)</Label>
-                  <Controller name="propertyPrice" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
+                  <Controller name="propertyPrice" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
                   {errors.propertyPrice && <p className="text-destructive text-sm mt-1">{errors.propertyPrice.message}</p>}
                 </div>
                 <div>
                   <Label>Deposit (£)</Label>
-                  <Controller name="deposit" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
+                  <Controller name="deposit" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
                   {errors.deposit && <p className="text-destructive text-sm mt-1">{errors.deposit.message}</p>}
                 </div>
                 <div>
                   <Label>Loan Term (years)</Label>
-                  <Controller name="loanTerm" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value) || 0)} />} />
+                  <Controller name="loanTerm" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseInt(e.target.value, 10))} />} />
                   {errors.loanTerm && <p className="text-destructive text-sm mt-1">{errors.loanTerm.message}</p>}
                 </div>
                 <div>
                   <Label>Interest Rate (%)</Label>
-                  <Controller name="interestRate" control={control} render={({ field }) => <Input type="number" step="0.01" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
+                  <Controller name="interestRate" control={control} render={({ field }) => <Input type="number" step="0.01" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
                   {errors.interestRate && <p className="text-destructive text-sm mt-1">{errors.interestRate.message}</p>}
                 </div>
               </AccordionContent>
@@ -292,5 +292,3 @@ export default function MortgageCalculatorUK() {
     </main>
   );
 }
-
-    

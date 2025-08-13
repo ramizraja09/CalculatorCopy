@@ -49,13 +49,13 @@ export default function SalesTaxCalculator() {
         
         <div>
           <Label htmlFor="price">Pre-Tax Price ($)</Label>
-          <Controller name="price" control={control} render={({ field }) => <Input id="price" type="number" step="0.01" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
+          <Controller name="price" control={control} render={({ field }) => <Input id="price" type="number" step="0.01" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
           {errors.price && <p className="text-destructive text-sm mt-1">{errors.price.message}</p>}
         </div>
 
         <div>
           <Label htmlFor="taxRate">Sales Tax Rate (%)</Label>
-          <Controller name="taxRate" control={control} render={({ field }) => <Input id="taxRate" type="number" step="0.01" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
+          <Controller name="taxRate" control={control} render={({ field }) => <Input id="taxRate" type="number" step="0.01" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
           {errors.taxRate && <p className="text-destructive text-sm mt-1">{errors.taxRate.message}</p>}
         </div>
         

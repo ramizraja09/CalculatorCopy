@@ -100,7 +100,7 @@ export default function SalaryCalculator() {
         
         <div>
           <Label htmlFor="grossIncome">Gross Annual Income ($)</Label>
-          <Controller name="grossIncome" control={control} render={({ field }) => <Input id="grossIncome" type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
+          <Controller name="grossIncome" control={control} render={({ field }) => <Input id="grossIncome" type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
           {errors.grossIncome && <p className="text-destructive text-sm mt-1">{errors.grossIncome.message}</p>}
         </div>
 

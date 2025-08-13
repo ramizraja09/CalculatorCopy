@@ -101,11 +101,11 @@ export default function TvmCalculator() {
         </Card>
         
         <div className="grid md:grid-cols-2 gap-4">
-          <div><Label htmlFor="pv">Present Value (PV)</Label><Controller name="pv" control={control} render={({ field }) => <Input id="pv" type="number" {...field} disabled={isInputDisabled('pv')} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} /></div>
-          <div><Label htmlFor="fv">Future Value (FV)</Label><Controller name="fv" control={control} render={({ field }) => <Input id="fv" type="number" {...field} disabled={isInputDisabled('fv')} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} /></div>
-          <div><Label htmlFor="pmt">Payment (PMT)</Label><Controller name="pmt" control={control} render={({ field }) => <Input id="pmt" type="number" {...field} disabled={isInputDisabled('pmt')} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} /></div>
-          <div><Label htmlFor="nper">Number of Periods (Months)</Label><Controller name="nper" control={control} render={({ field }) => <Input id="nper" type="number" {...field} disabled={isInputDisabled('nper')} onChange={e => field.onChange(parseInt(e.target.value) || 0)} />} /></div>
-          <div><Label htmlFor="rate">Annual Rate (%)</Label><Controller name="rate" control={control} render={({ field }) => <Input id="rate" type="number" step="0.01" {...field} disabled={isInputDisabled('rate')} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} /></div>
+          <div><Label htmlFor="pv">Present Value (PV)</Label><Controller name="pv" control={control} render={({ field }) => <Input id="pv" type="number" {...field} disabled={isInputDisabled('pv')} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} /></div>
+          <div><Label htmlFor="fv">Future Value (FV)</Label><Controller name="fv" control={control} render={({ field }) => <Input id="fv" type="number" {...field} disabled={isInputDisabled('fv')} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} /></div>
+          <div><Label htmlFor="pmt">Payment (PMT)</Label><Controller name="pmt" control={control} render={({ field }) => <Input id="pmt" type="number" {...field} disabled={isInputDisabled('pmt')} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} /></div>
+          <div><Label htmlFor="nper">Number of Periods (Months)</Label><Controller name="nper" control={control} render={({ field }) => <Input id="nper" type="number" {...field} disabled={isInputDisabled('nper')} onChange={e => field.onChange(e.target.value === '' ? '' : parseInt(e.target.value, 10))} />} /></div>
+          <div><Label htmlFor="rate">Annual Rate (%)</Label><Controller name="rate" control={control} render={({ field }) => <Input id="rate" type="number" step="0.01" {...field} disabled={isInputDisabled('rate')} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} /></div>
         </div>
         
         <Button type="submit" className="w-full">Calculate</Button>

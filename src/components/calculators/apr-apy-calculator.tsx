@@ -83,7 +83,7 @@ export default function AprApyCalculator() {
     const filename = `apr-apy-conversion.${isApr ? 'txt' : 'csv'}`;
     const initialKey = isApr ? 'APR' : 'APY';
     const resultKey = isApr ? 'APY' : 'APR';
-    const initialValue = isApr ? data.apr : data.apy;
+    const initialValue = isApr ? (data as AprFormData).apr : (data as ApyFormData).apy;
 
     if (isApr) { // Just making simple txt for both for now
       content = `APR to APY Calculation\n\nInputs:\n- ${initialKey}: ${initialValue}%\n- Compounding: ${data.compounding}\n\nResult:\n- Calculated ${resultKey}: ${result.toFixed(4)}%`;
@@ -118,7 +118,7 @@ export default function AprApyCalculator() {
             <form onSubmit={handleAprSubmit(calculateApy)} className="space-y-4">
               <div>
                 <Label>APR (%)</Label>
-                <Controller name="apr" control={aprControl} render={({ field }) => <Input type="number" step="0.01" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
+                <Controller name="apr" control={aprControl} render={({ field }) => <Input type="number" step="0.01" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
               </div>
               <div>
                 <Label>Compounding Frequency</Label>
@@ -166,7 +166,7 @@ export default function AprApyCalculator() {
             <form onSubmit={handleApySubmit(calculateApr)} className="space-y-4">
               <div>
                 <Label>APY (%)</Label>
-                <Controller name="apy" control={apyControl} render={({ field }) => <Input type="number" step="0.01" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
+                <Controller name="apy" control={apyControl} render={({ field }) => <Input type="number" step="0.01" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
               </div>
               <div>
                 <Label>Compounding Frequency</Label>

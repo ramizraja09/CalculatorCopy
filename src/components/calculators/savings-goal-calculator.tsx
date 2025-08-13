@@ -65,22 +65,22 @@ export default function SavingsGoalCalculator() {
         <h3 className="text-xl font-semibold">Your Goal</h3>
         <div>
           <Label htmlFor="savingsGoal">Savings Goal ($)</Label>
-          <Controller name="savingsGoal" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
+          <Controller name="savingsGoal" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
           {errors.savingsGoal && <p className="text-destructive text-sm mt-1">{errors.savingsGoal.message}</p>}
         </div>
          <div>
           <Label htmlFor="currentSavings">Current Savings ($)</Label>
-          <Controller name="currentSavings" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
+          <Controller name="currentSavings" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
            {errors.currentSavings && <p className="text-destructive text-sm mt-1">{errors.currentSavings.message}</p>}
         </div>
         <div>
           <Label htmlFor="yearsToGrow">Time to Save (Years)</Label>
-          <Controller name="yearsToGrow" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value, 10) || 0)} />} />
+          <Controller name="yearsToGrow" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseInt(e.target.value, 10))} />} />
           {errors.yearsToGrow && <p className="text-destructive text-sm mt-1">{errors.yearsToGrow.message}</p>}
         </div>
         <div>
           <Label htmlFor="annualRate">Expected Annual Return (%)</Label>
-          <Controller name="annualRate" control={control} render={({ field }) => <Input type="number" step="0.1" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
+          <Controller name="annualRate" control={control} render={({ field }) => <Input type="number" step="0.1" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
           {errors.annualRate && <p className="text-destructive text-sm mt-1">{errors.annualRate.message}</p>}
         </div>
         <Button type="submit" className="w-full">Calculate</Button>

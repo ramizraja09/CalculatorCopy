@@ -162,9 +162,9 @@ export default function DebtSnowballCalculator() {
           <Card key={field.id} className="p-4 space-y-2 relative">
             <div className="grid grid-cols-2 gap-2">
               <div><Label>Debt Name</Label><Controller name={`debts.${index}.name`} control={control} render={({ field }) => <Input placeholder="e.g., Visa" {...field} />} /></div>
-              <div><Label>Balance ($)</Label><Controller name={`debts.${index}.balance`} control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} /></div>
-              <div><Label>APR (%)</Label><Controller name={`debts.${index}.apr`} control={control} render={({ field }) => <Input type="number" step="0.1" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} /></div>
-              <div><Label>Min. Payment ($)</Label><Controller name={`debts.${index}.minPayment`} control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} /></div>
+              <div><Label>Balance ($)</Label><Controller name={`debts.${index}.balance`} control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} /></div>
+              <div><Label>APR (%)</Label><Controller name={`debts.${index}.apr`} control={control} render={({ field }) => <Input type="number" step="0.1" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} /></div>
+              <div><Label>Min. Payment ($)</Label><Controller name={`debts.${index}.minPayment`} control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} /></div>
             </div>
              <Button type="button" variant="ghost" size="icon" className="absolute top-1 right-1" onClick={() => remove(index)}><Trash className="h-4 w-4" /></Button>
           </Card>
@@ -175,7 +175,7 @@ export default function DebtSnowballCalculator() {
         <h3 className="text-xl font-semibold pt-4">Extra Monthly Payment</h3>
         <div>
           <Label>Amount ($)</Label>
-          <Controller name="extraPayment" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
+          <Controller name="extraPayment" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
         </div>
         <div className="flex gap-2">
             <Button type="submit" className="flex-1">Create Payoff Plan</Button>

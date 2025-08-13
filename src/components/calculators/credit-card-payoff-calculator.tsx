@@ -180,13 +180,13 @@ export default function CreditCardPayoffCalculator() {
         <h3 className="text-xl font-semibold">Inputs</h3>
         <div>
           <Label htmlFor="balance">Credit Card Balance ($)</Label>
-          <Controller name="balance" control={control} render={({ field }) => <Input id="balance" type="number" step="0.01" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
+          <Controller name="balance" control={control} render={({ field }) => <Input id="balance" type="number" step="0.01" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
           {errors.balance && <p className="text-destructive text-sm mt-1">{errors.balance.message}</p>}
         </div>
 
         <div>
           <Label htmlFor="apr">Interest Rate (APR %)</Label>
-          <Controller name="apr" control={control} render={({ field }) => <Input id="apr" type="number" step="0.01" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
+          <Controller name="apr" control={control} render={({ field }) => <Input id="apr" type="number" step="0.01" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
           {errors.apr && <p className="text-destructive text-sm mt-1">{errors.apr.message}</p>}
         </div>
         
@@ -213,14 +213,14 @@ export default function CreditCardPayoffCalculator() {
         {payoffStrategy === 'fixedPayment' && (
             <div>
               <Label htmlFor="monthlyPayment">Monthly Payment ($)</Label>
-              <Controller name="monthlyPayment" control={control} render={({ field }) => <Input id="monthlyPayment" type="number" step="10" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
+              <Controller name="monthlyPayment" control={control} render={({ field }) => <Input id="monthlyPayment" type="number" step="10" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
               {errors.monthlyPayment && <p className="text-destructive text-sm mt-1">{errors.monthlyPayment.message}</p>}
             </div>
         )}
         {payoffStrategy === 'targetDate' && (
             <div>
               <Label htmlFor="payoffMonths">Payoff in (months)</Label>
-              <Controller name="payoffMonths" control={control} render={({ field }) => <Input id="payoffMonths" type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value) || 0)} />} />
+              <Controller name="payoffMonths" control={control} render={({ field }) => <Input id="payoffMonths" type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseInt(e.target.value, 10))} />} />
               {errors.payoffMonths && <p className="text-destructive text-sm mt-1">{errors.payoffMonths.message}</p>}
             </div>
         )}

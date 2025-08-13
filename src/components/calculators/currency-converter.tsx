@@ -108,7 +108,7 @@ export default function CurrencyConverter() {
             <CardContent className="space-y-4">
                 <div>
                     <Label htmlFor="amount">Amount</Label>
-                    <Controller name="amount" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
+                    <Controller name="amount" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
                 </div>
                 <div className="flex items-center gap-4">
                     <div className="flex-1">

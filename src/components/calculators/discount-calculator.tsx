@@ -83,13 +83,13 @@ export default function DiscountCalculator() {
         
         <div>
           <Label htmlFor="originalPrice">Original Price ($)</Label>
-          <Controller name="originalPrice" control={control} render={({ field }) => <Input id="originalPrice" type="number" step="0.01" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
+          <Controller name="originalPrice" control={control} render={({ field }) => <Input id="originalPrice" type="number" step="0.01" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
           {errors.originalPrice && <p className="text-destructive text-sm mt-1">{errors.originalPrice.message}</p>}
         </div>
 
         <div>
           <Label htmlFor="discountPercentage">Discount Percentage (%)</Label>
-          <Controller name="discountPercentage" control={control} render={({ field }) => <Input id="discountPercentage" type="number" step="1" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
+          <Controller name="discountPercentage" control={control} render={({ field }) => <Input id="discountPercentage" type="number" step="1" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
           {errors.discountPercentage && <p className="text-destructive text-sm mt-1">{errors.discountPercentage.message}</p>}
         </div>
         

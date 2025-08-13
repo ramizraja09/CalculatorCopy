@@ -68,19 +68,19 @@ export default function RoiCalculator() {
         
         <div>
           <Label htmlFor="initialInvestment">Initial Investment ($)</Label>
-          <Controller name="initialInvestment" control={control} render={({ field }) => <Input id="initialInvestment" type="number" step="0.01" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
+          <Controller name="initialInvestment" control={control} render={({ field }) => <Input id="initialInvestment" type="number" step="0.01" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
           {errors.initialInvestment && <p className="text-destructive text-sm mt-1">{errors.initialInvestment.message}</p>}
         </div>
 
         <div>
           <Label htmlFor="finalValue">Final Value ($)</Label>
-          <Controller name="finalValue" control={control} render={({ field }) => <Input id="finalValue" type="number" step="0.01" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
+          <Controller name="finalValue" control={control} render={({ field }) => <Input id="finalValue" type="number" step="0.01" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
           {errors.finalValue && <p className="text-destructive text-sm mt-1">{errors.finalValue.message}</p>}
         </div>
 
         <div>
           <Label htmlFor="investmentLength">Investment Length (years)</Label>
-          <Controller name="investmentLength" control={control} render={({ field }) => <Input id="investmentLength" type="number" step="0.1" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
+          <Controller name="investmentLength" control={control} render={({ field }) => <Input id="investmentLength" type="number" step="0.1" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
           {errors.investmentLength && <p className="text-destructive text-sm mt-1">{errors.investmentLength.message}</p>}
         </div>
         

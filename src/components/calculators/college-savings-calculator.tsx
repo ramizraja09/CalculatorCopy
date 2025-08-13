@@ -106,18 +106,18 @@ export default function CollegeSavingsCalculator() {
         <Card><CardHeader><CardTitle>Student & College</CardTitle></CardHeader>
             <CardContent className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
-                    <div><Label>Child's Current Age</Label><Controller name="currentAge" control={control} render={({ field }) => <Input type="number" placeholder="5" {...field} onChange={e => field.onChange(parseInt(e.target.value) || 0)} />} /></div>
-                    <div><Label>Age at College</Label><Controller name="collegeAge" control={control} render={({ field }) => <Input type="number" placeholder="18" {...field} onChange={e => field.onChange(parseInt(e.target.value) || 0)} />} /></div>
+                    <div><Label>Child's Current Age</Label><Controller name="currentAge" control={control} render={({ field }) => <Input type="number" placeholder="5" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseInt(e.target.value, 10))} />} /></div>
+                    <div><Label>Age at College</Label><Controller name="collegeAge" control={control} render={({ field }) => <Input type="number" placeholder="18" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseInt(e.target.value, 10))} />} /></div>
                 </div>
-                 <div><Label>Annual College Cost (today's dollars)</Label><Controller name="annualCost" control={control} render={({ field }) => <Input type="number" placeholder="25000" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} /></div>
-                 <div><Label>Years in College</Label><Controller name="yearsInCollege" control={control} render={({ field }) => <Input type="number" placeholder="4" {...field} onChange={e => field.onChange(parseInt(e.target.value) || 0)} />} /></div>
+                 <div><Label>Annual College Cost (today's dollars)</Label><Controller name="annualCost" control={control} render={({ field }) => <Input type="number" placeholder="25000" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} /></div>
+                 <div><Label>Years in College</Label><Controller name="yearsInCollege" control={control} render={({ field }) => <Input type="number" placeholder="4" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseInt(e.target.value, 10))} />} /></div>
             </CardContent>
         </Card>
         <Card><CardHeader><CardTitle>Savings & Growth</CardTitle></CardHeader>
             <CardContent className="space-y-4">
-                <div><Label>Current College Savings ($)</Label><Controller name="currentSavings" control={control} render={({ field }) => <Input type="number" placeholder="10000" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} /></div>
-                <div><Label>Estimated Annual Return (%)</Label><Controller name="annualReturn" control={control} render={({ field }) => <Input type="number" step="0.1" placeholder="6" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} /></div>
-                <div><Label>College Cost Inflation Rate (%)</Label><Controller name="costIncreaseRate" control={control} render={({ field }) => <Input type="number" step="0.1" placeholder="5" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} /></div>
+                <div><Label>Current College Savings ($)</Label><Controller name="currentSavings" control={control} render={({ field }) => <Input type="number" placeholder="10000" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} /></div>
+                <div><Label>Estimated Annual Return (%)</Label><Controller name="annualReturn" control={control} render={({ field }) => <Input type="number" step="0.1" placeholder="6" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} /></div>
+                <div><Label>College Cost Inflation Rate (%)</Label><Controller name="costIncreaseRate" control={control} render={({ field }) => <Input type="number" step="0.1" placeholder="5" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} /></div>
             </CardContent>
         </Card>
         <div className="flex gap-2">

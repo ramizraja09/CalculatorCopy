@@ -91,17 +91,17 @@ export default function StartupRunwayCalculator() {
         
         <div>
           <Label htmlFor="cashBalance">Current Cash Balance ($)</Label>
-          <Controller name="cashBalance" control={control} render={({ field }) => <Input id="cashBalance" type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
+          <Controller name="cashBalance" control={control} render={({ field }) => <Input id="cashBalance" type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
         </div>
 
         <div>
           <Label htmlFor="monthlyRevenue">Monthly Revenue ($)</Label>
-          <Controller name="monthlyRevenue" control={control} render={({ field }) => <Input id="monthlyRevenue" type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
+          <Controller name="monthlyRevenue" control={control} render={({ field }) => <Input id="monthlyRevenue" type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
         </div>
 
         <div>
           <Label htmlFor="monthlyExpenses">Monthly Operating Expenses ($)</Label>
-          <Controller name="monthlyExpenses" control={control} render={({ field }) => <Input id="monthlyExpenses" type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
+          <Controller name="monthlyExpenses" control={control} render={({ field }) => <Input id="monthlyExpenses" type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
           {errors.monthlyExpenses && <p className="text-destructive text-sm mt-1">{errors.monthlyExpenses.message}</p>}
         </div>
         
