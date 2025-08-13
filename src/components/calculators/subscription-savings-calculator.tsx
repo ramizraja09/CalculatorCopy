@@ -81,9 +81,9 @@ export default function SubscriptionSavingsCalculator() {
     <form onSubmit={handleSubmit(calculateSavings)} className="grid md:grid-cols-2 gap-8">
       <div className="space-y-4">
         <h3 className="text-xl font-semibold">Subscription & Usage Details</h3>
-        <div><Label>Subscription Monthly Cost ($)</Label><Controller name="subscriptionCost" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} /></div>
-        <div><Label>Usage Frequency (per month)</Label><Controller name="usageFrequency" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value) || 0)} />} /></div>
-        <div><Label>Pay-Per-Use Price ($)</Label><Controller name="payPerUsePrice" control={control} render={({ field }) => <Input type="number" step="0.01" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} /></div>
+        <div><Label>Subscription Monthly Cost ($)</Label><Controller name="subscriptionCost" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} /></div>
+        <div><Label>Usage Frequency (per month)</Label><Controller name="usageFrequency" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseInt(e.target.value, 10))} />} /></div>
+        <div><Label>Pay-Per-Use Price ($)</Label><Controller name="payPerUsePrice" control={control} render={({ field }) => <Input type="number" step="0.01" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} /></div>
         <div className="flex gap-2">
             <Button type="submit" className="flex-1">Calculate Savings</Button>
             <DropdownMenu>

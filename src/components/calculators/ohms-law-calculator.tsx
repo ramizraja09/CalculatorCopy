@@ -90,9 +90,9 @@ export default function OhmsLawCalculator() {
                 <Label className="p-4 border rounded-md text-center peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary"><RadioGroupItem value="resistance" className="mr-2"/>Resistance (R)</Label>
             </RadioGroup>
         )}/>
-        <div><Label>Voltage (V)</Label><Controller name="voltage" control={control} render={({ field }) => <Input type="number" disabled={solveFor === 'voltage'} {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} /></div>
-        <div><Label>Current (A)</Label><Controller name="current" control={control} render={({ field }) => <Input type="number" disabled={solveFor === 'current'} {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} /></div>
-        <div><Label>Resistance (Ω)</Label><Controller name="resistance" control={control} render={({ field }) => <Input type="number" disabled={solveFor === 'resistance'} {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} /></div>
+        <div><Label>Voltage (V)</Label><Controller name="voltage" control={control} render={({ field }) => <Input type="number" disabled={solveFor === 'voltage'} {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} /></div>
+        <div><Label>Current (A)</Label><Controller name="current" control={control} render={({ field }) => <Input type="number" disabled={solveFor === 'current'} {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} /></div>
+        <div><Label>Resistance (Ω)</Label><Controller name="resistance" control={control} render={({ field }) => <Input type="number" disabled={solveFor === 'resistance'} {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} /></div>
         <div className="flex gap-2">
             <Button type="submit" className="flex-1">Calculate</Button>
             <DropdownMenu>

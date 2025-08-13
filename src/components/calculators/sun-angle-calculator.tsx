@@ -129,13 +129,13 @@ export default function SunAngleCalculator() {
         
         <div>
           <Label htmlFor="latitude">Latitude (-90 to 90)</Label>
-          <Controller name="latitude" control={control} render={({ field }) => <Input id="latitude" type="number" step="0.0001" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
+          <Controller name="latitude" control={control} render={({ field }) => <Input id="latitude" type="number" step="0.0001" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
           {errors.latitude && <p className="text-destructive text-sm mt-1">{errors.latitude.message}</p>}
         </div>
 
         <div>
           <Label htmlFor="longitude">Longitude (-180 to 180)</Label>
-          <Controller name="longitude" control={control} render={({ field }) => <Input id="longitude" type="number" step="0.0001" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
+          <Controller name="longitude" control={control} render={({ field }) => <Input id="longitude" type="number" step="0.0001" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
           {errors.longitude && <p className="text-destructive text-sm mt-1">{errors.longitude.message}</p>}
         </div>
 

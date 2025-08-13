@@ -83,19 +83,19 @@ export default function ConcreteCalculator() {
         
         <div>
           <Label htmlFor="length">Length (feet)</Label>
-          <Controller name="length" control={control} render={({ field }) => <Input id="length" type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
+          <Controller name="length" control={control} render={({ field }) => <Input id="length" type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
           {errors.length && <p className="text-destructive text-sm mt-1">{errors.length.message}</p>}
         </div>
 
         <div>
           <Label htmlFor="width">Width (feet)</Label>
-          <Controller name="width" control={control} render={({ field }) => <Input id="width" type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
+          <Controller name="width" control={control} render={({ field }) => <Input id="width" type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
           {errors.width && <p className="text-destructive text-sm mt-1">{errors.width.message}</p>}
         </div>
 
         <div>
           <Label htmlFor="thickness">Thickness (inches)</Label>
-          <Controller name="thickness" control={control} render={({ field }) => <Input id="thickness" type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
+          <Controller name="thickness" control={control} render={({ field }) => <Input id="thickness" type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
           {errors.thickness && <p className="text-destructive text-sm mt-1">{errors.thickness.message}</p>}
         </div>
         

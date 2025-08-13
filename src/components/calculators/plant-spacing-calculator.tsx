@@ -81,19 +81,19 @@ export default function PlantSpacingCalculator() {
         
         <div>
           <Label htmlFor="areaLength">Garden Length (feet)</Label>
-          <Controller name="areaLength" control={control} render={({ field }) => <Input id="areaLength" type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
+          <Controller name="areaLength" control={control} render={({ field }) => <Input id="areaLength" type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
           {errors.areaLength && <p className="text-destructive text-sm mt-1">{errors.areaLength.message}</p>}
         </div>
 
         <div>
           <Label htmlFor="areaWidth">Garden Width (feet)</Label>
-          <Controller name="areaWidth" control={control} render={({ field }) => <Input id="areaWidth" type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
+          <Controller name="areaWidth" control={control} render={({ field }) => <Input id="areaWidth" type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
           {errors.areaWidth && <p className="text-destructive text-sm mt-1">{errors.areaWidth.message}</p>}
         </div>
 
         <div>
           <Label htmlFor="spacing">Spacing Between Plants (inches)</Label>
-          <Controller name="spacing" control={control} render={({ field }) => <Input id="spacing" type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
+          <Controller name="spacing" control={control} render={({ field }) => <Input id="spacing" type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
           {errors.spacing && <p className="text-destructive text-sm mt-1">{errors.spacing.message}</p>}
         </div>
         

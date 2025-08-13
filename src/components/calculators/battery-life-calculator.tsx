@@ -82,9 +82,9 @@ export default function BatteryLifeCalculator() {
     <form onSubmit={(e) => e.preventDefault()} className="grid md:grid-cols-2 gap-8">
       <div className="space-y-4">
         <h3 className="text-xl font-semibold">Device & Battery Details</h3>
-        <div><Label>Battery Capacity (mAh)</Label><Controller name="capacity" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value) || 0)} />} /></div>
-        <div><Label>Device Consumption (mA)</Label><Controller name="consumption" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value) || 0)} />} /></div>
-        <div><Label>Usage (Hours per Day)</Label><Controller name="usageHours" control={control} render={({ field }) => <Input type="number" step="0.5" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} /></div>
+        <div><Label>Battery Capacity (mAh)</Label><Controller name="capacity" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseInt(e.target.value, 10))} />} /></div>
+        <div><Label>Device Consumption (mA)</Label><Controller name="consumption" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseInt(e.target.value, 10))} />} /></div>
+        <div><Label>Usage (Hours per Day)</Label><Controller name="usageHours" control={control} render={({ field }) => <Input type="number" step="0.5" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} /></div>
         <div>
             <Label>Battery Type</Label>
             <Controller name="batteryType" control={control} render={({ field }) => (

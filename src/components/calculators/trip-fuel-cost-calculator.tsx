@@ -84,19 +84,19 @@ export default function TripFuelCostCalculator() {
         
         <div>
           <Label htmlFor="distance">Trip Distance (km)</Label>
-          <Controller name="distance" control={control} render={({ field }) => <Input id="distance" type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
+          <Controller name="distance" control={control} render={({ field }) => <Input id="distance" type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
           {errors.distance && <p className="text-destructive text-sm mt-1">{errors.distance.message}</p>}
         </div>
 
         <div>
           <Label htmlFor="fuelEfficiency">Vehicle Fuel Efficiency (km/L)</Label>
-          <Controller name="fuelEfficiency" control={control} render={({ field }) => <Input id="fuelEfficiency" type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
+          <Controller name="fuelEfficiency" control={control} render={({ field }) => <Input id="fuelEfficiency" type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
           {errors.fuelEfficiency && <p className="text-destructive text-sm mt-1">{errors.fuelEfficiency.message}</p>}
         </div>
 
         <div>
           <Label htmlFor="fuelPrice">Price Per Liter ($)</Label>
-          <Controller name="fuelPrice" control={control} render={({ field }) => <Input id="fuelPrice" type="number" step="0.01" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
+          <Controller name="fuelPrice" control={control} render={({ field }) => <Input id="fuelPrice" type="number" step="0.01" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
           {errors.fuelPrice && <p className="text-destructive text-sm mt-1">{errors.fuelPrice.message}</p>}
         </div>
         

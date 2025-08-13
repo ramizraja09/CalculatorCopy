@@ -16,6 +16,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { Progress } from '@/components/ui/progress';
+
 
 const formSchema = z.object({
   temperature: z.number(),
@@ -90,7 +92,7 @@ export default function HeatIndexCalculator() {
         <div>
           <Label>Air Temperature</Label>
           <div className="flex gap-2">
-            <Controller name="temperature" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
+            <Controller name="temperature" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
             <Controller name="unit" control={control} render={({ field }) => (
               <RadioGroup onValueChange={field.onChange} value={field.value} className="grid grid-cols-2 gap-2 items-center">
                   <Label className="px-3 py-2 border rounded-md text-center text-sm peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary"><RadioGroupItem value="F" className="sr-only"/>°F</Label>
@@ -101,7 +103,7 @@ export default function HeatIndexCalculator() {
         </div>
         <div>
             <Label>Relative Humidity (%)</Label>
-            <Controller name="humidity" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value) || 0)} />} />
+            <Controller name="humidity" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseInt(e.target.value, 10))} />} />
         </div>
          <DropdownMenu>
             <DropdownMenuTrigger asChild>

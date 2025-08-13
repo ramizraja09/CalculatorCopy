@@ -92,11 +92,11 @@ export default function DistanceCalculator() {
         <div className="flex gap-2">
             <div>
               <Label htmlFor="lat1">Lat 1</Label>
-              <Controller name="lat1" control={control} render={({ field }) => <Input type="number" step="0.0001" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
+              <Controller name="lat1" control={control} render={({ field }) => <Input type="number" step="0.0001" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
             </div>
             <div>
               <Label htmlFor="lon1">Lon 1</Label>
-              <Controller name="lon1" control={control} render={({ field }) => <Input type="number" step="0.0001" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
+              <Controller name="lon1" control={control} render={({ field }) => <Input type="number" step="0.0001" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
             </div>
         </div>
         {(errors.lat1 || errors.lon1) && <p className="text-destructive text-sm mt-1">Please enter valid coordinates for Point 1.</p>}
@@ -105,11 +105,11 @@ export default function DistanceCalculator() {
         <div className="flex gap-2">
             <div>
               <Label htmlFor="lat2">Lat 2</Label>
-              <Controller name="lat2" control={control} render={({ field }) => <Input type="number" step="0.0001" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
+              <Controller name="lat2" control={control} render={({ field }) => <Input type="number" step="0.0001" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
             </div>
             <div>
               <Label htmlFor="lon2">Lon 2</Label>
-              <Controller name="lon2" control={control} render={({ field }) => <Input type="number" step="0.0001" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
+              <Controller name="lon2" control={control} render={({ field }) => <Input type="number" step="0.0001" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
             </div>
         </div>
         {(errors.lat2 || errors.lon2) && <p className="text-destructive text-sm mt-1">Please enter valid coordinates for Point 2.</p>}

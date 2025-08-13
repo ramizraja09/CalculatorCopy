@@ -85,12 +85,12 @@ export default function PetCostCalculator() {
     <form onSubmit={handleSubmit(calculateCost)} className="grid md:grid-cols-2 gap-8">
       <div className="space-y-4">
         <h3 className="text-xl font-semibold">Pet Expenses</h3>
-        <div><Label>One-Time Costs ($)</Label><Controller name="oneTimeCosts" control={control} render={({ field }) => <Input type="number" placeholder="Adoption, supplies, etc." {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} /></div>
-        <div><Label>Monthly Food Cost ($)</Label><Controller name="monthlyFoodCost" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} /></div>
-        <div><Label>Annual Vet Bills ($)</Label><Controller name="annualVetBills" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} /></div>
-        <div><Label>Monthly Grooming ($)</Label><Controller name="monthlyGrooming" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} /></div>
-        <div><Label>Monthly Toys/Accessories ($)</Label><Controller name="monthlyToys" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} /></div>
-        <div><Label>Estimated Lifespan (years)</Label><Controller name="petLifespan" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value) || 0)} />} /></div>
+        <div><Label>One-Time Costs ($)</Label><Controller name="oneTimeCosts" control={control} render={({ field }) => <Input type="number" placeholder="Adoption, supplies, etc." {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} /></div>
+        <div><Label>Monthly Food Cost ($)</Label><Controller name="monthlyFoodCost" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} /></div>
+        <div><Label>Annual Vet Bills ($)</Label><Controller name="annualVetBills" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} /></div>
+        <div><Label>Monthly Grooming ($)</Label><Controller name="monthlyGrooming" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} /></div>
+        <div><Label>Monthly Toys/Accessories ($)</Label><Controller name="monthlyToys" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} /></div>
+        <div><Label>Estimated Lifespan (years)</Label><Controller name="petLifespan" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseInt(e.target.value, 10))} />} /></div>
         <div className="flex gap-2">
             <Button type="submit" className="flex-1">Calculate Cost</Button>
             <DropdownMenu>

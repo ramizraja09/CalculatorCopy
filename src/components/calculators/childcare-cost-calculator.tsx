@@ -80,9 +80,9 @@ export default function ChildcareCostCalculator() {
     <form onSubmit={handleSubmit(calculateCost)} className="grid md:grid-cols-2 gap-8">
       <div className="space-y-4">
         <h3 className="text-xl font-semibold">Childcare Details</h3>
-        <div><Label>Monthly Cost per Child ($)</Label><Controller name="monthlyCost" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} /></div>
-        <div><Label>Years of Care Needed</Label><Controller name="yearsNeeded" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value) || 0)} />} /></div>
-        <div><Label>Number of Children</Label><Controller name="numberOfChildren" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value) || 0)} />} /></div>
+        <div><Label>Monthly Cost per Child ($)</Label><Controller name="monthlyCost" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} /></div>
+        <div><Label>Years of Care Needed</Label><Controller name="yearsNeeded" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseInt(e.target.value, 10))} />} /></div>
+        <div><Label>Number of Children</Label><Controller name="numberOfChildren" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseInt(e.target.value, 10))} />} /></div>
         <div className="flex gap-2">
             <Button type="submit" className="flex-1">Calculate Total Cost</Button>
             <DropdownMenu>

@@ -110,12 +110,12 @@ export default function WeddingBudgetCalculator() {
         <Card>
           <CardHeader><CardTitle>Wedding Budget & Expenses</CardTitle></CardHeader>
           <CardContent className="space-y-4">
-            <div><Label>Total Wedding Budget ($)</Label><Controller name="totalBudget" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} /></div>
+            <div><Label>Total Wedding Budget ($)</Label><Controller name="totalBudget" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} /></div>
             <h4 className="font-semibold pt-4">Expenses</h4>
             {fields.map((field, index) => (
               <div key={field.id} className="flex gap-2 items-center">
                 <Controller name={`expenses.${index}.name`} control={control} render={({ field }) => <Input placeholder="Expense Name" {...field} />} />
-                <Controller name={`expenses.${index}.cost`} control={control} render={({ field }) => <Input type="number" placeholder="Cost ($)" className="w-32" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
+                <Controller name={`expenses.${index}.cost`} control={control} render={({ field }) => <Input type="number" placeholder="Cost ($)" className="w-32" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
                 <Button type="button" variant="ghost" size="icon" onClick={() => remove(index)}><Trash className="h-4 w-4" /></Button>
               </div>
             ))}

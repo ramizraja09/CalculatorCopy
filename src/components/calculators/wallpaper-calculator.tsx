@@ -73,12 +73,12 @@ export default function WallpaperCalculator() {
       {/* Inputs */}
       <div className="space-y-4">
         <h3 className="text-xl font-semibold">Room Dimensions (feet)</h3>
-        <div><Label>Length</Label><Controller name="roomLength" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} /></div>
-        <div><Label>Width</Label><Controller name="roomWidth" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} /></div>
-        <div><Label>Height</Label><Controller name="roomHeight" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} /></div>
+        <div><Label>Length</Label><Controller name="roomLength" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} /></div>
+        <div><Label>Width</Label><Controller name="roomWidth" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} /></div>
+        <div><Label>Height</Label><Controller name="roomHeight" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} /></div>
         <h3 className="text-xl font-semibold">Wallpaper Roll (feet)</h3>
-        <div><Label>Width</Label><Controller name="rollWidth" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} /></div>
-        <div><Label>Length</Label><Controller name="rollLength" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} /></div>
+        <div><Label>Width</Label><Controller name="rollWidth" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} /></div>
+        <div><Label>Length</Label><Controller name="rollLength" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} /></div>
         <div className="flex gap-2">
             <Button type="submit" className="flex-1">Calculate</Button>
             <DropdownMenu>

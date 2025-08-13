@@ -83,13 +83,13 @@ export default function TravelTimeCalculator() {
         
         <div>
           <Label htmlFor="distance">Distance (miles)</Label>
-          <Controller name="distance" control={control} render={({ field }) => <Input id="distance" type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
+          <Controller name="distance" control={control} render={({ field }) => <Input id="distance" type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
           {errors.distance && <p className="text-destructive text-sm mt-1">{errors.distance.message}</p>}
         </div>
 
         <div>
           <Label htmlFor="speed">Average Speed (mph)</Label>
-          <Controller name="speed" control={control} render={({ field }) => <Input id="speed" type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
+          <Controller name="speed" control={control} render={({ field }) => <Input id="speed" type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
           {errors.speed && <p className="text-destructive text-sm mt-1">{errors.speed.message}</p>}
         </div>
         

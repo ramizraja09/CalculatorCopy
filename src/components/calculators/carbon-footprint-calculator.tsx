@@ -99,7 +99,7 @@ export default function CarbonFootprintCalculator() {
             <CardContent className="space-y-4">
                 <div>
                     <Label>Distance (km)</Label>
-                    <Controller name="distance" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
+                    <Controller name="distance" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
                 </div>
                 <div>
                     <Label>Primary Vehicle Type</Label>
@@ -115,8 +115,8 @@ export default function CarbonFootprintCalculator() {
         <Card>
             <CardHeader><CardTitle>Household & Diet</CardTitle></CardHeader>
             <CardContent className="space-y-4">
-                <div><Label>Annual Home Energy (kWh)</Label><Controller name="energyConsumption" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} /></div>
-                <div><Label>Monthly Meat Consumption (kg)</Label><Controller name="meatConsumption" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} /></div>
+                <div><Label>Annual Home Energy (kWh)</Label><Controller name="energyConsumption" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} /></div>
+                <div><Label>Monthly Meat Consumption (kg)</Label><Controller name="meatConsumption" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} /></div>
             </CardContent>
         </Card>
         <div className="flex gap-2">

@@ -115,7 +115,7 @@ export default function CostOfLivingCalculator() {
 
         <div>
           <Label htmlFor="currentSalary">Current Annual Salary ($)</Label>
-          <Controller name="currentSalary" control={control} render={({ field }) => <Input id="currentSalary" type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
+          <Controller name="currentSalary" control={control} render={({ field }) => <Input id="currentSalary" type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
           {errors.currentSalary && <p className="text-destructive text-sm mt-1">{errors.currentSalary.message}</p>}
         </div>
 

@@ -71,10 +71,10 @@ export default function DilutionCalculator() {
       {/* Inputs */}
       <div className="space-y-4">
         <h3 className="text-xl font-semibold">Stock Solution</h3>
-        <div><Label>Concentration (C1)</Label><Controller name="c1" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} /></div>
-        <div><Label>Volume (V1)</Label><Controller name="v1" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} /></div>
+        <div><Label>Concentration (C1)</Label><Controller name="c1" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} /></div>
+        <div><Label>Volume (V1)</Label><Controller name="v1" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} /></div>
         <h3 className="text-xl font-semibold">Final Solution</h3>
-        <div><Label>Concentration (C2)</Label><Controller name="c2" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} /></div>
+        <div><Label>Concentration (C2)</Label><Controller name="c2" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} /></div>
         <div className="flex gap-2">
             <Button type="submit" className="flex-1">Calculate</Button>
             <DropdownMenu>

@@ -83,19 +83,19 @@ export default function PaintCalculator() {
         
         <div>
           <Label htmlFor="wallArea">Total Wall Area to Paint (sq. ft.)</Label>
-          <Controller name="wallArea" control={control} render={({ field }) => <Input id="wallArea" type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
+          <Controller name="wallArea" control={control} render={({ field }) => <Input id="wallArea" type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
           {errors.wallArea && <p className="text-destructive text-sm mt-1">{errors.wallArea.message}</p>}
         </div>
 
         <div>
           <Label htmlFor="coats">Number of Coats</Label>
-          <Controller name="coats" control={control} render={({ field }) => <Input id="coats" type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value) || 0)} />} />
+          <Controller name="coats" control={control} render={({ field }) => <Input id="coats" type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseInt(e.target.value, 10))} />} />
           {errors.coats && <p className="text-destructive text-sm mt-1">{errors.coats.message}</p>}
         </div>
 
         <div>
           <Label htmlFor="coveragePerGallon">Paint Coverage (sq. ft. per gallon)</Label>
-          <Controller name="coveragePerGallon" control={control} render={({ field }) => <Input id="coveragePerGallon" type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
+          <Controller name="coveragePerGallon" control={control} render={({ field }) => <Input id="coveragePerGallon" type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
           {errors.coveragePerGallon && <p className="text-destructive text-sm mt-1">{errors.coveragePerGallon.message}</p>}
         </div>
         
