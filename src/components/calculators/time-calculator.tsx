@@ -79,9 +79,9 @@ export default function TimeCalculator() {
       <div className="flex flex-col items-center gap-4">
         {/* Time 1 */}
         <div className="grid grid-cols-3 gap-2 w-full max-w-sm">
-            <div><Label className="text-xs">Hours</Label><Controller name="h1" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value) || 0)} />} /></div>
-            <div><Label className="text-xs">Minutes</Label><Controller name="m1" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value) || 0)} />} /></div>
-            <div><Label className="text-xs">Seconds</Label><Controller name="s1" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value) || 0)} />} /></div>
+            <div><Label className="text-xs">Hours</Label><Controller name="h1" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseInt(e.target.value, 10))} />} /></div>
+            <div><Label className="text-xs">Minutes</Label><Controller name="m1" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseInt(e.target.value, 10))} />} /></div>
+            <div><Label className="text-xs">Seconds</Label><Controller name="s1" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseInt(e.target.value, 10))} />} /></div>
         </div>
         {/* Operator */}
         <Controller name="op" control={control} render={({ field }) => (
@@ -92,9 +92,9 @@ export default function TimeCalculator() {
         )}/>
         {/* Time 2 */}
         <div className="grid grid-cols-3 gap-2 w-full max-w-sm">
-            <div><Label className="text-xs">Hours</Label><Controller name="h2" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value) || 0)} />} /></div>
-            <div><Label className="text-xs">Minutes</Label><Controller name="m2" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value) || 0)} />} /></div>
-            <div><Label className="text-xs">Seconds</Label><Controller name="s2" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value) || 0)} />} /></div>
+            <div><Label className="text-xs">Hours</Label><Controller name="h2" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseInt(e.target.value, 10))} />} /></div>
+            <div><Label className="text-xs">Minutes</Label><Controller name="m2" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseInt(e.target.value, 10))} />} /></div>
+            <div><Label className="text-xs">Seconds</Label><Controller name="s2" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseInt(e.target.value, 10))} />} /></div>
         </div>
       </div>
       <div className="flex justify-center gap-2">

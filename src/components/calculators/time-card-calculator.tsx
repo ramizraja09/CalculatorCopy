@@ -20,21 +20,26 @@ import {
 const timeEntrySchema = z.object({
   startTime: z.string().nonempty(),
   endTime: z.string().nonempty(),
-  breakMinutes: z.number().min(0),
-});
+}).refine(data => {
+    return new Date(`1970-01-01T${data.endTime}`) > new Date(`1970-01-01T${data.startTime}`);
+}, { message: "End time must be after start time", path: ["endTime"] });
+
 const formSchema = z.object({
   timeEntries: z.array(timeEntrySchema),
+  breakMinutes: z.number().min(0).default(0),
 });
+
 type FormData = z.infer<typeof formSchema>;
 
 export default function TimeCardCalculator() {
   const [result, setResult] = useState<string | null>(null);
   const [formData, setFormData] = useState<FormData | null>(null);
 
-  const { control, handleSubmit } = useForm<FormData>({
+  const { control, handleSubmit, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      timeEntries: [{ startTime: '09:00', endTime: '17:00', breakMinutes: 30 }],
+      timeEntries: [{ startTime: '09:00', endTime: '17:00' }],
+      breakMinutes: 30,
     },
   });
   const { fields, append, remove } = useFieldArray({ control, name: "timeEntries" });
@@ -47,11 +52,13 @@ export default function TimeCardCalculator() {
       if (end > start) {
         totalMinutes += (end.getTime() - start.getTime()) / 60000;
       }
-      totalMinutes -= entry.breakMinutes;
     });
+    totalMinutes -= data.breakMinutes;
+
     const hours = Math.floor(totalMinutes / 60);
     const minutes = Math.round(totalMinutes % 60);
-    setResult(`${hours} hours, ${minutes} minutes`);
+    const decimalHours = (totalMinutes / 60).toFixed(2);
+    setResult(`${hours}h ${minutes}m (Decimal: ${decimalHours})`);
     setFormData(data);
   };
   
@@ -64,15 +71,16 @@ export default function TimeCardCalculator() {
     if (format === 'txt') {
       content = `Time Card Calculation\n\n`;
       formData.timeEntries.forEach((entry, index) => {
-        content += `Entry ${index + 1}: ${entry.startTime} - ${entry.endTime} (Break: ${entry.breakMinutes} mins)\n`;
+        content += `Entry ${index + 1}: ${entry.startTime} - ${entry.endTime}\n`;
       });
-      content += `\nResult:\nTotal Time Worked: ${result}`;
+      content += `Total Break: ${formData.breakMinutes} minutes\n\n`;
+      content += `Result:\nTotal Time Worked: ${result}`;
     } else {
-      content = 'Start Time,End Time,Break (mins)\n';
+      content = 'Entry,Start Time,End Time\n';
        formData.timeEntries.forEach((entry, index) => {
-        content += `${entry.startTime},${entry.endTime},${entry.breakMinutes}\n`;
+        content += `${index+1},${entry.startTime},${entry.endTime}\n`;
       });
-      content += `\nTotal Time,"${result}"`;
+      content += `\nBreak (minutes),${formData.breakMinutes}\nTotal Time,"${result}"`;
     }
 
     const blob = new Blob([content], { type: `text/${format}` });
@@ -96,12 +104,16 @@ export default function TimeCardCalculator() {
             <div className="grid grid-cols-2 gap-2 flex-1">
               <div><Label className="text-xs">Start Time</Label><Controller name={`timeEntries.${index}.startTime`} control={control} render={({ field }) => <Input type="time" {...field} />} /></div>
               <div><Label className="text-xs">End Time</Label><Controller name={`timeEntries.${index}.endTime`} control={control} render={({ field }) => <Input type="time" {...field} />} /></div>
-              <div className="col-span-2"><Label className="text-xs">Break (mins)</Label><Controller name={`timeEntries.${index}.breakMinutes`} control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value) || 0)} />} /></div>
             </div>
-            <Button type="button" variant="destructive" size="icon" onClick={() => remove(index)}><Trash className="h-4 w-4" /></Button>
+            <Button type="button" variant="ghost" size="icon" onClick={() => remove(index)}><Trash className="h-4 w-4" /></Button>
           </div>
         ))}
-        <Button type="button" variant="outline" onClick={() => append({ startTime: '09:00', endTime: '17:00', breakMinutes: 30 })}>Add Entry</Button>
+        {errors.timeEntries && <p className="text-destructive text-sm">Please check time entries.</p>}
+        <Button type="button" variant="outline" onClick={() => append({ startTime: '09:00', endTime: '17:00' })}>Add Time Entry</Button>
+        <div>
+          <Label>Total Break Time (minutes)</Label>
+          <Controller name="breakMinutes" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseInt(e.target.value, 10))} />} />
+        </div>
         <div className="flex gap-2">
             <Button type="submit" className="flex-1">Calculate Total Hours</Button>
             <DropdownMenu>
@@ -121,7 +133,7 @@ export default function TimeCardCalculator() {
       <div className="space-y-4">
         <h3 className="text-xl font-semibold">Total Time Worked</h3>
         {result ? (
-            <Card><CardContent className="p-6 text-center"><p className="text-4xl font-bold">{result}</p></CardContent></Card>
+            <Card><CardContent className="p-6 text-center"><p className="text-3xl font-bold">{result}</p></CardContent></Card>
         ) : (
           <div className="flex items-center justify-center h-40 bg-muted/50 rounded-lg border border-dashed"><p>Add entries to calculate total hours</p></div>
         )}
