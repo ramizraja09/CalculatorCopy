@@ -174,16 +174,16 @@ export default function LoanCalculator() {
                 <div className="space-y-4">
                     <div className="grid grid-cols-3 gap-4">
                         <Card>
-                            <CardHeader><CardTitle className="text-base text-muted-foreground">Monthly Payment</CardTitle></CardHeader>
-                            <CardContent><p className="text-xl md:text-2xl font-bold break-all">{formatCurrency(results.monthlyPayment)}</p></CardContent>
+                            <CardHeader><CardTitle className="text-sm text-muted-foreground">Monthly Payment</CardTitle></CardHeader>
+                            <CardContent><p className="text-lg md:text-xl font-bold break-all">{formatCurrency(results.monthlyPayment)}</p></CardContent>
                         </Card>
                          <Card>
-                            <CardHeader><CardTitle className="text-base text-muted-foreground">Total Interest</CardTitle></CardHeader>
-                            <CardContent><p className="text-xl md:text-2xl font-bold break-all">{formatCurrency(results.totalInterestPaid)}</p></CardContent>
+                            <CardHeader><CardTitle className="text-sm text-muted-foreground">Total Interest</CardTitle></CardHeader>
+                            <CardContent><p className="text-lg md:text-xl font-bold break-all">{formatCurrency(results.totalInterestPaid)}</p></CardContent>
                         </Card>
                          <Card>
-                            <CardHeader><CardTitle className="text-base text-muted-foreground">Total Paid</CardTitle></CardHeader>
-                            <CardContent><p className="text-xl md:text-2xl font-bold break-all">{formatCurrency(results.totalPaid)}</p></CardContent>
+                            <CardHeader><CardTitle className="text-sm text-muted-foreground">Total Paid</CardTitle></CardHeader>
+                            <CardContent><p className="text-lg md:text-xl font-bold break-all">{formatCurrency(results.totalPaid)}</p></CardContent>
                         </Card>
                     </div>
                     <Card>
