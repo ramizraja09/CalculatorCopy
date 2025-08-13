@@ -42,10 +42,8 @@ const defaultOffers = [
 ];
 
 export default function JobOfferComparisonCalculator() {
-  const [results, setResults] = useState<any[]>([]);
-  const [betterOfferIndex, setBetterOfferIndex] = useState<number | null>(null);
-
-  const { control, handleSubmit, watch, reset } = useForm<FormData>({
+  const [isClient, setIsClient] = useState(false);
+  const { control, watch, reset } = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       offers: defaultOffers,
@@ -55,9 +53,8 @@ export default function JobOfferComparisonCalculator() {
   const { fields, append, remove } = useFieldArray({ control, name: "offers" });
   const watchedOffers = watch("offers");
   
-  const formatCurrency = (value: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value);
-
   useEffect(() => {
+    setIsClient(true);
     try {
       const savedData = localStorage.getItem('jobOfferComparisonData');
       if (savedData) {
@@ -69,10 +66,15 @@ export default function JobOfferComparisonCalculator() {
   }, [reset]);
 
   useEffect(() => {
-    localStorage.setItem('jobOfferComparisonData', JSON.stringify(watchedOffers));
-    
-    const calculatedResults = watchedOffers.map(offer => {
-      const workingDaysPerYear = 260; // Standard 5 days/week * 52 weeks
+    if(isClient) {
+      localStorage.setItem('jobOfferComparisonData', JSON.stringify(watchedOffers));
+    }
+  }, [watchedOffers, isClient]);
+
+  const formatCurrency = (value: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value);
+
+  const calculatedResults = watchedOffers.map(offer => {
+      const workingDaysPerYear = 260; 
       const vacationValue = (offer.salary / workingDaysPerYear) * offer.vacationDays;
       const totalCompensation = offer.salary + offer.bonus + offer.benefitsValue + vacationValue + offer.otherPerks;
       const costAdjustedSalary = totalCompensation * (offer.costOfLivingIndex / 100);
@@ -88,21 +90,12 @@ export default function JobOfferComparisonCalculator() {
       };
     });
 
-    setResults(calculatedResults);
-
-    if (calculatedResults.length > 0) {
-      const bestOffer = calculatedResults.reduce((best, current, index) => {
-          if (current.costAdjustedSalary > best.value) {
-              return { index, value: current.costAdjustedSalary };
-          }
-          return best;
-      }, { index: -1, value: -Infinity });
-      setBetterOfferIndex(bestOffer.index);
-    } else {
-        setBetterOfferIndex(null);
-    }
-
-  }, [watchedOffers, reset]);
+  const betterOfferIndex = calculatedResults.length > 0 ? calculatedResults.reduce((best, current, index) => {
+      if (current.costAdjustedSalary > best.value) {
+          return { index, value: current.costAdjustedSalary };
+      }
+      return best;
+  }, { index: -1, value: -Infinity }).index : null;
 
 
   const handleAddNewOffer = () => {
@@ -110,13 +103,13 @@ export default function JobOfferComparisonCalculator() {
   };
   
   const handleExport = (format: 'txt' | 'csv') => {
-    if (results.length === 0) return;
+    if (calculatedResults.length === 0) return;
     
     let content = '';
     const filename = `job-offer-comparison.${format}`;
 
     if (format === 'txt') {
-      results.forEach(offer => {
+      calculatedResults.forEach(offer => {
         content += `Offer: ${offer.name}\n`;
         content += `-------------------------\n`;
         content += `Base Salary: ${formatCurrency(offer.salary)}\n`;
@@ -130,7 +123,7 @@ export default function JobOfferComparisonCalculator() {
     } else {
       const headers = ['Offer Name', 'Base Salary', 'Bonus', 'Benefits Value', 'Vacation Value', 'Total Comp.', 'Adj. Comp.', 'Hourly Rate'];
       content += headers.join(',') + '\n';
-      results.forEach(offer => {
+      calculatedResults.forEach(offer => {
         const row = [
           `"${offer.name}"`,
           offer.salary,
@@ -156,8 +149,12 @@ export default function JobOfferComparisonCalculator() {
     URL.revokeObjectURL(url);
   };
 
+  if (!isClient) {
+    return <div>Loading...</div>; // Or a skeleton loader
+  }
+
   return (
-    <form onSubmit={(e) => e.preventDefault()} className="space-y-8">
+    <div className="space-y-8">
       <div className="grid md:grid-cols-2 gap-8">
         {fields.map((field, index) => (
           <Card key={field.id} className={cn("transition-shadow", index === betterOfferIndex && "shadow-xl border-primary")}>
@@ -190,7 +187,7 @@ export default function JobOfferComparisonCalculator() {
         <Button type="button" variant="outline" onClick={handleAddNewOffer}>Add Another Offer</Button>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline" disabled={results.length === 0}>
+            <Button variant="outline" disabled={calculatedResults.length === 0}>
               <Download className="mr-2 h-4 w-4" /> Export
             </Button>
           </DropdownMenuTrigger>
@@ -201,7 +198,7 @@ export default function JobOfferComparisonCalculator() {
         </DropdownMenu>
       </div>
 
-      {results.length > 0 && (
+      {calculatedResults.length > 0 && (
         <Card>
             <CardHeader>
                 <CardTitle>Comparison Summary</CardTitle>
@@ -211,22 +208,22 @@ export default function JobOfferComparisonCalculator() {
                     <TableHeader>
                         <TableRow>
                             <TableHead>Metric</TableHead>
-                            {results.map((res, index) => <TableHead key={index} className="text-right">{res.name}</TableHead>)}
+                            {calculatedResults.map((res, index) => <TableHead key={index} className="text-right">{res.name}</TableHead>)}
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        <TableRow><TableCell>Base Salary</TableCell>{results.map((r,i) => <TableCell key={i} className="text-right">{formatCurrency(r.salary)}</TableCell>)}</TableRow>
-                        <TableRow><TableCell>Bonus</TableCell>{results.map((r,i) => <TableCell key={i} className="text-right">{formatCurrency(r.bonus)}</TableCell>)}</TableRow>
-                        <TableRow><TableCell>Benefits Value</TableCell>{results.map((r,i) => <TableCell key={i} className="text-right">{formatCurrency(r.benefitsValue)}</TableCell>)}</TableRow>
-                        <TableRow><TableCell>Vacation Value</TableCell>{results.map((r,i) => <TableCell key={i} className="text-right">{formatCurrency(r.vacationValue)}</TableCell>)}</TableRow>
-                         <TableRow className="font-semibold"><TableCell>Total Compensation</TableCell>{results.map((r,i) => <TableCell key={i} className="text-right">{formatCurrency(r.totalCompensation)}</TableCell>)}</TableRow>
-                        <TableRow className="bg-muted/50 font-bold text-primary"><TableCell>Adj. Compensation</TableCell>{results.map((r,i) => <TableCell key={i} className={cn("text-right", i === betterOfferIndex && "text-primary")}>{formatCurrency(r.costAdjustedSalary)}</TableCell>)}</TableRow>
-                         <TableRow><TableCell>Effective Hourly Rate</TableCell>{results.map((r,i) => <TableCell key={i} className="text-right">{formatCurrency(r.hourlyRate)}</TableCell>)}</TableRow>
+                        <TableRow><TableCell>Base Salary</TableCell>{calculatedResults.map((r,i) => <TableCell key={i} className="text-right">{formatCurrency(r.salary)}</TableCell>)}</TableRow>
+                        <TableRow><TableCell>Bonus</TableCell>{calculatedResults.map((r,i) => <TableCell key={i} className="text-right">{formatCurrency(r.bonus)}</TableCell>)}</TableRow>
+                        <TableRow><TableCell>Benefits Value</TableCell>{calculatedResults.map((r,i) => <TableCell key={i} className="text-right">{formatCurrency(r.benefitsValue)}</TableCell>)}</TableRow>
+                        <TableRow><TableCell>Vacation Value</TableCell>{calculatedResults.map((r,i) => <TableCell key={i} className="text-right">{formatCurrency(r.vacationValue)}</TableCell>)}</TableRow>
+                         <TableRow className="font-semibold"><TableCell>Total Compensation</TableCell>{calculatedResults.map((r,i) => <TableCell key={i} className="text-right">{formatCurrency(r.totalCompensation)}</TableCell>)}</TableRow>
+                        <TableRow className="bg-muted/50 font-bold text-primary"><TableCell>Adj. Compensation</TableCell>{calculatedResults.map((r,i) => <TableCell key={i} className={cn("text-right", i === betterOfferIndex && "text-primary")}>{formatCurrency(r.costAdjustedSalary)}</TableCell>)}</TableRow>
+                         <TableRow><TableCell>Effective Hourly Rate</TableCell>{calculatedResults.map((r,i) => <TableCell key={i} className="text-right">{formatCurrency(r.hourlyRate)}</TableCell>)}</TableRow>
                     </TableBody>
                 </Table>
             </CardContent>
         </Card>
       )}
-    </form>
+    </div>
   );
 }
