@@ -17,6 +17,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { Progress } from '@/components/ui/progress';
+
 
 const formSchema = z.object({
   temperature: z.number(),
@@ -48,10 +50,10 @@ export default function HeatIndexCalculator() {
     defaultValues: { temperature: 85, unit: 'F', humidity: 70 },
   });
 
-  const formData = watch();
+  const formValues = watch();
 
   useEffect(() => {
-    const { temperature, unit, humidity } = formData;
+    const { temperature, unit, humidity } = formValues;
     const tempF = unit === 'F' ? temperature : (temperature * 9/5) + 32;
 
     if(tempF >= 80 && humidity >= 40) {
@@ -64,14 +66,14 @@ export default function HeatIndexCalculator() {
     } else {
         setResults(null);
     }
-  }, [formData]);
+  }, [formValues]);
 
   const handleExport = (format: 'txt' | 'csv') => {
-    if (!results || !formData) return;
+    if (!results || !formValues) return;
     
     let content = '';
     const filename = `heat-index-calculation.${format}`;
-    const { temperature, unit, humidity } = formData;
+    const { temperature, unit, humidity } = formValues;
 
     if (format === 'txt') {
       content = `Heat Index Calculation\n\nInputs:\n- Temperature: ${temperature}°${unit}\n- Humidity: ${humidity}%\n\nResult:\n- Heat Index: ${results.heatIndexF.toFixed(1)}°F / ${results.heatIndexC.toFixed(1)}°C\n- Category: ${results.category.category}`;

@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import { useState, useEffect } from 'react';
@@ -35,10 +34,10 @@ export default function PaceCalculator() {
     defaultValues: { distance: 5, distanceUnit: 'km', timeHours: 0, timeMinutes: 25, timeSeconds: 0 },
   });
   
-  const formData = watch();
+  const formValues = watch();
 
   useEffect(() => {
-    const { distance, distanceUnit, timeHours, timeMinutes, timeSeconds } = formData;
+    const { distance, distanceUnit, timeHours, timeMinutes, timeSeconds } = formValues;
     if (distance > 0 && (timeHours > 0 || timeMinutes > 0 || timeSeconds > 0)) {
         const totalTimeSeconds = (timeHours * 3600) + (timeMinutes * 60) + timeSeconds;
         
@@ -59,7 +58,7 @@ export default function PaceCalculator() {
     } else {
         setResults(null);
     }
-  }, [formData]);
+  }, [formValues]);
 
 
   return (

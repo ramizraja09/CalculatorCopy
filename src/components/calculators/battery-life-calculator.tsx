@@ -41,10 +41,10 @@ export default function BatteryLifeCalculator() {
     defaultValues: { capacity: 2000, consumption: 150, usageHours: 4, batteryType: 'li-ion' },
   });
   
-  const formData = watch();
+  const formValues = watch();
 
   useEffect(() => {
-    const { capacity, consumption, usageHours, batteryType } = formData;
+    const { capacity, consumption, usageHours, batteryType } = formValues;
     if (capacity > 0 && consumption > 0 && usageHours > 0) {
         const efficiency = efficiencyFactors[batteryType];
         const effectiveCapacity = capacity * efficiency;
@@ -57,14 +57,14 @@ export default function BatteryLifeCalculator() {
     } else {
         setResults(null);
     }
-  }, [formData]);
+  }, [formValues]);
 
   const handleExport = (format: 'txt' | 'csv') => {
-    if (!results || !formData) return;
+    if (!results || !formValues) return;
     
     let content = '';
     const filename = `battery-life-calculation.${format}`;
-    const { capacity, consumption, usageHours, batteryType } = formData;
+    const { capacity, consumption, usageHours, batteryType } = formValues;
 
     if (format === 'txt') {
       content = `Battery Life Calculation\n\nInputs:\n- Capacity: ${capacity} mAh\n- Consumption: ${consumption} mA\n- Usage: ${usageHours} hrs/day\n- Type: ${batteryType}\n\nResult:\n- Total Hours: ${results.totalHours}\n- Total Days: ${results.totalDays}`;
