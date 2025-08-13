@@ -11,6 +11,7 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Search } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
+import Link from 'next/link';
 
 const categoryDescriptions: { [key: string]: string } = {
     'All Calculators': "Explore all free calculators at My Genius Calculator – math, finance, health, conversions, and more. Instant, accurate results online.",
@@ -114,12 +115,14 @@ function CalculatorsPageContent() {
                     filteredCalculators.length > 0 ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 pt-4">
                         {filteredCalculators.map(calculator => (
-                        <CalculatorCard
-                            key={calculator.slug}
-                            calculator={calculator}
-                            isFavorite={favorites.includes(calculator.slug)}
-                            onToggleFavorite={toggleFavorite}
-                        />
+                          <Link href={`/calculators/${calculator.slug}`} key={calculator.slug} className="group block h-full">
+                            <CalculatorCard
+                                calculator={calculator}
+                                isFavorite={favorites.includes(calculator.slug)}
+                                onToggleFavorite={toggleFavorite}
+                                isLink={true}
+                            />
+                          </Link>
                         ))}
                     </div>
                     ) : (

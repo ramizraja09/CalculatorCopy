@@ -10,11 +10,15 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Search } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
+import Link from 'next/link';
+
 
 function HomePageContent() {
   const [searchTerm, setSearchTerm] = useState('');
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
   const { favorites, toggleFavorite, isLoaded } = useFavorites();
+  
+  const recentlyAddedCalculators = useMemo(() => calculators.slice(-3), []);
 
   const filteredCalculators = useMemo(() => {
     if (!isLoaded) {
@@ -42,6 +46,28 @@ function HomePageContent() {
           My Genius Calculator – Free online calculators for math, finance, health, and conversions. Get instant, accurate results with our easy-to-use tools.
         </p>
       </div>
+
+      {/* Recently Added Section */}
+      <div className="space-y-4">
+        <h2 className="text-2xl font-bold font-headline text-foreground">Recently Added</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {isLoaded ? (
+            recentlyAddedCalculators.map(calculator => (
+              <Link href={`/calculators/${calculator.slug}`} key={`recent-${calculator.slug}`} className="group block h-full">
+                <CalculatorCard
+                  calculator={calculator}
+                  isFavorite={favorites.includes(calculator.slug)}
+                  onToggleFavorite={toggleFavorite}
+                  isLink={true}
+                />
+              </Link>
+            ))
+          ) : (
+             [...Array(3)].map((_, i) => <Skeleton key={`recent-skel-${i}`} className="h-64 w-full" />)
+          )}
+        </div>
+      </div>
+
 
       <div className="space-y-4">
         <div className="sticky top-[55px] md:top-[57px] z-10 bg-muted/80 backdrop-blur-sm -mx-4 px-4 py-4 border-b">
@@ -78,12 +104,14 @@ function HomePageContent() {
           filteredCalculators.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 pt-4">
               {filteredCalculators.map(calculator => (
-                <CalculatorCard
-                  key={calculator.slug}
-                  calculator={calculator}
-                  isFavorite={favorites.includes(calculator.slug)}
-                  onToggleFavorite={toggleFavorite}
-                />
+                <Link href={`/calculators/${calculator.slug}`} key={calculator.slug} className="group block h-full">
+                  <CalculatorCard
+                    calculator={calculator}
+                    isFavorite={favorites.includes(calculator.slug)}
+                    onToggleFavorite={toggleFavorite}
+                    isLink={true}
+                  />
+                </Link>
               ))}
             </div>
           ) : (

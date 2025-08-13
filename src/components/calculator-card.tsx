@@ -15,6 +15,7 @@ type CalculatorCardProps = {
   calculator: Calculator;
   isFavorite: boolean;
   onToggleFavorite: (slug: string) => void;
+  isLink?: boolean;
 };
 
 const categoryColors: { [key: string]: string } = {
@@ -30,7 +31,7 @@ const categoryColors: { [key: string]: string } = {
 };
 
 
-export default function CalculatorCard({ calculator, isFavorite, onToggleFavorite }: CalculatorCardProps) {
+export default function CalculatorCard({ calculator, isFavorite, onToggleFavorite, isLink = false }: CalculatorCardProps) {
   const Icon = calculator.icon;
   const categoryColorClass = categoryColors[calculator.category] || categoryColors['Other'];
   const [isClient, setIsClient] = useState(false);
@@ -42,39 +43,40 @@ export default function CalculatorCard({ calculator, isFavorite, onToggleFavorit
   if (!isClient) {
     return <Skeleton className="h-64 w-full" />;
   }
-
-  return (
-    <Link href={`/calculators/${calculator.slug}`} className="group block h-full">
-        <Card className="flex flex-col h-full transition-all group-hover:shadow-xl group-hover:-translate-y-1 bg-card">
-            <CardHeader className="flex-row items-start gap-4 pb-4">
-                 {Icon && (
-                    <div className="bg-muted/70 p-3 rounded-lg">
-                        <Icon className="h-6 w-6 text-primary transition-transform duration-300 ease-in-out group-hover:scale-110 group-hover:-rotate-12" />
-                    </div>
-                )}
-                <div className="flex-1">
-                    <CardTitle className="font-headline text-lg">
-                        {calculator.name}
-                    </CardTitle>
-                    <Badge variant="outline" className={cn(categoryColorClass, 'font-medium mt-1')}>{calculator.category}</Badge>
+  
+  const CardComponent = (
+    <Card className={cn("flex flex-col h-full transition-all bg-card", isLink && "group-hover:shadow-xl group-hover:-translate-y-1")}>
+        <CardHeader className="flex-row items-start gap-4 pb-4">
+             {Icon && (
+                <div className="bg-muted/70 p-3 rounded-lg">
+                    <Icon className={cn("h-6 w-6 text-primary", isLink && "transition-transform duration-300 ease-in-out group-hover:scale-110 group-hover:-rotate-12")} />
                 </div>
-                <Button
-                    variant="ghost"
-                    size="icon"
-                    className="rounded-full h-8 w-8 shrink-0"
-                    onClick={(e) => {
-                        e.preventDefault();
-                        onToggleFavorite(calculator.slug);
-                    }}
-                    aria-label={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
-                >
-                    <Star className={cn('h-5 w-5 transition-all', isFavorite ? 'fill-accent text-accent' : 'text-muted-foreground/50 hover:text-accent hover:fill-accent')} />
-                </Button>
-            </CardHeader>
-            <CardContent className="flex-grow">
-                <CardDescription>{calculator.description}</CardDescription>
-            </CardContent>
-        </Card>
-    </Link>
+            )}
+            <div className="flex-1">
+                <CardTitle className="font-headline text-lg">
+                    {calculator.name}
+                </CardTitle>
+                <Badge variant="outline" className={cn(categoryColorClass, 'font-medium mt-1')}>{calculator.category}</Badge>
+            </div>
+            <Button
+                variant="ghost"
+                size="icon"
+                className="rounded-full h-8 w-8 shrink-0"
+                onClick={(e) => {
+                    e.preventDefault();
+                    onToggleFavorite(calculator.slug);
+                }}
+                aria-label={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
+            >
+                <Star className={cn('h-5 w-5 transition-all', isFavorite ? 'fill-accent text-accent' : 'text-muted-foreground/50 hover:text-accent hover:fill-accent')} />
+            </Button>
+        </CardHeader>
+        <CardContent className="flex-grow">
+            <CardDescription>{calculator.description}</CardDescription>
+        </CardContent>
+    </Card>
   );
+
+  return CardComponent;
 }
+
