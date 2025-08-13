@@ -175,15 +175,15 @@ export default function LoanCalculator() {
                     <div className="grid grid-cols-3 gap-4">
                         <Card>
                             <CardHeader><CardTitle className="text-sm text-muted-foreground">Monthly Payment</CardTitle></CardHeader>
-                            <CardContent><p className="text-lg font-bold break-all">{formatCurrency(results.monthlyPayment)}</p></CardContent>
+                            <CardContent><p className="text-base font-bold break-all">{formatCurrency(results.monthlyPayment)}</p></CardContent>
                         </Card>
                          <Card>
                             <CardHeader><CardTitle className="text-sm text-muted-foreground">Total Interest</CardTitle></CardHeader>
-                            <CardContent><p className="text-lg font-bold break-all">{formatCurrency(results.totalInterestPaid)}</p></CardContent>
+                            <CardContent><p className="text-base font-bold break-all">{formatCurrency(results.totalInterestPaid)}</p></CardContent>
                         </Card>
                          <Card>
                             <CardHeader><CardTitle className="text-sm text-muted-foreground">Total Paid</CardTitle></CardHeader>
-                            <CardContent><p className="text-lg font-bold break-all">{formatCurrency(results.totalPaid)}</p></CardContent>
+                            <CardContent><p className="text-base font-bold break-all">{formatCurrency(results.totalPaid)}</p></CardContent>
                         </Card>
                     </div>
                     <Card>
