@@ -79,11 +79,11 @@ export default function GraphingCalculator() {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <Label htmlFor="xMin">X Min</Label>
-              <Controller name="xMin" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
+              <Controller name="xMin" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
             </div>
             <div>
               <Label htmlFor="xMax">X Max</Label>
-              <Controller name="xMax" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
+              <Controller name="xMax" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
             </div>
           </div>
           {errors.xMax && <p className="text-destructive text-sm mt-1">{errors.xMax.message}</p>}

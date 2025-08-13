@@ -88,9 +88,9 @@ export default function PythagoreanTheoremCalculator() {
                 <Label className="p-4 border rounded-md text-center peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary"><RadioGroupItem value="c" className="mr-2"/>Solve for c</Label>
             </RadioGroup>
         )}/>
-        <div><Label>a</Label><Controller name="a" control={control} render={({ field }) => <Input type="number" disabled={solveFor === 'a'} {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} /></div>
-        <div><Label>b</Label><Controller name="b" control={control} render={({ field }) => <Input type="number" disabled={solveFor === 'b'} {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} /></div>
-        <div><Label>c (hypotenuse)</Label><Controller name="c" control={control} render={({ field }) => <Input type="number" disabled={solveFor === 'c'} {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} /></div>
+        <div><Label>a</Label><Controller name="a" control={control} render={({ field }) => <Input type="number" disabled={solveFor === 'a'} {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} /></div>
+        <div><Label>b</Label><Controller name="b" control={control} render={({ field }) => <Input type="number" disabled={solveFor === 'b'} {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} /></div>
+        <div><Label>c (hypotenuse)</Label><Controller name="c" control={control} render={({ field }) => <Input type="number" disabled={solveFor === 'c'} {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} /></div>
         <div className="flex gap-2">
             <Button type="submit" className="flex-1">Calculate</Button>
             <DropdownMenu>

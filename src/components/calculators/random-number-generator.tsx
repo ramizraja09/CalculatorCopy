@@ -80,11 +80,11 @@ export default function RandomNumberGenerator() {
         <h3 className="text-xl font-semibold">Range</h3>
         <div>
             <Label>Min</Label>
-            <Controller name="min" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value) || 0)} />} />
+            <Controller name="min" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseInt(e.target.value, 10))} />} />
         </div>
          <div>
             <Label>Max</Label>
-            <Controller name="max" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value) || 0)} />} />
+            <Controller name="max" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseInt(e.target.value, 10))} />} />
         </div>
         {errors.max && <p className="text-destructive text-sm mt-1">{errors.max.message}</p>}
         <div className="flex gap-2">

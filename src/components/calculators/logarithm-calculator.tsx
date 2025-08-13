@@ -70,9 +70,9 @@ export default function LogarithmCalculator() {
       {/* Inputs */}
       <div className="space-y-4">
         <h3 className="text-xl font-semibold">Inputs</h3>
-        <div><Label>Logarithm of (Number)</Label><Controller name="number" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
+        <div><Label>Logarithm of (Number)</Label><Controller name="number" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
         {errors.number && <p className="text-destructive text-sm mt-1">{errors.number.message}</p>}</div>
-        <div><Label>Base</Label><Controller name="base" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
+        <div><Label>Base</Label><Controller name="base" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
         {errors.base && <p className="text-destructive text-sm mt-1">{errors.base.message}</p>}</div>
         <div className="flex gap-2">
             <Button type="submit" className="flex-1">Calculate Log</Button>

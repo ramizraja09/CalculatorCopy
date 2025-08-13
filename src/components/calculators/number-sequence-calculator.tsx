@@ -93,7 +93,7 @@ export default function NumberSequenceCalculator() {
       <div className="space-y-4">
         <h3 className="text-xl font-semibold">Inputs</h3>
         <div><Label>Sequence (comma-separated)</Label><Controller name="sequence" control={control} render={({ field }) => <Input {...field} />} /></div>
-        <div><Label>Terms to Predict</Label><Controller name="terms" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value) || 0)} />} /></div>
+        <div><Label>Terms to Predict</Label><Controller name="terms" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseInt(e.target.value, 10))} />} /></div>
         <div className="flex gap-2">
             <Button type="submit" className="flex-1">Calculate Next Terms</Button>
             <DropdownMenu>

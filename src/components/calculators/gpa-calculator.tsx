@@ -108,7 +108,7 @@ export default function GpaCalculator() {
             <div key={field.id} className="flex gap-2 items-end p-2 border rounded-md">
               <div className="flex-1 space-y-1">
                 <Label htmlFor={`courses[${index}].credits`}>Credits</Label>
-                <Controller name={`courses.${index}.credits`} control={control} render={({ field }) => <Input type="number" step="0.5" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
+                <Controller name={`courses.${index}.credits`} control={control} render={({ field }) => <Input type="number" step="0.5" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
               </div>
               <div className="flex-1 space-y-1">
                 <Label htmlFor={`courses[${index}].grade`}>Grade</Label>

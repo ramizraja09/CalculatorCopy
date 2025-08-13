@@ -85,7 +85,7 @@ export default function PValueCalculator() {
         <h3 className="text-xl font-semibold">Inputs</h3>
         <div>
           <Label htmlFor="zScore">Z-score</Label>
-          <Controller name="zScore" control={control} render={({ field }) => <Input type="number" step="0.01" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
+          <Controller name="zScore" control={control} render={({ field }) => <Input type="number" step="0.01" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
         </div>
         <Controller name="tail" control={control} render={({ field }) => (
             <RadioGroup onValueChange={field.onChange} defaultValue={field.value} className="grid grid-cols-2 gap-4">

@@ -95,9 +95,9 @@ export default function CombinationsPermutationsCalculator() {
       {/* Inputs */}
       <div className="space-y-4">
         <h3 className="text-xl font-semibold">Inputs</h3>
-        <div><Label>Total number of items (n)</Label><Controller name="n" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value) || 0)} />} />
+        <div><Label>Total number of items (n)</Label><Controller name="n" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseInt(e.target.value, 10))} />} />
         {errors.n && <p className="text-destructive text-sm mt-1">{errors.n.message}</p>}</div>
-        <div><Label>Number of items to choose (r)</Label><Controller name="r" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value) || 0)} />} />
+        <div><Label>Number of items to choose (r)</Label><Controller name="r" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseInt(e.target.value, 10))} />} />
         {errors.r && <p className="text-destructive text-sm mt-1">{errors.r.message}</p>}</div>
         <div className="flex gap-2">
             <Button type="submit" className="flex-1">Calculate</Button>

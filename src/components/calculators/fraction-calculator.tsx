@@ -95,9 +95,9 @@ export default function FractionCalculator() {
         <div className="flex items-center justify-center gap-4">
           {/* Fraction 1 */}
           <div className="flex flex-col items-center gap-1">
-            <Controller name="num1" control={control} render={({ field }) => <Input className="w-20 text-center" type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value) || 0)} />} />
+            <Controller name="num1" control={control} render={({ field }) => <Input className="w-20 text-center" type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseInt(e.target.value, 10))} />} />
             <div className="h-px w-20 bg-foreground"></div>
-            <Controller name="den1" control={control} render={({ field }) => <Input className="w-20 text-center" type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value) || 0)} />} />
+            <Controller name="den1" control={control} render={({ field }) => <Input className="w-20 text-center" type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseInt(e.target.value, 10))} />} />
           </div>
           {/* Operator */}
           <Controller name="operator" control={control} render={({ field }) => (
@@ -108,9 +108,9 @@ export default function FractionCalculator() {
           )} />
           {/* Fraction 2 */}
           <div className="flex flex-col items-center gap-1">
-            <Controller name="num2" control={control} render={({ field }) => <Input className="w-20 text-center" type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value) || 0)} />} />
+            <Controller name="num2" control={control} render={({ field }) => <Input className="w-20 text-center" type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseInt(e.target.value, 10))} />} />
             <div className="h-px w-20 bg-foreground"></div>
-            <Controller name="den2" control={control} render={({ field }) => <Input className="w-20 text-center" type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value) || 0)} />} />
+            <Controller name="den2" control={control} render={({ field }) => <Input className="w-20 text-center" type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseInt(e.target.value, 10))} />} />
           </div>
         </div>
         <div className="flex justify-center gap-2">

@@ -54,9 +54,9 @@ export default function PercentageCalculator() {
         <CardContent>
           <form onSubmit={handleSubmit1(calculatePercentageOf)} className="flex items-center gap-2">
             <Label>What is</Label>
-            <Controller name="percentage" control={control1} render={({ field }) => <Input className="w-24" type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
+            <Controller name="percentage" control={control1} render={({ field }) => <Input className="w-24" type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
             <Label>% of</Label>
-            <Controller name="value" control={control1} render={({ field }) => <Input className="w-24" type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
+            <Controller name="value" control={control1} render={({ field }) => <Input className="w-24" type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
             <Label>?</Label>
             <Button type="submit" className="ml-auto">Calculate</Button>
           </form>
@@ -69,9 +69,9 @@ export default function PercentageCalculator() {
         <CardHeader><CardTitle>X is what % of Y?</CardTitle></CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit2(calculateWhatPercent)} className="flex items-center gap-2">
-            <Controller name="part" control={control2} render={({ field }) => <Input className="w-24" type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
+            <Controller name="part" control={control2} render={({ field }) => <Input className="w-24" type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
             <Label>is what % of</Label>
-            <Controller name="whole" control={control2} render={({ field }) => <Input className="w-24" type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
+            <Controller name="whole" control={control2} render={({ field }) => <Input className="w-24" type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
             <Label>?</Label>
             <Button type="submit" className="ml-auto">Calculate</Button>
           </form>

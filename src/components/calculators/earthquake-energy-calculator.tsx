@@ -82,7 +82,7 @@ export default function EarthquakeEnergyCalculator() {
         <h3 className="text-xl font-semibold">Richter Scale Magnitude</h3>
         <div>
           <Label>Magnitude</Label>
-          <Controller name="magnitude" control={control} render={({ field }) => <Input type="number" step="0.1" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
+          <Controller name="magnitude" control={control} render={({ field }) => <Input type="number" step="0.1" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
         </div>
         <div className="pt-4">
             <Label>Energy Release Scale</Label>
