@@ -10,13 +10,11 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import { Info, Download } from 'lucide-react';
+import { Download } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
+import { FinanceResultBox } from '@/components/finance-result-box';
 
 const formatCurrency = (value: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value);
-const PIE_COLORS = ['hsl(var(--chart-1))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))'];
 
 // Financial formulas
 const calcFV = (rate: number, nper: number, pmt: number, pv: number) => {
@@ -94,13 +92,9 @@ function CalculatorTab({ solveFor }: { solveFor: 'fv' | 'pmt' | 'pv' | 'nper' | 
             }
             if (typeof res === 'number' && isNaN(res)) throw new Error("Could not calculate. Check inputs for a valid scenario.");
 
-            let calculatedPv = solveFor === 'pv' ? res : pv;
-            let calculatedFv = solveFor === 'fv' ? res : fv;
-            let calculatedPmt = solveFor === 'pmt' ? res : pmt;
-
-            const totalContributions = (solveFor === 'pmt' ? Math.abs(res) : pmt) * nper;
-            const endBalance = solveFor === 'fv' ? Math.abs(res) : fv;
             const startingAmount = solveFor === 'pv' ? Math.abs(res) : pv;
+            const endBalance = solveFor === 'fv' ? Math.abs(res) : fv;
+            const totalContributions = (solveFor === 'pmt' ? Math.abs(res) : pmt) * nper;
             const totalInterest = endBalance - startingAmount - totalContributions;
 
             setResults({
@@ -156,47 +150,13 @@ function CalculatorTab({ solveFor }: { solveFor: 'fv' | 'pmt' | 'pv' | 'nper' | 
               </div>
             </div>
             <div className="space-y-4">
-              <h3 className="text-xl font-semibold">Results</h3>
-              {results && !results.error ? (
-                <div className="space-y-4">
-                  <Alert><Info className="h-4 w-4" /><AlertTitle className="font-bold text-lg">
-                    {solveFor === 'fv' && `End Balance: ${formatCurrency(results.solvedValue)}`}
-                    {solveFor === 'pmt' && `Monthly Contribution: ${formatCurrency(results.solvedValue)}`}
-                    {solveFor === 'pv' && `Starting Amount: ${formatCurrency(results.solvedValue)}`}
-                    {solveFor === 'nper' && `Investment Length: ${Math.floor(results.solvedValue / 12)} years, ${Math.round(results.solvedValue % 12)} months`}
-                    {solveFor === 'rate' && `Annual Return Rate: ${results.solvedValue.toFixed(2)}%`}
-                  </AlertTitle></Alert>
-                  <Card><CardHeader><CardTitle className="text-base text-center">Breakdown</CardTitle></CardHeader>
-                    <CardContent className="space-y-2 text-sm">
-                      <div className="flex justify-between font-bold"><span>End Balance</span><span>{formatCurrency(results.endBalance)}</span></div>
-                      <div className="flex justify-between pl-4 text-muted-foreground"><span>Starting Amount</span><span>{formatCurrency(results.startingAmount)}</span></div>
-                      <div className="flex justify-between pl-4 text-muted-foreground"><span>Total Contributions</span><span>{formatCurrency(results.totalContributions)}</span></div>
-                      <div className="flex justify-between pl-4 text-muted-foreground"><span>Total Interest</span><span>{formatCurrency(results.totalInterest)}</span></div>
-                    </CardContent>
-                  </Card>
-                  <Card><CardContent className="p-4 h-64">
-                    <ResponsiveContainer width="100%" height="100%">
-                        <PieChart>
-                          <Pie data={results.pieData} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={40} outerRadius={60} paddingAngle={5}>
-                              {results.pieData.map((_entry, index) => <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />)}
-                          </Pie>
-                          <Tooltip formatter={(value: number) => formatCurrency(value)} />
-                          <Legend iconType="circle" />
-                        </PieChart>
-                    </ResponsiveContainer>
-                  </CardContent></Card>
-                </div>
-              ) : (
-                <div className="flex items-center justify-center h-full bg-muted/50 rounded-lg border border-dashed p-8">
-                    <p className="text-sm text-muted-foreground text-center">{results?.error || "Enter values and click calculate. The disabled field is what will be solved for."}</p>
-                </div>
-              )}
+                <h3 className="text-xl font-semibold">Results</h3>
+                <FinanceResultBox results={results} solveFor={solveFor} />
             </div>
           </div>
         </form>
     );
 }
-
 
 // --- Main Component ---
 export default function InvestmentCalculator() {
@@ -217,5 +177,3 @@ export default function InvestmentCalculator() {
     </Tabs>
   );
 }
-
-    
