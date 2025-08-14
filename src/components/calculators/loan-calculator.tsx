@@ -182,7 +182,7 @@ export default function LoanCalculator() {
               </div>
             </div>
             {amortizedResults && !amortizedResults.error && (
-              <div className="col-span-1 md:col-span-2 mt-8 space-y-8">
+              <div className="md:col-span-2 mt-8 space-y-8">
                   <div className="grid md:grid-cols-2 gap-8">
                       <Card>
                           <CardHeader><CardTitle className="text-base text-center">Total Cost Breakdown</CardTitle></CardHeader>
@@ -294,3 +294,5 @@ export default function LoanCalculator() {
     </Tabs>
   );
 }
+
+    
