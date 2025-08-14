@@ -1154,3 +1154,6 @@ if (allCategories.includes(otherCategory)) {
 
 export const calculatorCategories = mainCategories;
 export const calculatorNames = calculators.map(c => c.name);
+
+
+  

@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { useState, useEffect } from 'react';
@@ -488,3 +489,5 @@ export default function CalculatorClientPage({ calculator }: CalculatorClientPag
     </div>
   );
 }
+
+  
