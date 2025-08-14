@@ -264,8 +264,132 @@ function SingleVsJointCalculator() {
 }
 
 // --- Tab 3: Work Longer ---
+const workLongerSchema = z.object({
+  lifeExpectancy: z.number().int().min(1),
+  retirementAge1: z.number().int().min(18),
+  monthlyPension1: z.number().min(1),
+  retirementAge2: z.number().int().min(19),
+  monthlyPension2: z.number().min(1),
+  investmentReturn: z.number().min(0),
+  cola: z.number().min(0),
+}).refine(data => data.retirementAge2 > data.retirementAge1, {
+  message: "Option 2 retirement age must be after Option 1.",
+  path: ["retirementAge2"],
+});
+
+type WorkLongerFormData = z.infer<typeof workLongerSchema>;
+
 function WorkLongerCalculator() {
-    return <Card className="p-8 text-center"><p className="text-muted-foreground">This feature is coming soon.</p></Card>;
+    const [results, setResults] = useState<any>(null);
+    const [formData, setFormData] = useState<WorkLongerFormData | null>(null);
+
+    const { control, handleSubmit, formState: { errors } } = useForm<WorkLongerFormData>({
+        resolver: zodResolver(workLongerSchema),
+        defaultValues: {
+            lifeExpectancy: 85,
+            retirementAge1: 60,
+            monthlyPension1: 2500,
+            retirementAge2: 65,
+            monthlyPension2: 3800,
+            investmentReturn: 5,
+            cola: 3.5,
+        },
+    });
+
+    const calculatePV = (monthlyPayment: number, years: number, monthlyRate: number, monthlyCola: number) => {
+        const n = years * 12;
+        if (monthlyRate === monthlyCola) {
+            return monthlyPayment * n / (1 + monthlyRate);
+        }
+        return monthlyPayment * (1 - Math.pow((1 + monthlyCola) / (1 + monthlyRate), n)) / (monthlyRate - monthlyCola);
+    };
+
+    const calculateComparison = (data: WorkLongerFormData) => {
+        const i = data.investmentReturn / 100 / 12;
+        const g = data.cola / 100 / 12;
+
+        const pv1 = calculatePV(data.monthlyPension1, data.lifeExpectancy - data.retirementAge1, i, g);
+
+        const workingYearsValue = calculatePV(data.monthlyPension1, data.retirementAge2 - data.retirementAge1, i, g);
+        
+        const pv2_from_retirement2 = calculatePV(data.monthlyPension2, data.lifeExpectancy - data.retirementAge2, i, g);
+        
+        const pv2 = workingYearsValue + pv2_from_retirement2 / Math.pow(1 + i, (data.retirementAge2 - data.retirementAge1) * 12);
+
+        setResults({
+            pv1,
+            pv2,
+            difference: pv2 - pv1,
+        });
+        setFormData(data);
+    };
+    
+    const handleExport = (format: 'txt' | 'csv') => {
+        if (!results || !formData) return;
+        let content = '';
+        const filename = `pension-work-longer-comparison.${format}`;
+        if (format === 'txt') {
+            content = `Pension Comparison\n\nInputs:\n${Object.entries(formData).map(([k,v]) => `- ${k}: ${v}`).join('\n')}\n\nResults:\n- PV of Option 1: ${formatCurrency(results.pv1)}\n- PV of Option 2: ${formatCurrency(results.pv2)}\n- Difference: ${formatCurrency(results.difference)}`;
+        } else {
+            content = `Category,Value\n${Object.entries(formData).map(([k,v]) => `${k},${v}`).join('\n')}\nResult Category,Value\nPV Option 1,${results.pv1}\nPV Option 2,${results.pv2}\nDifference,${results.difference}`;
+        }
+        const blob = new Blob([content], { type: `text/${format}` });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    };
+
+    return (
+        <form onSubmit={handleSubmit(calculateComparison)} className="grid md:grid-cols-2 gap-8">
+             <div className="space-y-4">
+                <Card>
+                    <CardHeader><CardTitle>Should you work longer for a better pension?</CardTitle></CardHeader>
+                    <CardContent className="space-y-4">
+                        <h4 className="font-semibold text-lg pt-4">Pension option 1</h4>
+                        <div><Label>Retirement age</Label><Controller name="retirementAge1" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value, 10) || 0)} />} /></div>
+                        <div><Label>Monthly pension income ($)</Label><Controller name="monthlyPension1" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} /></div>
+                        <h4 className="font-semibold text-lg pt-4">Pension option 2 (work longer)</h4>
+                        <div><Label>Retirement age</Label><Controller name="retirementAge2" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value, 10) || 0)} />} /></div>
+                        {errors.retirementAge2 && <p className="text-destructive text-sm mt-1">{errors.retirementAge2.message}</p>}
+                        <div><Label>Monthly pension income ($)</Label><Controller name="monthlyPension2" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} /></div>
+                         <h4 className="font-semibold text-lg pt-4">Other information</h4>
+                        <div><Label>Your life expectancy</Label><Controller name="lifeExpectancy" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value, 10) || 0)} />} /></div>
+                        <div><Label>Your investment return (% per year)</Label><Controller name="investmentReturn" control={control} render={({ field }) => <Input type="number" step="0.1" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} /></div>
+                        <div><Label>Cost-of-living adjustment (% per year)</Label><Controller name="cola" control={control} render={({ field }) => <Input type="number" step="0.1" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} /></div>
+
+                        <div className="flex gap-2 pt-4">
+                            <Button type="submit" className="flex-1">Calculate</Button>
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild><Button variant="outline" disabled={!results}><Download className="mr-2 h-4 w-4" /> Export</Button></DropdownMenuTrigger>
+                                <DropdownMenuContent><DropdownMenuItem onClick={() => handleExport('txt')}>Download .txt</DropdownMenuItem><DropdownMenuItem onClick={() => handleExport('csv')}>Download .csv</DropdownMenuItem></DropdownMenuContent>
+                            </DropdownMenu>
+                        </div>
+                    </CardContent>
+                </Card>
+            </div>
+             <div className="space-y-4">
+                <h3 className="text-xl font-semibold">Comparison Result</h3>
+                {results ? (
+                    <div className="space-y-4">
+                         <Alert variant={results.difference > 0 ? "default" : "destructive"} className={results.difference > 0 ? "border-green-500" : ""}>
+                            <Info className="h-4 w-4" />
+                            <AlertTitle>{results.difference > 0 ? "Working Longer Appears More Valuable" : "Retiring Earlier Appears More Valuable"}</AlertTitle>
+                            <AlertDescription>The present value of working longer is {formatCurrency(Math.abs(results.difference))} {results.difference > 0 ? 'more' : 'less'} than retiring earlier.</AlertDescription>
+                        </Alert>
+                        <Card><CardContent className="p-4 grid grid-cols-2 gap-4 text-center">
+                            <div><p className="text-muted-foreground">PV of Option 1</p><p className="font-semibold text-xl">{formatCurrency(results.pv1)}</p></div>
+                            <div><p className="text-muted-foreground">PV of Option 2</p><p className="font-semibold text-xl">{formatCurrency(results.pv2)}</p></div>
+                        </CardContent></Card>
+                    </div>
+                ) : ( <div className="flex items-center justify-center h-60 bg-muted/50 rounded-lg border border-dashed"><p className="text-sm text-muted-foreground">Enter details to compare pension options</p></div> )}
+            </div>
+        </form>
+    );
 }
 
 export default function PensionCalculator() {
