@@ -112,6 +112,7 @@ export default function MortgageCalculatorUK() {
       pieData: [
         { name: 'Principal', value: principal },
         { name: 'Total Interest', value: totalInterestPaid },
+        { name: 'Stamp Duty', value: stampDuty }
       ],
       error: null,
     });

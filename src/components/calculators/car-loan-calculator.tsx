@@ -126,6 +126,10 @@ export default function CarLoanCalculator() {
       totalCost,
       schedule,
       principal: totalLoanAmount,
+      pieData: [
+        { name: 'Principal', value: totalLoanAmount },
+        { name: 'Total Interest', value: totalInterestPaid },
+      ],
       error: null,
     });
     setFormData(data);
@@ -234,7 +238,7 @@ export default function CarLoanCalculator() {
                 <Card>
                     <CardHeader><CardTitle className="text-base text-center">Loan Breakdown</CardTitle></CardHeader>
                     <CardContent className="h-64"><ResponsiveContainer width="100%" height="100%">
-                        <PieChart><Pie data={[{ name: 'Principal', value: results.principal }, { name: 'Interest', value: results.totalInterest }]} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={50} outerRadius={80}><Cell key="cell-0" fill={PIE_COLORS[0]} /><Cell key="cell-1" fill={PIE_COLORS[1]} /></Pie><RechartsTooltip formatter={(value: number) => formatCurrency(value)} /><Legend /></PieChart>
+                        <PieChart><Pie data={results.pieData} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={50} outerRadius={80}><Cell key="cell-0" fill={PIE_COLORS[0]} /><Cell key="cell-1" fill={PIE_COLORS[1]} /></Pie><RechartsTooltip formatter={(value: number) => formatCurrency(value)} /><Legend /></PieChart>
                     </ResponsiveContainer></CardContent>
                 </Card>
                 <Card>
@@ -263,5 +267,3 @@ export default function CarLoanCalculator() {
     </form>
   );
 }
-
-    

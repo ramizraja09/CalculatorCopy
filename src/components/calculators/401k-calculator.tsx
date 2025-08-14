@@ -9,7 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { Download } from 'lucide-react';
 import {
   DropdownMenu,
@@ -33,6 +33,7 @@ const formSchema = z.object({
 });
 
 type FormData = z.infer<typeof formSchema>;
+const PIE_COLORS = ['hsl(var(--chart-1))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))'];
 
 export default function Four01kCalculator() {
   const [results, setResults] = useState<any>(null);
@@ -61,31 +62,38 @@ export default function Four01kCalculator() {
     const yearsToRetirement = retirementAge - currentAge;
     const monthlyRate = annualReturn / 100 / 12;
 
-    const employeeContributionMonthly = (annualSalary * (contributionPercent / 100)) / 12;
-    const employerMatchableContribution = (annualSalary * (matchUpToPercent / 100)) / 12;
-    const employerMatchMonthly = Math.min(employeeContributionMonthly, employerMatchableContribution) * (employerMatchPercent / 100);
-    const totalMonthlyContribution = employeeContributionMonthly + employerMatchMonthly;
-    
     let balance = currentBalance;
-    const schedule = [{ age: currentAge, balance }];
+    const schedule = [{ age: currentAge, balance, totalContributions: currentBalance, totalInterest: 0 }];
+    let totalContributions = currentBalance;
+    let totalInterest = 0;
 
     for (let year = 1; year <= yearsToRetirement; year++) {
       let currentYearSalary = annualSalary; // In a more complex model, this could increase annually
-      const currentEmployeeContributionMonthly = (currentYearSalary * (contributionPercent / 100)) / 12;
-      const currentEmployerMatchable = (currentYearSalary * (matchUpToPercent / 100)) / 12;
-      const currentEmployerMatch = Math.min(currentEmployeeContributionMonthly, currentEmployerMatchable) * (employerMatchPercent / 100);
-      const currentTotalMonthly = currentEmployeeContributionMonthly + currentEmployerMatch;
+      const employeeContributionMonthly = (currentYearSalary * (contributionPercent / 100)) / 12;
+      const employerMatchable = (currentYearSalary * (matchUpToPercent / 100)) / 12;
+      const employerMatchMonthly = Math.min(employeeContributionMonthly, employerMatchable) * (employerMatchPercent / 100);
+      const currentTotalMonthly = employeeContributionMonthly + employerMatchMonthly;
 
       for (let month = 1; month <= 12; month++) {
-        balance = balance * (1 + monthlyRate) + currentTotalMonthly;
+        const interestForMonth = balance * monthlyRate;
+        balance += interestForMonth;
+        balance += currentTotalMonthly;
+        totalContributions += currentTotalMonthly;
+        totalInterest += interestForMonth;
       }
-      schedule.push({ age: currentAge + year, balance });
+      schedule.push({ age: currentAge + year, balance, totalContributions, totalInterest });
     }
 
     setResults({
       finalBalance: balance,
-      totalContributions: currentBalance + (totalMonthlyContribution * 12 * yearsToRetirement), // Simplified total
+      totalContributions,
+      totalInterest,
       schedule,
+      pieData: [
+        { name: 'Initial Balance', value: currentBalance },
+        { name: 'Contributions', value: totalContributions - currentBalance },
+        { name: 'Interest', value: totalInterest },
+      ],
       error: null,
     });
     setFormData(data);
@@ -173,6 +181,20 @@ export default function Four01kCalculator() {
                           <p className="text-sm text-muted-foreground">Balance at Retirement</p>
                           <p className="text-3xl font-bold">{formatCurrency(results.finalBalance)}</p>
                       </CardContent>
+                  </Card>
+                   <Card>
+                    <CardHeader><CardTitle className="text-base text-center">Balance Breakdown</CardTitle></CardHeader>
+                    <CardContent className="h-48">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <PieChart>
+                          <Pie data={results.pieData} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={30} outerRadius={50} paddingAngle={5}>
+                              {results.pieData.map((_entry: any, index: number) => <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />)}
+                          </Pie>
+                          <Tooltip formatter={(value: number) => formatCurrency(value)} />
+                          <Legend iconType="circle" />
+                        </PieChart>
+                      </ResponsiveContainer>
+                    </CardContent>
                   </Card>
               </div>
           ) : (
