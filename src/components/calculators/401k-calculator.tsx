@@ -66,12 +66,18 @@ export default function Four01kCalculator() {
     const schedule = [{ age: currentAge, balance, totalContributions: currentBalance, totalInterest: 0 }];
     let totalContributions = currentBalance;
     let totalInterest = 0;
+    let totalEmployeeContribution = 0;
+    let totalEmployerContribution = 0;
 
     for (let year = 1; year <= yearsToRetirement; year++) {
       let currentYearSalary = annualSalary; // In a more complex model, this could increase annually
       const employeeContributionMonthly = (currentYearSalary * (contributionPercent / 100)) / 12;
       const employerMatchable = (currentYearSalary * (matchUpToPercent / 100)) / 12;
       const employerMatchMonthly = Math.min(employeeContributionMonthly, employerMatchable) * (employerMatchPercent / 100);
+      
+      totalEmployeeContribution += employeeContributionMonthly * 12;
+      totalEmployerContribution += employerMatchMonthly * 12;
+
       const currentTotalMonthly = employeeContributionMonthly + employerMatchMonthly;
 
       for (let month = 1; month <= 12; month++) {
@@ -91,8 +97,8 @@ export default function Four01kCalculator() {
       schedule,
       pieData: [
         { name: 'Initial Balance', value: currentBalance },
-        { name: 'Contributions', value: totalContributions - currentBalance },
-        { name: 'Interest', value: totalInterest },
+        { name: 'Total Contributions', value: totalEmployeeContribution + totalEmployerContribution },
+        { name: 'Interest Earned', value: totalInterest },
       ],
       error: null,
     });

@@ -5,14 +5,15 @@ import { useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Download } from 'lucide-react';
+import { Download, PieChart as PieChartIcon } from 'lucide-react';
+import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -41,6 +42,8 @@ const formSchema = z.object({
 
 
 type FormData = z.infer<typeof formSchema>;
+const PIE_COLORS = ['hsl(var(--chart-1))', 'hsl(var(--chart-2))'];
+
 
 export default function CreditCardPayoffCalculator() {
   const [results, setResults] = useState<any>(null);
@@ -129,6 +132,7 @@ export default function CreditCardPayoffCalculator() {
       finalPayoffDate: new Date(Date.now() + finalPaymentMonth * 30.437 * 24 * 60 * 60 * 1000).toLocaleDateString(),
       monthlyPayment: calculatedMonthlyPayment,
       schedule,
+      pieData: [{ name: 'Principal', value: balance }, { name: 'Interest', value: totalInterest }],
       error: null,
     });
     setFormData(data);
@@ -267,6 +271,20 @@ export default function CreditCardPayoffCalculator() {
                   <div><p className="text-muted-foreground">Total Interest Paid</p><p className="font-semibold">{formatCurrency(results.totalInterest)}</p></div>
                 </CardContent>
               </Card>
+              <Card>
+                    <CardHeader><CardTitle className="text-base text-center">Total Payments Breakdown</CardTitle></CardHeader>
+                    <CardContent className="h-48">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <PieChart>
+                          <Pie data={results.pieData} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={30} outerRadius={50} paddingAngle={5}>
+                              {results.pieData.map((_entry: any, index: number) => <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />)}
+                          </Pie>
+                          <Tooltip formatter={(value: number) => formatCurrency(value)} />
+                          <Legend iconType="circle" />
+                        </PieChart>
+                      </ResponsiveContainer>
+                    </CardContent>
+                  </Card>
             </div>
           )) : (
             <div className="flex items-center justify-center h-60 bg-muted/50 rounded-lg border border-dashed">

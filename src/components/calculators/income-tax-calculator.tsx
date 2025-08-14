@@ -13,6 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { Info, Download } from 'lucide-react';
+import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -55,6 +56,7 @@ const formSchema = z.object({
 });
 
 type FormData = z.infer<typeof formSchema>;
+const PIE_COLORS = ['hsl(var(--chart-2))', 'hsl(var(--destructive))'];
 
 export default function IncomeTaxCalculator() {
   const [results, setResults] = useState<any>(null);
@@ -118,6 +120,7 @@ export default function IncomeTaxCalculator() {
     // Final calculation
     const totalTaxLiability = Math.max(0, ordinaryTax + capitalGainsTax - totalCredits);
     const finalResult = data.wagesWithheld - totalTaxLiability;
+    const netIncome = totalIncome - totalTaxLiability;
 
     setResults({
         totalIncome,
@@ -125,6 +128,10 @@ export default function IncomeTaxCalculator() {
         taxableIncome: taxableOrdinaryIncome + data.longTermGains,
         totalTax: totalTaxLiability,
         finalResult,
+        pieData: [
+            { name: 'Net Income', value: netIncome },
+            { name: 'Total Tax', value: totalTaxLiability },
+        ]
     });
     setFormData(data);
   };
@@ -229,22 +236,38 @@ export default function IncomeTaxCalculator() {
       <div className="lg:col-span-1 space-y-4">
         <h3 className="text-xl font-semibold">Tax Summary</h3>
         {results ? (
-            <Card>
-                <CardHeader>
-                    <CardTitle className={`text-center text-3xl font-bold ${results.finalResult >= 0 ? 'text-green-600' : 'text-destructive'}`}>
-                        {formatCurrency(Math.abs(results.finalResult))}
-                    </CardTitle>
-                    <CardDescription className="text-center font-semibold">
-                         {results.finalResult >= 0 ? 'Estimated Refund' : 'Estimated Amount Owed'}
-                    </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-2 text-sm">
-                    <div className="flex justify-between"><span className="text-muted-foreground">Total Income</span><span>{formatCurrency(results.totalIncome)}</span></div>
-                    <div className="flex justify-between"><span className="text-muted-foreground">Total Deductions</span><span>-{formatCurrency(results.totalDeductions)}</span></div>
-                    <div className="flex justify-between border-b pb-2 mb-2"><span className="text-muted-foreground">Taxable Income</span><span>{formatCurrency(results.taxableIncome)}</span></div>
-                    <div className="flex justify-between font-bold"><span>Total Tax</span><span>{formatCurrency(results.totalTax)}</span></div>
-                </CardContent>
-            </Card>
+            <div className="space-y-4">
+                <Card>
+                    <CardHeader>
+                        <CardTitle className={`text-center text-3xl font-bold ${results.finalResult >= 0 ? 'text-green-600' : 'text-destructive'}`}>
+                            {formatCurrency(Math.abs(results.finalResult))}
+                        </CardTitle>
+                        <CardDescription className="text-center font-semibold">
+                            {results.finalResult >= 0 ? 'Estimated Refund' : 'Estimated Amount Owed'}
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-2 text-sm">
+                        <div className="flex justify-between"><span className="text-muted-foreground">Total Income</span><span>{formatCurrency(results.totalIncome)}</span></div>
+                        <div className="flex justify-between"><span className="text-muted-foreground">Total Deductions</span><span>-{formatCurrency(results.totalDeductions)}</span></div>
+                        <div className="flex justify-between border-b pb-2 mb-2"><span className="text-muted-foreground">Taxable Income</span><span>{formatCurrency(results.taxableIncome)}</span></div>
+                        <div className="flex justify-between font-bold"><span>Total Tax</span><span>{formatCurrency(results.totalTax)}</span></div>
+                    </CardContent>
+                </Card>
+                 <Card>
+                    <CardHeader><CardTitle className="text-base text-center">Income Breakdown</CardTitle></CardHeader>
+                    <CardContent className="h-64">
+                         <ResponsiveContainer width="100%" height="100%">
+                            <PieChart>
+                                <Pie data={results.pieData} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={50} outerRadius={80} paddingAngle={5}>
+                                    {results.pieData.map((_entry: any, index: number) => <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />)}
+                                </Pie>
+                                <Tooltip formatter={(value: number) => formatCurrency(value)} />
+                                <Legend iconType="circle" />
+                            </PieChart>
+                        </ResponsiveContainer>
+                    </CardContent>
+                </Card>
+            </div>
         ) : (
             <div className="flex items-center justify-center h-full bg-muted/50 rounded-lg border border-dashed p-8">
                 <p className="text-sm text-muted-foreground text-center">Enter your income and deductions to estimate your tax refund or amount owed.</p>
