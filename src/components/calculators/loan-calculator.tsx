@@ -11,7 +11,7 @@ import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Download, PieChart as PieChartIcon, BarChart } from 'lucide-react';
+import { Download } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -20,7 +20,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { PieChart, Pie, Cell, Tooltip as RechartsTooltip, ResponsiveContainer, Legend } from 'recharts';
+import { PieChart, Pie, Cell, Tooltip as RechartsTooltip, ResponsiveContainer, Legend, LineChart, Line, XAxis, YAxis, CartesianGrid } from 'recharts';
 
 
 const amortizedSchema = z.object({
@@ -90,7 +90,7 @@ export default function LoanCalculator() {
         const interestPayment = remainingBalance * monthlyInterestRate;
         const principalPayment = monthlyPayment - interestPayment;
         remainingBalance -= principalPayment;
-        schedule.push({ month: i, interestPayment, principalPayment, remainingBalance: Math.max(0, remainingBalance) });
+        schedule.push({ month: i, interestPayment, principalPayment, balance: Math.max(0, remainingBalance) });
     }
 
     setAmortizedResults({
@@ -140,23 +140,27 @@ export default function LoanCalculator() {
             <div className="grid md:grid-cols-2 gap-8">
               {/* Inputs Column */}
               <div className="space-y-4">
-                <h3 className="text-xl font-semibold">Loan Details</h3>
-                <div>
-                  <Label>Loan Amount ($)</Label>
-                  <Controller name="loanAmount" control={amortizedForm.control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
-                </div>
-                <div>
-                  <Label>Loan Term (years)</Label>
-                  <Controller name="loanTerm" control={amortizedForm.control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseInt(e.target.value, 10))} />} />
-                </div>
-                <div>
-                  <Label>Interest Rate (APR %)</Label>
-                  <Controller name="interestRate" control={amortizedForm.control} render={({ field }) => <Input type="number" step="0.01" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
-                </div>
-                 <div>
-                    <Label>Pay Back Frequency</Label>
-                    <Select defaultValue="monthly" disabled><SelectTrigger><SelectValue/></SelectTrigger><SelectContent><SelectItem value="monthly">Every Month</SelectItem></SelectContent></Select>
-                  </div>
+                <Card>
+                  <CardHeader><CardTitle>Loan Details</CardTitle></CardHeader>
+                  <CardContent className="space-y-4">
+                    <div>
+                      <Label>Loan Amount ($)</Label>
+                      <Controller name="loanAmount" control={amortizedForm.control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
+                    </div>
+                    <div>
+                      <Label>Loan Term (years)</Label>
+                      <Controller name="loanTerm" control={amortizedForm.control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseInt(e.target.value, 10))} />} />
+                    </div>
+                    <div>
+                      <Label>Interest Rate (APR %)</Label>
+                      <Controller name="interestRate" control={amortizedForm.control} render={({ field }) => <Input type="number" step="0.01" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
+                    </div>
+                    <div>
+                        <Label>Pay Back Frequency</Label>
+                        <Select defaultValue="monthly" disabled><SelectTrigger><SelectValue/></SelectTrigger><SelectContent><SelectItem value="monthly">Every Month</SelectItem></SelectContent></Select>
+                    </div>
+                  </CardContent>
+                </Card>
                 <Button type="submit" className="w-full">Calculate</Button>
               </div>
 
@@ -165,23 +169,9 @@ export default function LoanCalculator() {
                 <h3 className="text-xl font-semibold">Results</h3>
                 {amortizedResults && !amortizedResults.error ? (
                   <Card>
-                    <CardContent className="p-4 space-y-4">
-                        <div className="space-y-2">
-                            <div className="flex justify-between items-baseline"><span className="text-muted-foreground">Payment Every Month</span><span className="font-bold text-lg">{formatCurrency(amortizedResults.monthlyPayment)}</span></div>
-                            <div className="flex justify-between items-baseline"><span className="text-muted-foreground">Total of {amortizedResults.numberOfPayments} Payments</span><span className="font-bold text-lg">{formatCurrency(amortizedResults.totalPaid)}</span></div>
-                            <div className="flex justify-between items-baseline"><span className="text-muted-foreground">Total Interest</span><span className="font-bold text-lg">{formatCurrency(amortizedResults.totalInterestPaid)}</span></div>
-                        </div>
-                        <div className="h-48">
-                          <ResponsiveContainer width="100%" height="100%">
-                              <PieChart>
-                                  <Pie data={amortizedResults.pieData} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={40} outerRadius={60} paddingAngle={5}>
-                                      {amortizedResults.pieData.map((_entry: any, index: number) => <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />)}
-                                  </Pie>
-                                  <RechartsTooltip formatter={(value: number) => formatCurrency(value)} />
-                                  <Legend iconType="circle" />
-                              </PieChart>
-                          </ResponsiveContainer>
-                        </div>
+                    <CardHeader><CardTitle className="text-base text-center text-muted-foreground">Payment Every Month</CardTitle></CardHeader>
+                    <CardContent className="text-center">
+                      <p className="text-3xl font-bold">{formatCurrency(amortizedResults.monthlyPayment)}</p>
                     </CardContent>
                   </Card>
                 ) : (
@@ -192,27 +182,59 @@ export default function LoanCalculator() {
               </div>
             </div>
             {amortizedResults && !amortizedResults.error && (
-              <div className="col-span-1 md:col-span-2 mt-8">
-                  <h2 className="text-xl font-semibold mb-4">Amortization Schedule</h2>
-                  <Card>
-                      <CardContent className="p-0">
-                          <ScrollArea className="h-[30rem]">
-                              <Table>
-                                  <TableHeader className="sticky top-0 bg-muted"><TableRow><TableHead className="w-1/4">Month</TableHead><TableHead className="w-1/4 text-right">Principal</TableHead><TableHead className="w-1/4 text-right">Interest</TableHead><TableHead className="w-1/4 text-right">Balance</TableHead></TableRow></TableHeader>
-                                  <TableBody>
-                                      {amortizedResults.schedule.map((row: any) => (
-                                          <TableRow key={row.month}>
-                                              <TableCell>{row.month}</TableCell>
-                                              <TableCell className="text-right">{formatCurrency(row.principalPayment)}</TableCell>
-                                              <TableCell className="text-right">{formatCurrency(row.interestPayment)}</TableCell>
-                                              <TableCell className="text-right">{formatCurrency(row.remainingBalance)}</TableCell>
-                                          </TableRow>
-                                      ))}
-                                  </TableBody>
-                              </Table>
-                          </ScrollArea>
-                      </CardContent>
-                  </Card>
+              <div className="col-span-1 md:col-span-2 mt-8 space-y-8">
+                  <div className="grid md:grid-cols-2 gap-8">
+                      <Card>
+                          <CardHeader><CardTitle className="text-base text-center">Total Cost Breakdown</CardTitle></CardHeader>
+                          <CardContent className="h-64">
+                              <ResponsiveContainer width="100%" height="100%">
+                                  <PieChart>
+                                      <Pie data={amortizedResults.pieData} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={50} outerRadius={80} paddingAngle={5}>
+                                          {amortizedResults.pieData.map((_entry: any, index: number) => <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />)}
+                                      </Pie>
+                                      <RechartsTooltip formatter={(value: number) => formatCurrency(value)} />
+                                      <Legend iconType="circle" />
+                                  </PieChart>
+                              </ResponsiveContainer>
+                          </CardContent>
+                      </Card>
+                      <Card>
+                          <CardHeader><CardTitle className="text-base text-center">Loan Balance Over Time</CardTitle></CardHeader>
+                          <CardContent className="h-64">
+                              <ResponsiveContainer width="100%" height="100%">
+                                  <LineChart data={amortizedResults.schedule} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+                                      <CartesianGrid strokeDasharray="3 3" />
+                                      <XAxis dataKey="month" label={{ value: 'Month', position: 'insideBottom', offset: -5 }} />
+                                      <YAxis tickFormatter={(value) => formatCurrency(value)} />
+                                      <RechartsTooltip formatter={(value: number) => formatCurrency(value)} />
+                                      <Line type="monotone" dataKey="balance" name="Remaining Balance" stroke="hsl(var(--primary))" dot={false} />
+                                  </LineChart>
+                              </ResponsiveContainer>
+                          </CardContent>
+                      </Card>
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-semibold mb-4">Amortization Schedule</h2>
+                    <Card>
+                        <CardContent className="p-0">
+                            <ScrollArea className="h-[30rem]">
+                                <Table>
+                                    <TableHeader className="sticky top-0 bg-muted"><TableRow><TableHead className="w-1/4">Month</TableHead><TableHead className="w-1/4 text-right">Principal</TableHead><TableHead className="w-1/4 text-right">Interest</TableHead><TableHead className="w-1/4 text-right">Balance</TableHead></TableRow></TableHeader>
+                                    <TableBody>
+                                        {amortizedResults.schedule.map((row: any) => (
+                                            <TableRow key={row.month}>
+                                                <TableCell>{row.month}</TableCell>
+                                                <TableCell className="text-right">{formatCurrency(row.principalPayment)}</TableCell>
+                                                <TableCell className="text-right">{formatCurrency(row.interestPayment)}</TableCell>
+                                                <TableCell className="text-right">{formatCurrency(row.balance)}</TableCell>
+                                            </TableRow>
+                                        ))}
+                                    </TableBody>
+                                </Table>
+                            </ScrollArea>
+                        </CardContent>
+                    </Card>
+                  </div>
               </div>
             )}
         </form>
@@ -221,22 +243,27 @@ export default function LoanCalculator() {
         <form onSubmit={deferredForm.handleSubmit(calculateDeferred)}>
           <div className="grid md:grid-cols-2 gap-8">
             <div className="space-y-4">
-              <h3 className="text-xl font-semibold">Loan Details</h3>
-              <div><Label>Loan Amount ($)</Label><Controller name="loanAmount" control={deferredForm.control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} /></div>
-              <div><Label>Loan Term (years)</Label><Controller name="loanTerm" control={deferredForm.control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseInt(e.target.value, 10))} />} /></div>
-              <div><Label>Interest Rate (APY %)</Label><Controller name="interestRate" control={deferredForm.control} render={({ field }) => <Input type="number" step="0.01" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} /></div>
-              <div>
-                <Label>Compound Frequency</Label>
-                <Controller name="compoundFrequency" control={deferredForm.control} render={({ field }) => (
-                    <Select onValueChange={field.onChange} defaultValue={field.value}><SelectTrigger><SelectValue/></SelectTrigger><SelectContent>{Object.keys(compoundMap).map(freq => <SelectItem key={freq} value={freq} className="capitalize">{freq}</SelectItem>)}</SelectContent></Select>
-                )} />
-              </div>
+              <Card>
+                <CardHeader><CardTitle>Loan Details</CardTitle></CardHeader>
+                <CardContent className="space-y-4">
+                  <div><Label>Loan Amount ($)</Label><Controller name="loanAmount" control={deferredForm.control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} /></div>
+                  <div><Label>Loan Term (years)</Label><Controller name="loanTerm" control={deferredForm.control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseInt(e.target.value, 10))} />} /></div>
+                  <div><Label>Interest Rate (APY %)</Label><Controller name="interestRate" control={deferredForm.control} render={({ field }) => <Input type="number" step="0.01" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} /></div>
+                  <div>
+                    <Label>Compound Frequency</Label>
+                    <Controller name="compoundFrequency" control={deferredForm.control} render={({ field }) => (
+                        <Select onValueChange={field.onChange} defaultValue={field.value}><SelectTrigger><SelectValue/></SelectTrigger><SelectContent>{Object.keys(compoundMap).map(freq => <SelectItem key={freq} value={freq} className="capitalize">{freq}</SelectItem>)}</SelectContent></Select>
+                    )} />
+                  </div>
+                </CardContent>
+              </Card>
               <Button type="submit" className="w-full">Calculate</Button>
             </div>
              <div className="space-y-4">
                 <h3 className="text-xl font-semibold">Results</h3>
                 {deferredResults && !deferredResults.error ? (
                   <Card>
+                    <CardHeader><CardTitle>Summary</CardTitle></CardHeader>
                     <CardContent className="p-4 space-y-4">
                         <div className="space-y-2">
                             <div className="flex justify-between items-baseline"><span className="text-muted-foreground">Amount Due at Maturity</span><span className="font-bold text-lg">{formatCurrency(deferredResults.amountDue)}</span></div>
