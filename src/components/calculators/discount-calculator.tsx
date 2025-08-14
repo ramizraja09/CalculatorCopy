@@ -47,55 +47,55 @@ export default function DiscountCalculator() {
 
   const formValues = watch();
 
-  useEffect(() => {
-    const calculate = () => {
-      const { priceBefore, discountValue, priceAfter, discountType, solveFor } = formValues;
+  const calculate = () => {
+      const { priceBefore, discountValue, priceAfter, discountType, solveFor } = getValues();
       const pb = parseFloat(priceBefore);
       const dv = parseFloat(discountValue);
       const pa = parseFloat(priceAfter);
 
-      let newPriceAfter = NaN;
-      let newPriceBefore = NaN;
-      let newDiscountValue = NaN;
       let saved = 0;
 
       try {
         if (solveFor === 'priceAfter' && !isNaN(pb) && !isNaN(dv)) {
           if (discountType === 'percent') {
             saved = pb * (dv / 100);
-            newPriceAfter = pb - saved;
+            setValue('priceAfter', (pb - saved).toFixed(2));
           } else { // fixed
             saved = dv;
-            newPriceAfter = pb - saved;
+            setValue('priceAfter', (pb - saved).toFixed(2));
           }
         } else if (solveFor === 'priceBefore' && !isNaN(pa) && !isNaN(dv)) {
           if (discountType === 'percent') {
-            newPriceBefore = pa / (1 - dv / 100);
+            const newPriceBefore = pa / (1 - dv / 100);
             saved = newPriceBefore - pa;
+            setValue('priceBefore', newPriceBefore.toFixed(2));
           } else { // fixed
             saved = dv;
-            newPriceBefore = pa + saved;
+            setValue('priceBefore', (pa + saved).toFixed(2));
           }
         } else if (solveFor === 'discountValue' && !isNaN(pb) && !isNaN(pa)) {
            saved = pb - pa;
            if (discountType === 'percent') {
-              newDiscountValue = (saved / pb) * 100;
+              const newDiscountValue = (saved / pb) * 100;
+              setValue('discountValue', newDiscountValue.toFixed(2));
            } else { // fixed
-              newDiscountValue = saved;
+              setValue('discountValue', saved.toFixed(2));
            }
         }
         
-        if (!isNaN(newPriceAfter)) setValue('priceAfter', newPriceAfter.toFixed(2));
-        if (!isNaN(newPriceBefore)) setValue('priceBefore', newPriceBefore.toFixed(2));
-        if (!isNaN(newDiscountValue)) setValue('discountValue', newDiscountValue.toFixed(2));
-        setYouSaved(formatCurrency(saved));
+        if (!isNaN(saved) && saved > 0) {
+            setYouSaved(formatCurrency(saved));
+        } else {
+            setYouSaved('');
+        }
+        setFormData(getValues());
 
       } catch (e) {
         setYouSaved('');
       }
     };
-    calculate();
-  }, [formValues, setValue]);
+  
+  const { getValues } = useForm();
 
 
   const handleExport = (format: 'txt' | 'csv') => {
@@ -135,14 +135,16 @@ export default function DiscountCalculator() {
     <div className="grid md:grid-cols-2 gap-8">
       <Card>
         <CardContent className="p-6 space-y-4">
-          <form onSubmit={(e) => e.preventDefault()}>
+          <form onSubmit={(e) => { e.preventDefault(); calculate(); }}>
             <p className="text-sm text-muted-foreground mb-4">Please provide any 2 values to calculate the third.</p>
             
             <div className="space-y-4">
               <div>
                   <Label htmlFor="priceBefore">Price before discount</Label>
                   <div className="flex items-center gap-2">
-                    <RadioGroup value={formValues.solveFor} onValueChange={(val) => setValue('solveFor', val as any)}><RadioGroupItem value="priceBefore" id="solveForPriceBefore" checked={isInputDisabled('priceBefore')} /></RadioGroup>
+                    <RadioGroup value={formValues.solveFor} onValueChange={(val) => setValue('solveFor', val as any)}>
+                      <RadioGroupItem value="priceBefore" id="solveForPriceBefore" />
+                    </RadioGroup>
                     <Controller name="priceBefore" control={control} render={({ field }) => <Input type="text" {...field} disabled={isInputDisabled('priceBefore')} />} />
                   </div>
               </div>
@@ -150,7 +152,9 @@ export default function DiscountCalculator() {
               <div>
                   <Label htmlFor="discountValue">Discount</Label>
                   <div className="flex items-center gap-2">
-                    <RadioGroup value={formValues.solveFor} onValueChange={(val) => setValue('solveFor', val as any)}><RadioGroupItem value="discountValue" id="solveForDiscountValue" checked={isInputDisabled('discountValue')} /></RadioGroup>
+                    <RadioGroup value={formValues.solveFor} onValueChange={(val) => setValue('solveFor', val as any)}>
+                      <RadioGroupItem value="discountValue" id="solveForDiscountValue" />
+                    </RadioGroup>
                     <Controller name="discountValue" control={control} render={({ field }) => <Input type="text" {...field} disabled={isInputDisabled('discountValue')} />} />
                      <span className="font-semibold">{formValues.discountType === 'percent' ? '%' : '$'}</span>
                   </div>
@@ -159,7 +163,9 @@ export default function DiscountCalculator() {
                <div>
                   <Label htmlFor="priceAfter">Price after discount</Label>
                   <div className="flex items-center gap-2">
-                     <RadioGroup value={formValues.solveFor} onValueChange={(val) => setValue('solveFor', val as any)}><RadioGroupItem value="priceAfter" id="solveForPriceAfter" checked={isInputDisabled('priceAfter')} /></RadioGroup>
+                     <RadioGroup value={formValues.solveFor} onValueChange={(val) => setValue('solveFor', val as any)}>
+                      <RadioGroupItem value="priceAfter" id="solveForPriceAfter" />
+                     </RadioGroup>
                      <Controller name="priceAfter" control={control} render={({ field }) => <Input type="text" {...field} disabled={isInputDisabled('priceAfter')} />} />
                   </div>
               </div>
@@ -180,6 +186,7 @@ export default function DiscountCalculator() {
               </div>
 
               <div className="flex gap-2 pt-4">
+                  <Button type="submit" className="flex-1">Calculate</Button>
                   <Button type="button" onClick={handleClear} variant="outline" className="flex-1">Clear</Button>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild><Button variant="outline" disabled={!youSaved}><Download className="mr-2 h-4 w-4" /> Export</Button></DropdownMenuTrigger>
