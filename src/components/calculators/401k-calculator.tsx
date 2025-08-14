@@ -17,7 +17,7 @@ import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 
 const formatCurrency = (value: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value);
-const PIE_COLORS = ['hsl(var(--chart-1))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))'];
+const PIE_COLORS = ['hsl(var(--chart-1))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))', 'hsl(var(--chart-4))'];
 
 // --- Tab 1: 401k Growth Calculator ---
 const growthSchema = z.object({
@@ -58,42 +58,44 @@ function GrowthCalculator() {
     const monthlyRate = data.annualReturn / 100 / 12;
     let balance = data.currentBalance;
     const schedule = [{ age: data.currentAge, balance, totalContributions: data.currentBalance, totalInterest: 0 }];
-    let totalContributions = data.currentBalance;
-    let totalInterest = 0;
+    
     let totalEmployeeContribution = 0;
     let totalEmployerContribution = 0;
 
     for (let year = 1; year <= yearsToRetirement; year++) {
-      let currentYearSalary = data.annualSalary;
+      let currentYearSalary = data.annualSalary; // Assuming salary doesn't increase for simplicity here
       const employeeContributionMonthly = (currentYearSalary * (data.contributionPercent / 100)) / 12;
       const employerMatchable = (currentYearSalary * (data.matchUpToPercent / 100)) / 12;
       const employerMatchMonthly = Math.min(employeeContributionMonthly, employerMatchable) * (data.employerMatchPercent / 100);
       
-      totalEmployeeContribution += employeeContributionMonthly * 12;
-      totalEmployerContribution += employerMatchMonthly * 12;
-
       const currentTotalMonthly = employeeContributionMonthly + employerMatchMonthly;
 
       for (let month = 1; month <= 12; month++) {
-        const interestForMonth = balance * monthlyRate;
-        balance += interestForMonth;
         balance += currentTotalMonthly;
-        totalContributions += currentTotalMonthly;
-        totalInterest += interestForMonth;
+        balance = balance * (1 + monthlyRate);
+        totalEmployeeContribution += employeeContributionMonthly;
+        totalEmployerContribution += employerMatchMonthly;
       }
-      schedule.push({ age: data.currentAge + year, balance, totalContributions, totalInterest });
+      schedule.push({ age: data.currentAge + year, balance });
     }
+    
+    const totalContributions = totalEmployeeContribution + totalEmployerContribution;
+    const totalInterest = balance - data.currentBalance - totalContributions;
 
     setResults({
       finalBalance: balance,
+      initialBalance: data.currentBalance,
+      totalEmployeeContribution,
+      totalEmployerContribution,
       totalContributions,
       totalInterest,
       schedule,
       pieData: [
         { name: 'Initial Balance', value: data.currentBalance },
-        { name: 'Contributions', value: totalEmployeeContribution + totalEmployerContribution },
+        { name: 'Your Contributions', value: totalEmployeeContribution },
+        { name: 'Employer Contributions', value: totalEmployerContribution },
         { name: 'Interest Earned', value: totalInterest },
-      ],
+      ].filter(item => item.value > 0),
       error: null,
     });
     setFormData(data);
@@ -157,8 +159,17 @@ function GrowthCalculator() {
           <h3 className="text-xl font-semibold">Projected Balance</h3>
           {results ? (
               <div className="space-y-4">
-                  <Card><CardContent className="p-4 text-center"><p className="text-sm text-muted-foreground">Balance at Retirement</p><p className="text-3xl font-bold">{formatCurrency(results.finalBalance)}</p></CardContent></Card>
-                  <Card><CardHeader><CardTitle className="text-base text-center">Balance Breakdown</CardTitle></CardHeader>
+                  <Card><CardHeader><CardTitle className="text-center">Balance at Retirement</CardTitle></CardHeader><CardContent className="text-center"><p className="text-3xl font-bold">{formatCurrency(results.finalBalance)}</p></CardContent></Card>
+                  <Card><CardHeader><CardTitle className="text-lg">Summary</CardTitle></CardHeader>
+                    <CardContent className="space-y-2 text-sm">
+                        <div className="flex justify-between font-bold"><span>End Balance</span><span>{formatCurrency(results.finalBalance)}</span></div>
+                        <div className="flex justify-between pl-4 text-muted-foreground"><span>Initial Balance</span><span>{formatCurrency(results.initialBalance)}</span></div>
+                        <div className="flex justify-between pl-4 text-muted-foreground"><span>Your Contributions</span><span>{formatCurrency(results.totalEmployeeContribution)}</span></div>
+                        <div className="flex justify-between pl-4 text-muted-foreground"><span>Employer Contributions</span><span>{formatCurrency(results.totalEmployerContribution)}</span></div>
+                        <div className="flex justify-between pl-4 text-muted-foreground"><span>Total Interest Earned</span><span>{formatCurrency(results.totalInterest)}</span></div>
+                    </CardContent>
+                  </Card>
+                   <Card><CardHeader><CardTitle className="text-base text-center">Balance Breakdown</CardTitle></CardHeader>
                     <CardContent className="h-48">
                       <ResponsiveContainer width="100%" height="100%">
                         <PieChart>
