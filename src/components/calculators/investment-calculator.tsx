@@ -12,7 +12,7 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { Download } from 'lucide-react';
 import {
   DropdownMenu,
@@ -30,6 +30,8 @@ const formSchema = z.object({
 });
 
 type FormData = z.infer<typeof formSchema>;
+const PIE_COLORS = ['hsl(var(--chart-1))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))'];
+
 
 export default function InvestmentCalculator() {
   const [results, setResults] = useState<any>(null);
@@ -87,12 +89,19 @@ export default function InvestmentCalculator() {
         totalInterest: currentTotalInterest > 0 ? currentTotalInterest : 0,
       });
     }
+    
+    const finalTotalInterest = balance - totalContributions;
 
     setResults({
       finalBalance: balance,
       totalContributions,
-      totalInterest: balance - totalContributions,
+      totalInterest: finalTotalInterest,
       schedule,
+      pieData: [
+        { name: 'Initial Principal', value: initialPrincipal },
+        { name: 'Total Contributions', value: totalContributions - initialPrincipal },
+        { name: 'Total Interest', value: finalTotalInterest },
+      ],
       error: null,
     });
     setFormData(data);
@@ -203,37 +212,45 @@ export default function InvestmentCalculator() {
             ) : (
                 <div className="space-y-4">
                     <Card>
-                        <CardContent className="p-4">
-                            <p className="text-sm text-muted-foreground">Future Value</p>
-                            <p className="text-3xl font-bold">{formatCurrency(results.finalBalance)}</p>
-                        </CardContent>
-                    </Card>
-                    <Card>
-                        <CardContent className="p-4 grid grid-cols-2 gap-2 text-sm">
-                             <div><p className="text-muted-foreground">Total Contributions</p><p className="font-semibold">{formatCurrency(results.totalContributions)}</p></div>
-                             <div><p className="text-muted-foreground">Total Interest</p><p className="font-semibold">{formatCurrency(results.totalInterest)}</p></div>
+                        <CardContent className="p-4 grid grid-cols-3 gap-4 text-center">
+                            <div><p className="text-sm text-muted-foreground">Future Value</p><p className="text-2xl font-bold">{formatCurrency(results.finalBalance)}</p></div>
+                             <div><p className="text-sm text-muted-foreground">Total Contributions</p><p className="text-2xl font-bold">{formatCurrency(results.totalContributions)}</p></div>
+                             <div><p className="text-sm text-muted-foreground">Total Interest</p><p className="text-2xl font-bold">{formatCurrency(results.totalInterest)}</p></div>
                         </CardContent>
                     </Card>
 
-                    <Card>
-                      <CardContent className="p-4">
-                        <h4 className="font-semibold mb-4 text-center">Investment Growth Over Time</h4>
-                        <div className="h-60">
-                          <ResponsiveContainer width="100%" height="100%">
-                            <LineChart data={results.schedule} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
-                              <CartesianGrid strokeDasharray="3 3" />
-                              <XAxis dataKey="year" />
-                              <YAxis tickFormatter={(value) => typeof value === 'number' ? formatCurrency(value) : ''} />
-                              <Tooltip formatter={(value: number, name: string) => (name === "Total Contributions" || name === "Total Balance") ? formatCurrency(value) : value } />
-                              <Legend />
-                              <Line type="monotone" dataKey="endBalance" name="Total Balance" stroke="hsl(var(--primary))" dot={false} />
-                              <Line type="monotone" dataKey="totalContributions" name="Total Contributions" stroke="hsl(var(--secondary-foreground))" dot={false} />
-                            </LineChart>
-                          </ResponsiveContainer>
-                        </div>
-                      </CardContent>
-                    </Card>
-                    
+                    <div className="grid md:grid-cols-2 gap-4">
+                        <Card>
+                            <CardContent className="p-4 h-64">
+                                <h4 className="font-semibold text-center mb-2">Growth Over Time</h4>
+                                <ResponsiveContainer width="100%" height="100%">
+                                <LineChart data={results.schedule} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
+                                    <CartesianGrid strokeDasharray="3 3" />
+                                    <XAxis dataKey="year" />
+                                    <YAxis tickFormatter={(value) => typeof value === 'number' ? formatCurrency(value) : ''} />
+                                    <RechartsTooltip formatter={(value: number) => formatCurrency(value)} />
+                                    <Legend />
+                                    <Line type="monotone" dataKey="endBalance" name="Total Balance" stroke="hsl(var(--primary))" dot={false} />
+                                </LineChart>
+                                </ResponsiveContainer>
+                            </CardContent>
+                        </Card>
+                        <Card>
+                             <CardContent className="p-4 h-64">
+                                <h4 className="font-semibold text-center mb-2">Final Balance Breakdown</h4>
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <PieChart>
+                                        <Pie data={results.pieData} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={40} outerRadius={60} paddingAngle={5} label>
+                                            {results.pieData.map((_entry: any, index: number) => <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />)}
+                                        </Pie>
+                                        <RechartsTooltip formatter={(value: number) => formatCurrency(value)} />
+                                        <Legend iconType="circle" />
+                                    </PieChart>
+                                </ResponsiveContainer>
+                            </CardContent>
+                        </Card>
+                    </div>
+
                     <Card>
                       <CardContent className="p-4">
                         <h4 className="font-semibold mb-2">Yearly Breakdown</h4>
@@ -265,7 +282,7 @@ export default function InvestmentCalculator() {
             )
         ) : (
              <div className="flex items-center justify-center h-60 bg-muted/50 rounded-lg border border-dashed">
-                <p className="text-sm text-muted-foreground">Enter your details to calculate your investment growth</p>
+                <p className="text-sm text-muted-foreground">Enter your investment details to see the returns</p>
             </div>
         )}
       </div>
