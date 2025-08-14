@@ -1,11 +1,10 @@
-
 "use client";
 
 import { useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
@@ -20,6 +19,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 
+// 2024 Federal Tax Data (simplified)
 const taxData = {
   2024: {
     brackets: {
@@ -78,12 +78,12 @@ export default function PaycheckCalculator() {
     
     const brackets = taxData[2024].brackets[filingStatus];
     let federalTax = 0;
-    brackets.forEach(bracket => {
+    for (const bracket of brackets) {
       if (taxableIncome > bracket.from) {
         const incomeInBracket = Math.min(taxableIncome, bracket.to) - bracket.from;
         federalTax += incomeInBracket * bracket.rate;
       }
-    });
+    }
     
     const childTaxCredit = childrenUnder17 * taxData[2024].childTaxCredit;
     const otherDependentCredit = otherDependents * taxData[2024].otherDependentCredit;
@@ -187,9 +187,9 @@ export default function PaycheckCalculator() {
                 <Card><CardHeader><CardTitle className="text-center text-3xl font-bold">{formatCurrency(results.netPay)}</CardTitle><CardDescription className="text-center font-semibold">Estimated Net {results.payFrequencyLabel} Pay</CardDescription></CardHeader>
                     <CardContent className="space-y-2 text-sm">
                         <div className="flex justify-between"><span className="text-muted-foreground">Gross Pay</span><span>{formatCurrency(results.grossPay)}</span></div>
-                        <div className="flex justify-between text-destructive"><span className="pl-4">Federal Tax</span><span>-{formatCurrency(results.federalTax)}</span></div>
-                        <div className="flex justify-between text-destructive"><span className="pl-4">FICA (Social Security, Medicare)</span><span>-{formatCurrency(results.socialSecurityTax + results.medicareTax)}</span></div>
-                        <div className="flex justify-between text-destructive"><span className="pl-4">Pre-Tax Deductions</span><span>-{formatCurrency(results.preTaxDeductions)}</span></div>
+                        <div className="flex justify-between pl-4 text-destructive"><span>Pre-Tax Deductions</span><span>-{formatCurrency(results.preTaxDeductions)}</span></div>
+                        <div className="flex justify-between pl-4 text-destructive"><span>Federal Tax</span><span>-{formatCurrency(results.federalTax)}</span></div>
+                        <div className="flex justify-between pl-4 text-destructive"><span>FICA Taxes</span><span>-{formatCurrency(results.ficaTax)}</span></div>
                         <div className="flex justify-between font-bold border-t pt-2 mt-2"><span>Net Pay (Take-Home)</span><span>{formatCurrency(results.netPay)}</span></div>
                     </CardContent>
                 </Card>
