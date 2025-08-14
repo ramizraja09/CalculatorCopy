@@ -45,6 +45,22 @@ const calcNPER = (rate: number, pmt: number, pv: number, fv: number) => {
     return Math.log(logVal) / Math.log(1 + rate);
 };
 
+// Iterative function to find the rate
+const calcRATE = (nper: number, pmt: number, pv: number, fv: number, guess = 0.005, max_iter = 100, tol = 1e-6) => {
+  let rate = guess;
+  for (let i = 0; i < max_iter; i++) {
+    const fv_at_rate = pv * Math.pow(1 + rate, nper) + pmt * (Math.pow(1 + rate, nper) - 1) / rate;
+    const fv_deriv = nper * pv * Math.pow(1 + rate, nper - 1) + pmt * ((nper * rate * Math.pow(1 + rate, nper - 1) - (Math.pow(1 + rate, nper) - 1)) / (rate * rate));
+    
+    const new_rate = rate - (fv_at_rate + fv) / fv_deriv;
+    
+    if (Math.abs(new_rate - rate) < tol) {
+      return new_rate * 12 * 100; // Return annual rate
+    }
+    rate = new_rate;
+  }
+  return NaN; // Failed to converge
+};
 
 const formSchema = z.object({
   solveFor: z.enum(['fv', 'pmt', 'pv', 'nper', 'rate']),
@@ -97,7 +113,8 @@ export default function InvestmentCalculator() {
                 if (isNaN(res)) throw new Error("Cannot calculate periods with these values.");
                 break;
             case 'rate':
-                res = 'Rate calculation is complex and not yet implemented.';
+                res = calcRATE(nper, pmt, pv, -fv);
+                if (isNaN(res)) throw new Error("Could not converge on a rate. Try different values.");
                 break;
         }
 
@@ -108,7 +125,10 @@ export default function InvestmentCalculator() {
                  const years = Math.floor(res / 12);
                  const months = Math.round(res % 12);
                  newResults[activeTab] = `${years} years, ${months} months`;
-            } else {
+            } else if (activeTab === 'rate') {
+                newResults[activeTab] = `${res.toFixed(3)}%`;
+            }
+            else {
                  newResults[activeTab] = (Math.abs(res)).toFixed(2);
             }
         } else {
@@ -177,9 +197,9 @@ export default function InvestmentCalculator() {
       <TabsList className="grid w-full grid-cols-2 md:grid-cols-5">
         <TabsTrigger value="fv">End Amount</TabsTrigger>
         <TabsTrigger value="pmt">Contribution</TabsTrigger>
+        <TabsTrigger value="rate">Return Rate</TabsTrigger>
         <TabsTrigger value="pv">Starting Amount</TabsTrigger>
         <TabsTrigger value="nper">Investment Length</TabsTrigger>
-        <TabsTrigger value="rate" disabled>Return Rate</TabsTrigger>
       </TabsList>
       
       <Card className="mt-4">
@@ -205,10 +225,10 @@ export default function InvestmentCalculator() {
               </div>
               <div>
                 <Label htmlFor="rate">Annual Return Rate (%)</Label>
-                <Controller name="rate" control={control} render={({ field }) => <Input type="number" step="any" {...field} disabled={isInputDisabled('rate')} value={isInputDisabled('rate') ? results.rate || '' : field.value} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))}/>} />
+                <Controller name="rate" control={control} render={({ field }) => <Input type="number" step="any" {...field} disabled={isInputDisabled('rate')} value={isInputDisabled('rate') ? (typeof results.rate === 'string' ? results.rate.replace('%', '') : '') : field.value} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))}/>} />
               </div>
               <div>
-                <Label htmlFor="fv">End Amount ($)</Label>
+                <Label htmlFor="fv">End Amount (Your Target) ($)</Label>
                 <Controller name="fv" control={control} render={({ field }) => <Input type="number" step="any" {...field} disabled={isInputDisabled('fv')} value={isInputDisabled('fv') ? (results.fv ? formatCurrency(results.fv).replace(/[^0-9.-]+/g,"") : '') : field.value} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))}/>} />
               </div>
             </div>
