@@ -30,6 +30,7 @@ export default function SalesTaxCalculator() {
       solveFor: 'total',
       preTax: 100,
       taxRate: 8,
+      total: 108,
     },
   });
 
@@ -40,8 +41,7 @@ export default function SalesTaxCalculator() {
     // This effect will re-calculate whenever an input changes, providing a live update feel.
     const subscription = watch((values, { name, type }) => {
       if (type === 'change') {
-        const { solveFor, preTax, taxRate, total } = values;
-        if (preTax === undefined || taxRate === undefined || total === undefined) return;
+        const { solveFor, preTax = 0, taxRate = 0, total = 0 } = values;
         
         try {
           if (solveFor === 'total' && preTax > 0 && taxRate >= 0) {
@@ -82,7 +82,7 @@ export default function SalesTaxCalculator() {
                         <RadioGroupItem value="preTax" id="solveForPreTax" checked={isInputDisabled('preTax')} />
                     </RadioGroup>
                     <Controller name="preTax" control={control} render={({ field }) => (
-                         <Input id="preTax" type="number" step="0.01" {...field} disabled={isInputDisabled('preTax')} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />
+                         <Input id="preTax" type="number" step="0.01" {...field} value={field.value ?? ''} disabled={isInputDisabled('preTax')} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />
                     )}/>
                 </div>
             </div>
@@ -93,7 +93,7 @@ export default function SalesTaxCalculator() {
                       <RadioGroupItem value="taxRate" id="solveForTaxRate" checked={isInputDisabled('taxRate')} />
                     </RadioGroup>
                     <Controller name="taxRate" control={control} render={({ field }) => (
-                       <Input id="taxRate" type="number" step="0.01" {...field} disabled={isInputDisabled('taxRate')} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />
+                       <Input id="taxRate" type="number" step="0.01" {...field} value={field.value ?? ''} disabled={isInputDisabled('taxRate')} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />
                     )}/>
                     <span className="font-semibold">%</span>
                 </div>
@@ -105,7 +105,7 @@ export default function SalesTaxCalculator() {
                       <RadioGroupItem value="total" id="solveForTotal" checked={isInputDisabled('total')} />
                     </RadioGroup>
                     <Controller name="total" control={control} render={({ field }) => (
-                         <Input id="total" type="number" step="0.01" {...field} disabled={isInputDisabled('total')} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />
+                         <Input id="total" type="number" step="0.01" {...field} value={field.value ?? ''} disabled={isInputDisabled('total')} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />
                     )}/>
                 </div>
             </div>
