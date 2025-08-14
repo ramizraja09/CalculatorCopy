@@ -16,7 +16,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const formatCurrency = (value: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value);
 
-// --- Lump Sum vs Monthly ---
+// --- Tab 1: Lump Sum vs Monthly ---
 const lumpSumSchema = z.object({
   retirementAge: z.number().int().min(18),
   lifeExpectancy: z.number().int().min(19),
@@ -118,12 +118,152 @@ function LumpSumCalculator() {
     );
 }
 
-// --- Single vs Joint Life ---
+// --- Tab 2: Single vs Joint Life ---
+const jointLifeSchema = z.object({
+  retirementAge: z.number().int().min(18),
+  lifeExpectancy: z.number().int().min(19),
+  spouseAge: z.number().int().min(18),
+  spouseLifeExpectancy: z.number().int().min(19),
+  singleLifePension: z.number().min(1),
+  jointSurvivorPension: z.number().min(1),
+  investmentReturn: z.number().min(0),
+  cola: z.number().min(0),
+}).refine(data => data.lifeExpectancy > data.retirementAge, {
+  message: "Life expectancy must be after retirement age.",
+  path: ["lifeExpectancy"],
+}).refine(data => data.spouseLifeExpectancy > data.spouseAge, {
+    message: "Spouse life expectancy must be after their age.",
+    path: ["spouseLifeExpectancy"],
+});
+type JointLifeFormData = z.infer<typeof jointLifeSchema>;
+
 function SingleVsJointCalculator() {
-    return <Card className="p-8 text-center"><p className="text-muted-foreground">This feature is coming soon.</p></Card>;
+    const [results, setResults] = useState<any>(null);
+    const [formData, setFormData] = useState<JointLifeFormData | null>(null);
+
+    const { control, handleSubmit, formState: { errors } } = useForm<JointLifeFormData>({
+        resolver: zodResolver(jointLifeSchema),
+        defaultValues: {
+            retirementAge: 65,
+            lifeExpectancy: 77,
+            spouseAge: 62,
+            spouseLifeExpectancy: 82,
+            singleLifePension: 5000,
+            jointSurvivorPension: 3000,
+            investmentReturn: 5,
+            cola: 3.5,
+        },
+    });
+
+    const calculatePV = (monthlyPayment: number, years: number, monthlyRate: number, monthlyCola: number) => {
+        const n = years * 12;
+        if (monthlyRate === monthlyCola) {
+            return monthlyPayment * n / (1 + monthlyRate);
+        }
+        return monthlyPayment * (1 - Math.pow((1 + monthlyCola) / (1 + monthlyRate), n)) / (monthlyRate - monthlyCola);
+    };
+
+    const calculateComparison = (data: JointLifeFormData) => {
+        const i = data.investmentReturn / 100 / 12;
+        const g = data.cola / 100 / 12;
+
+        const singleLifeYears = data.lifeExpectancy - data.retirementAge;
+        const pvSingle = calculatePV(data.singleLifePension, singleLifeYears, i, g);
+
+        const jointYears = data.spouseLifeExpectancy - data.retirementAge;
+        const pvJoint = calculatePV(data.jointSurvivorPension, jointYears, i, g);
+
+        setResults({
+            pvSingle,
+            pvJoint,
+            difference: pvJoint - pvSingle,
+        });
+        setFormData(data);
+    };
+    
+    const handleExport = (format: 'txt' | 'csv') => {
+        if (!results || !formData) return;
+        let content = '';
+        const filename = `pension-joint-life-comparison.${format}`;
+        if (format === 'txt') {
+            content = `Pension Comparison\n\nInputs:\n${Object.entries(formData).map(([k,v]) => `- ${k}: ${v}`).join('\n')}\n\nResults:\n- PV of Single Life Pension: ${formatCurrency(results.pvSingle)}\n- PV of Joint Pension: ${formatCurrency(results.pvJoint)}\n- Difference: ${formatCurrency(results.difference)}`;
+        } else {
+            content = `Category,Value\n${Object.entries(formData).map(([k,v]) => `${k},${v}`).join('\n')}\nResult Category,Value\nPV of Single Life Pension,${results.pvSingle}\nPV of Joint Pension,${results.pvJoint}\nDifference,${results.difference}`;
+        }
+        const blob = new Blob([content], { type: `text/${format}` });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    };
+
+    return (
+        <form onSubmit={handleSubmit(calculateComparison)} className="grid md:grid-cols-2 gap-8">
+            <div className="space-y-4">
+                 <Card><CardHeader><CardTitle>Single-life or Joint-and-survivor Payout?</CardTitle></CardHeader>
+                    <CardContent className="space-y-4">
+                        <div className="grid grid-cols-2 gap-4">
+                            <div><Label>Your retirement age</Label><Controller name="retirementAge" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value, 10) || 0)} />} /></div>
+                            <div><Label>Your life expectancy</Label><Controller name="lifeExpectancy" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value, 10) || 0)} />} /></div>
+                        </div>
+                        {errors.lifeExpectancy && <p className="text-destructive text-sm mt-1">{errors.lifeExpectancy.message}</p>}
+                        <div className="grid grid-cols-2 gap-4">
+                             <div><Label>Spouse's age when you retire</Label><Controller name="spouseAge" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value, 10) || 0)} />} /></div>
+                            <div><Label>Spouse's life expectancy</Label><Controller name="spouseLifeExpectancy" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value, 10) || 0)} />} /></div>
+                        </div>
+                        {errors.spouseLifeExpectancy && <p className="text-destructive text-sm mt-1">{errors.spouseLifeExpectancy.message}</p>}
+                        <div className="grid grid-cols-2 gap-4 items-center">
+                            <Label>Single life pension</Label>
+                            <div className="flex items-center gap-2"><Controller name="singleLifePension" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} /><span className="text-sm text-muted-foreground">/month</span></div>
+                        </div>
+                        <div className="grid grid-cols-2 gap-4 items-center">
+                            <Label>Joint survivor pension</Label>
+                             <div className="flex items-center gap-2"><Controller name="jointSurvivorPension" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} /><span className="text-sm text-muted-foreground">/month</span></div>
+                        </div>
+                         <div className="grid grid-cols-2 gap-4 items-center">
+                            <Label>Your investment return</Label>
+                             <div className="flex items-center gap-2"><Controller name="investmentReturn" control={control} render={({ field }) => <Input type="number" step="0.1" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} /><span className="text-sm text-muted-foreground">%/year</span></div>
+                        </div>
+                         <div className="grid grid-cols-2 gap-4 items-center">
+                            <Label>Cost-of-living adjustment</Label>
+                            <div className="flex items-center gap-2"><Controller name="cola" control={control} render={({ field }) => <Input type="number" step="0.1" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} /><span className="text-sm text-muted-foreground">%/year</span></div>
+                        </div>
+
+                        <div className="flex gap-2 pt-4">
+                            <Button type="submit" className="flex-1">Compare</Button>
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild><Button variant="outline" disabled={!results}><Download className="mr-2 h-4 w-4" /> Export</Button></DropdownMenuTrigger>
+                                <DropdownMenuContent><DropdownMenuItem onClick={() => handleExport('txt')}>Download .txt</DropdownMenuItem><DropdownMenuItem onClick={() => handleExport('csv')}>Download .csv</DropdownMenuItem></DropdownMenuContent>
+                            </DropdownMenu>
+                        </div>
+                    </CardContent>
+                </Card>
+            </div>
+             <div className="space-y-4">
+                <h3 className="text-xl font-semibold">Comparison Result</h3>
+                {results ? (
+                    <div className="space-y-4">
+                        <Alert variant={results.difference > 0 ? "default" : "destructive"} className={results.difference > 0 ? "border-green-500" : ""}>
+                            <Info className="h-4 w-4" />
+                            <AlertTitle>{results.difference > 0 ? "Joint Pension Appears More Valuable" : "Single Life Pension Appears More Valuable"}</AlertTitle>
+                            <AlertDescription>The present value of the joint pension is {formatCurrency(Math.abs(results.difference))} {results.difference > 0 ? 'more' : 'less'} than the single life pension.</AlertDescription>
+                        </Alert>
+                        <Card><CardContent className="p-4 grid grid-cols-2 gap-4 text-center">
+                            <div><p className="text-muted-foreground">PV of Single Life Pension</p><p className="font-semibold text-xl">{formatCurrency(results.pvSingle)}</p></div>
+                            <div><p className="text-muted-foreground">PV of Joint Pension</p><p className="font-semibold text-xl">{formatCurrency(results.pvJoint)}</p></div>
+                        </CardContent></Card>
+                    </div>
+                ) : ( <div className="flex items-center justify-center h-60 bg-muted/50 rounded-lg border border-dashed"><p className="text-sm text-muted-foreground">Enter details to compare pension options</p></div> )}
+            </div>
+        </form>
+    );
 }
 
-// --- Work Longer ---
+// --- Tab 3: Work Longer ---
 function WorkLongerCalculator() {
     return <Card className="p-8 text-center"><p className="text-muted-foreground">This feature is coming soon.</p></Card>;
 }
