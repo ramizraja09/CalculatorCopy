@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from 'react';
@@ -170,8 +171,8 @@ export default function PaycheckCalculator() {
 
   return (
     <TooltipProvider>
-    <div className="grid lg:grid-cols-3 gap-8">
-      <form onSubmit={handleSubmit(calculatePay)} className="lg:col-span-2 space-y-4">
+    <div className="space-y-8">
+      <form onSubmit={handleSubmit(calculatePay)} className="space-y-4">
         <Card>
           <CardContent className="p-4 grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
             
@@ -278,38 +279,39 @@ export default function PaycheckCalculator() {
         </div>
       </form>
       
-      <div className="lg:col-span-1 space-y-4">
+       <div className="lg:col-span-3 space-y-4 mt-8">
         <h3 className="text-xl font-semibold">Paycheck Summary</h3>
         {results ? (
-            <div className="space-y-4">
-                <Card><CardHeader><CardTitle className="text-center text-3xl font-bold">{formatCurrency(results.netPay)}</CardTitle><CardDescription className="text-center font-semibold">Estimated Net {results.payFrequencyLabel} Pay</CardDescription></CardHeader>
-                    <CardContent className="space-y-2 text-sm">
-                        <div className="flex justify-between"><span className="text-muted-foreground">Gross Pay</span><span>{formatCurrency(results.grossPay)}</span></div>
-                        <div className="flex justify-between pl-4 text-destructive"><span>Pre-Tax Deductions</span><span>-{formatCurrency(results.preTaxDeductions)}</span></div>
-                        <div className="flex justify-between pl-4 text-destructive"><span>Federal Tax</span><span>-{formatCurrency(results.federalTax)}</span></div>
-                        <div className="flex justify-between pl-4 text-destructive"><span>State Tax</span><span>-{formatCurrency(results.stateTax)}</span></div>
-                        <div className="flex justify-between pl-4 text-destructive"><span>City Tax</span><span>-{formatCurrency(results.cityTax)}</span></div>
-                        <div className="flex justify-between pl-4 text-destructive"><span>FICA Taxes</span><span>-{formatCurrency(results.ficaTax)}</span></div>
-                        <div className="flex justify-between font-bold border-t pt-2 mt-2"><span>Net Pay (Take-Home)</span><span>{formatCurrency(results.netPay)}</span></div>
-                    </CardContent>
-                </Card>
-                <Card>
-                    <CardHeader><CardTitle className="text-base text-center">Paycheck Breakdown</CardTitle></CardHeader>
-                    <CardContent className="h-64">
-                         <ResponsiveContainer width="100%" height="100%">
-                            <PieChart>
-                                <Pie data={results.pieData} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={40} outerRadius={60} paddingAngle={5}>
-                                    {results.pieData.map((_entry: any, index: number) => <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />)}
-                                </Pie>
-                                <Tooltip formatter={(value: number) => formatCurrency(value)} />
-                                <Legend iconType="circle" />
-                            </PieChart>
-                        </ResponsiveContainer>
-                    </CardContent>
-                </Card>
+            <div className="grid md:grid-cols-2 gap-8">
+              <Card>
+                <CardHeader><CardTitle className="text-center text-3xl font-bold">{formatCurrency(results.netPay)}</CardTitle><CardDescription className="text-center font-semibold">Estimated Net {results.payFrequencyLabel} Pay</CardDescription></CardHeader>
+                <CardContent className="space-y-2 text-sm">
+                    <div className="flex justify-between"><span className="text-muted-foreground">Gross Pay</span><span>{formatCurrency(results.grossPay)}</span></div>
+                    <div className="flex justify-between pl-4 text-destructive"><span>Pre-Tax Deductions</span><span>-{formatCurrency(results.preTaxDeductions)}</span></div>
+                    <div className="flex justify-between pl-4 text-destructive"><span>Federal Tax</span><span>-{formatCurrency(results.federalTax)}</span></div>
+                    <div className="flex justify-between pl-4 text-destructive"><span>State Tax</span><span>-{formatCurrency(results.stateTax)}</span></div>
+                    <div className="flex justify-between pl-4 text-destructive"><span>City Tax</span><span>-{formatCurrency(results.cityTax)}</span></div>
+                    <div className="flex justify-between pl-4 text-destructive"><span>FICA Taxes</span><span>-{formatCurrency(results.ficaTax)}</span></div>
+                    <div className="flex justify-between font-bold border-t pt-2 mt-2"><span>Net Pay (Take-Home)</span><span>{formatCurrency(results.netPay)}</span></div>
+                </CardContent>
+              </Card>
+              <Card>
+                  <CardHeader><CardTitle className="text-base text-center">Paycheck Breakdown</CardTitle></CardHeader>
+                  <CardContent className="h-80">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <PieChart>
+                              <Pie data={results.pieData} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={50} outerRadius={80} paddingAngle={5}>
+                                  {results.pieData.map((_entry: any, index: number) => <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />)}
+                              </Pie>
+                              <Tooltip formatter={(value: number) => formatCurrency(value)} />
+                              <Legend iconType="circle" />
+                          </PieChart>
+                      </ResponsiveContainer>
+                  </CardContent>
+              </Card>
             </div>
         ) : (
-            <div className="flex items-center justify-center h-full bg-muted/50 rounded-lg border border-dashed p-8">
+            <div className="flex items-center justify-center h-60 bg-muted/50 rounded-lg border border-dashed p-8">
                 <p className="text-sm text-muted-foreground text-center">Enter your salary and deductions to estimate your take-home pay.</p>
             </div>
         )}
