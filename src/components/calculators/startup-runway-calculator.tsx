@@ -5,27 +5,33 @@ import { useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
-import { Download } from 'lucide-react';
+import { Download, Info } from 'lucide-react';
 import { addMonths, format } from 'date-fns';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+} from "@/components/ui/dropdown-menu";
+import { LineChart, BarChart, Bar, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
+
 
 const formSchema = z.object({
   cashBalance: z.number().min(0, "Cash balance must be non-negative"),
   monthlyRevenue: z.number().min(0, "Monthly revenue must be non-negative"),
   monthlyExpenses: z.number().min(1, "Monthly expenses must be positive"),
-}).refine(data => data.monthlyExpenses > data.monthlyRevenue, {
-  message: "Expenses must be greater than revenue for a valid runway calculation.",
-  path: ["monthlyExpenses"],
+  monthlyRevenueGrowth: z.number().min(0).default(0),
+  monthlyExpenseGrowth: z.number().min(0).default(0),
+}).refine(data => data.monthlyExpenses > data.monthlyRevenue || data.monthlyRevenueGrowth > data.monthlyExpenseGrowth, {
+  message: "If revenue is higher than expenses, expense growth must be lower than revenue growth.",
+  path: ["monthlyExpenseGrowth"],
 });
+
 
 type FormData = z.infer<typeof formSchema>;
 
@@ -39,20 +45,51 @@ export default function StartupRunwayCalculator() {
       cashBalance: 250000,
       monthlyRevenue: 20000,
       monthlyExpenses: 50000,
+      monthlyRevenueGrowth: 5,
+      monthlyExpenseGrowth: 1,
     },
   });
 
   const calculateRunway = (data: FormData) => {
-    const { cashBalance, monthlyRevenue, monthlyExpenses } = data;
-    const netBurn = monthlyExpenses - monthlyRevenue;
-    const runwayMonths = cashBalance / netBurn;
+    const { cashBalance, monthlyRevenueGrowth, monthlyExpenseGrowth } = data;
+    let currentCash = cashBalance;
+    let currentRevenue = data.monthlyRevenue;
+    let currentExpenses = data.monthlyExpenses;
     
-    const endDate = addMonths(new Date(), runwayMonths);
+    let months = 0;
+    const monthlyProjections = [];
+
+    // Loop for a maximum of 10 years to prevent infinite loops
+    while (currentCash > 0 && months < 120) {
+        months++;
+        const netBurn = currentExpenses - currentRevenue;
+        currentCash -= netBurn;
+
+        monthlyProjections.push({
+            month: months,
+            revenue: currentRevenue,
+            expenses: currentExpenses,
+            netBurn: netBurn,
+            cashBalance: Math.max(0, currentCash),
+        });
+
+        // Apply growth for next month
+        currentRevenue *= (1 + monthlyRevenueGrowth / 100);
+        currentExpenses *= (1 + monthlyExpenseGrowth / 100);
+
+        if (netBurn <= 0 && currentCash > 0) { // Profitable
+            break;
+        }
+    }
+
+    const isProfitable = (currentExpenses - currentRevenue) < 0;
 
     setResults({
-      runwayMonths: runwayMonths.toFixed(1),
-      endDate: format(endDate, "MMMM yyyy"),
-      netBurn: netBurn,
+      runwayMonths: isProfitable ? Infinity : months,
+      endDate: isProfitable ? 'N/A (Profitable)' : format(addMonths(new Date(), months), "MMMM yyyy"),
+      netBurn: data.monthlyExpenses - data.monthlyRevenue,
+      projections: monthlyProjections,
+      isProfitable,
     });
     setFormData(data);
   };
@@ -64,12 +101,11 @@ export default function StartupRunwayCalculator() {
     
     let content = '';
     const filename = `startup-runway-calculation.${format}`;
-    const { cashBalance, monthlyRevenue, monthlyExpenses } = formData;
 
     if (format === 'txt') {
-      content = `Startup Runway Calculation\n\nInputs:\n- Cash Balance: ${formatCurrency(cashBalance)}\n- Monthly Revenue: ${formatCurrency(monthlyRevenue)}\n- Monthly Expenses: ${formatCurrency(monthlyExpenses)}\n\nResult:\n- Runway: ${results.runwayMonths} months\n- Estimated End Date: ${results.endDate}`;
+      content = `Startup Runway Calculation\n\nInputs:\n${Object.entries(formData).map(([k,v]) => `- ${k}: ${v}`).join('\n')}\n\nResult:\n- Runway: ${results.runwayMonths === Infinity ? 'Infinite (Profitable)' : `${results.runwayMonths} months`}\n- Estimated End Date: ${results.endDate}`;
     } else {
-       content = `Cash Balance,Monthly Revenue,Monthly Expenses,Runway (months),End Date\n${cashBalance},${monthlyRevenue},${monthlyExpenses},${results.runwayMonths},${results.endDate}`;
+       content = `Category,Value\n${Object.entries(formData).map(([k,v]) => `${k},${v}`).join('\n')}\n\nResult Category,Value\nRunway (months),${results.runwayMonths === Infinity ? 'Infinite' : results.runwayMonths}\nEnd Date,${results.endDate}\n`;
     }
 
     const blob = new Blob([content], { type: `text/${format}` });
@@ -84,26 +120,25 @@ export default function StartupRunwayCalculator() {
   };
 
   return (
-    <form onSubmit={handleSubmit(calculateRunway)} className="grid md:grid-cols-2 gap-8">
+    <form onSubmit={handleSubmit(calculateRunway)} className="grid lg:grid-cols-2 gap-8">
       {/* Inputs Column */}
       <div className="space-y-4">
-        <h3 className="text-xl font-semibold">Financials</h3>
-        
-        <div>
-          <Label htmlFor="cashBalance">Current Cash Balance ($)</Label>
-          <Controller name="cashBalance" control={control} render={({ field }) => <Input id="cashBalance" type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
-        </div>
-
-        <div>
-          <Label htmlFor="monthlyRevenue">Monthly Revenue ($)</Label>
-          <Controller name="monthlyRevenue" control={control} render={({ field }) => <Input id="monthlyRevenue" type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
-        </div>
-
-        <div>
-          <Label htmlFor="monthlyExpenses">Monthly Operating Expenses ($)</Label>
-          <Controller name="monthlyExpenses" control={control} render={({ field }) => <Input id="monthlyExpenses" type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
-          {errors.monthlyExpenses && <p className="text-destructive text-sm mt-1">{errors.monthlyExpenses.message}</p>}
-        </div>
+        <Card>
+            <CardHeader><CardTitle>Financials</CardTitle></CardHeader>
+            <CardContent className="space-y-4">
+              <div><Label htmlFor="cashBalance">Current Cash Balance ($)</Label><Controller name="cashBalance" control={control} render={({ field }) => <Input id="cashBalance" type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} /></div>
+              <div><Label htmlFor="monthlyRevenue">Current Monthly Revenue ($)</Label><Controller name="monthlyRevenue" control={control} render={({ field }) => <Input id="monthlyRevenue" type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} /></div>
+              <div><Label htmlFor="monthlyExpenses">Current Monthly Operating Expenses ($)</Label><Controller name="monthlyExpenses" control={control} render={({ field }) => <Input id="monthlyExpenses" type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} /></div>
+            </CardContent>
+        </Card>
+        <Card>
+            <CardHeader><CardTitle>Monthly Growth Rates</CardTitle></CardHeader>
+            <CardContent className="space-y-4">
+               <div><Label htmlFor="monthlyRevenueGrowth">Revenue Growth Rate (%/month)</Label><Controller name="monthlyRevenueGrowth" control={control} render={({ field }) => <Input id="monthlyRevenueGrowth" type="number" step="0.1" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} /></div>
+               <div><Label htmlFor="monthlyExpenseGrowth">Expense Growth Rate (%/month)</Label><Controller name="monthlyExpenseGrowth" control={control} render={({ field }) => <Input id="monthlyExpenseGrowth" type="number" step="0.1" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} /></div>
+               {errors.monthlyExpenseGrowth && <p className="text-destructive text-sm mt-1">{errors.monthlyExpenseGrowth.message}</p>}
+            </CardContent>
+        </Card>
         
         <div className="flex gap-2">
             <Button type="submit" className="flex-1">Calculate Runway</Button>
@@ -129,15 +164,47 @@ export default function StartupRunwayCalculator() {
                 <Card>
                     <CardContent className="p-4 text-center">
                         <p className="text-sm text-muted-foreground">Cash Runway</p>
-                        <p className="text-3xl font-bold">{results.runwayMonths} months</p>
+                        <p className="text-3xl font-bold">{results.isProfitable ? 'Profitable' : `${results.runwayMonths} months`}</p>
                     </CardContent>
                 </Card>
                 <Card>
                     <CardContent className="p-4 grid grid-cols-2 gap-2 text-sm text-center">
-                         <div><p className="text-muted-foreground">Estimated End Date</p><p className="font-semibold">{results.endDate}</p></div>
-                         <div><p className="text-muted-foreground">Net Monthly Burn</p><p className="font-semibold">{formatCurrency(results.netBurn)}</p></div>
+                         <div><p className="text-muted-foreground">Cash Zero Date</p><p className="font-semibold">{results.endDate}</p></div>
+                         <div><p className="text-muted-foreground">Initial Monthly Burn</p><p className="font-semibold">{formatCurrency(results.netBurn)}</p></div>
                     </CardContent>
                 </Card>
+                <Card>
+                    <CardHeader><CardTitle className="text-base text-center">Cash Balance Projection</CardTitle></CardHeader>
+                    <CardContent className="h-48">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <LineChart data={results.projections} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
+                          <CartesianGrid strokeDasharray="3 3" />
+                          <XAxis dataKey="month" label={{ value: "Month", position: "insideBottom", offset: -5 }} />
+                          <YAxis tickFormatter={(val) => `$${(val/1000)}k`}/>
+                          <Tooltip formatter={(value: number) => formatCurrency(value)} />
+                          <Legend />
+                          <Line type="monotone" dataKey="cashBalance" name="Cash Balance" stroke="hsl(var(--chart-2))" dot={false} />
+                        </LineChart>
+                      </ResponsiveContainer>
+                    </CardContent>
+                </Card>
+                 <Card>
+                    <CardHeader><CardTitle className="text-base text-center">Revenue vs. Expenses</CardTitle></CardHeader>
+                    <CardContent className="h-48">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <BarChart data={results.projections} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
+                          <CartesianGrid strokeDasharray="3 3" />
+                          <XAxis dataKey="month" label={{ value: "Month", position: "insideBottom", offset: -5 }} />
+                          <YAxis tickFormatter={(val) => `$${(val/1000)}k`}/>
+                          <Tooltip formatter={(value: number) => formatCurrency(value)} />
+                          <Legend />
+                          <Bar dataKey="revenue" fill="hsl(var(--chart-2))" name="Revenue" />
+                          <Bar dataKey="expenses" fill="hsl(var(--destructive))" name="Expenses" />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    </CardContent>
+                </Card>
+
             </div>
         ) : (
              <div className="flex items-center justify-center h-60 bg-muted/50 rounded-lg border border-dashed">
