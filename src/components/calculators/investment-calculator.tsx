@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
@@ -40,9 +40,9 @@ export default function InvestmentCalculator() {
   const { control, handleSubmit, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      initialPrincipal: 1000,
-      monthlyContribution: 100,
-      interestRate: 7,
+      initialPrincipal: 20000,
+      monthlyContribution: 1000,
+      interestRate: 6,
       years: 10,
       compoundFrequency: 'annually',
     },
@@ -61,7 +61,8 @@ export default function InvestmentCalculator() {
     const n = compoundMap[compoundFrequency];
     const schedule = [];
     let balance = initialPrincipal;
-    let totalContributions = initialPrincipal;
+    let totalPrincipal = initialPrincipal;
+    let totalInterest = 0;
     
     schedule.push({
       year: 0,
@@ -71,36 +72,35 @@ export default function InvestmentCalculator() {
     });
     
     for (let year = 1; year <= years; year++) {
-      let yearStartBalance = balance;
-      for (let month = 1; month <= 12; month++) {
-        balance += monthlyContribution;
-      }
-      
-      const interestForYear = balance * (Math.pow(1 + annualRate / n, n) - 1);
-      balance += interestForYear;
-      
-      totalContributions += monthlyContribution * 12;
-      const currentTotalInterest = balance - totalContributions;
+        let yearStartBalance = balance;
+        let yearlyContribution = monthlyContribution * 12;
+        
+        balance += yearlyContribution; // Assuming contributions are made at the beginning of the year for simplicity
+        
+        const interestForYear = balance * (Math.pow(1 + annualRate / n, n) - 1);
+        balance += interestForYear;
+        
+        totalPrincipal += yearlyContribution;
+        totalInterest += interestForYear;
 
-      schedule.push({
-        year,
-        endBalance: balance,
-        totalContributions,
-        totalInterest: currentTotalInterest > 0 ? currentTotalInterest : 0,
-      });
+        schedule.push({
+            year,
+            endBalance: balance,
+            totalContributions: totalPrincipal,
+            totalInterest,
+        });
     }
     
-    const finalTotalInterest = balance - totalContributions;
-
     setResults({
       finalBalance: balance,
-      totalContributions,
-      totalInterest: finalTotalInterest,
+      startingAmount: initialPrincipal,
+      totalContributions: totalPrincipal - initialPrincipal,
+      totalInterest: totalInterest,
       schedule,
       pieData: [
-        { name: 'Initial Principal', value: initialPrincipal },
-        { name: 'Total Contributions', value: totalContributions - initialPrincipal },
-        { name: 'Total Interest', value: finalTotalInterest },
+        { name: 'Starting Amount', value: initialPrincipal },
+        { name: 'Total Contributions', value: totalPrincipal - initialPrincipal },
+        { name: 'Total Interest', value: totalInterest },
       ],
       error: null,
     });
@@ -118,15 +118,15 @@ export default function InvestmentCalculator() {
 
     if (format === 'txt') {
       content = `Investment Calculation\n\nInputs:\n`;
-      content += `- Initial Principal: ${formatCurrency(initialPrincipal)}\n- Monthly Contribution: ${formatCurrency(monthlyContribution)}\n- Annual Interest Rate: ${interestRate}%\n`;
-      content += `- Length of Time: ${years} years\n- Compound Frequency: ${compoundFrequency}\n\n`;
-      content += `Results:\n- Future Value: ${formatCurrency(results.finalBalance)}\n- Total Contributions: ${formatCurrency(results.totalContributions)}\n- Total Interest: ${formatCurrency(results.totalInterest)}\n`;
+      content += `- Starting Amount: ${formatCurrency(initialPrincipal)}\n- Additional Contribution: ${formatCurrency(monthlyContribution * 12)}/year\n- Return Rate: ${interestRate}%\n`;
+      content += `- After: ${years} years\n- Compound Frequency: ${compoundFrequency}\n\n`;
+      content += `Results:\n- End Balance: ${formatCurrency(results.finalBalance)}\n- Total Contributions: ${formatCurrency(results.totalContributions)}\n- Total Interest: ${formatCurrency(results.totalInterest)}\n`;
     } else {
       content = 'Category,Value\n';
-      content += `Initial Principal,${initialPrincipal}\nMonthly Contribution,${monthlyContribution}\nAnnual Interest Rate (%),${interestRate}\n`;
-      content += `Length of Time (years),${years}\nCompound Frequency,${compoundFrequency}\n\n`;
+      content += `Starting Amount,${initialPrincipal}\nAdditional Contribution,${monthlyContribution*12}\nReturn Rate (%),${interestRate}\n`;
+      content += `After (years),${years}\nCompound Frequency,${compoundFrequency}\n\n`;
       content += 'Result Category,Value\n';
-      content += `Future Value,${results.finalBalance.toFixed(2)}\nTotal Contributions,${results.totalContributions.toFixed(2)}\nTotal Interest,${results.totalInterest.toFixed(2)}\n`;
+      content += `End Balance,${results.finalBalance.toFixed(2)}\nTotal Contributions,${results.totalContributions.toFixed(2)}\nTotal Interest,${results.totalInterest.toFixed(2)}\n`;
     }
 
     const blob = new Blob([content], { type: `text/${format}` });
@@ -147,31 +147,27 @@ export default function InvestmentCalculator() {
         <h3 className="text-xl font-semibold">Inputs</h3>
         
         <div>
-          <Label htmlFor="initialPrincipal">Initial Principal ($)</Label>
+          <Label htmlFor="initialPrincipal">Starting Amount ($)</Label>
           <Controller name="initialPrincipal" control={control} render={({ field }) => <Input id="initialPrincipal" type="number" step="0.01" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
-          {errors.initialPrincipal && <p className="text-destructive text-sm mt-1">{errors.initialPrincipal.message}</p>}
         </div>
 
         <div>
-          <Label htmlFor="monthlyContribution">Monthly Contribution ($)</Label>
+          <Label htmlFor="monthlyContribution">Additional Contribution ($/month)</Label>
           <Controller name="monthlyContribution" control={control} render={({ field }) => <Input id="monthlyContribution" type="number" step="0.01" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
-          {errors.monthlyContribution && <p className="text-destructive text-sm mt-1">{errors.monthlyContribution.message}</p>}
         </div>
 
         <div>
-          <Label htmlFor="interestRate">Annual Interest Rate (%)</Label>
+          <Label htmlFor="interestRate">Return Rate (%)</Label>
           <Controller name="interestRate" control={control} render={({ field }) => <Input id="interestRate" type="number" step="0.01" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
-          {errors.interestRate && <p className="text-destructive text-sm mt-1">{errors.interestRate.message}</p>}
         </div>
         
         <div>
-          <Label htmlFor="years">Length of Time (years)</Label>
+          <Label htmlFor="years">After (years)</Label>
           <Controller name="years" control={control} render={({ field }) => <Input id="years" type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseInt(e.target.value, 10))} />} />
-          {errors.years && <p className="text-destructive text-sm mt-1">{errors.years.message}</p>}
         </div>
         
         <div>
-          <Label htmlFor="compoundFrequency">Compound Frequency</Label>
+          <Label htmlFor="compoundFrequency">Compound</Label>
           <Controller name="compoundFrequency" control={control} render={({ field }) => (
             <Select onValueChange={field.onChange} defaultValue={field.value}>
               <SelectTrigger id="compoundFrequency"><SelectValue /></SelectTrigger>
@@ -212,44 +208,27 @@ export default function InvestmentCalculator() {
             ) : (
                 <div className="space-y-4">
                     <Card>
-                        <CardContent className="p-4 grid grid-cols-3 gap-4 text-center">
-                            <div><p className="text-sm text-muted-foreground">Future Value</p><p className="text-2xl font-bold">{formatCurrency(results.finalBalance)}</p></div>
-                             <div><p className="text-sm text-muted-foreground">Total Contributions</p><p className="text-2xl font-bold">{formatCurrency(results.totalContributions)}</p></div>
-                             <div><p className="text-sm text-muted-foreground">Total Interest</p><p className="text-2xl font-bold">{formatCurrency(results.totalInterest)}</p></div>
-                        </CardContent>
+                      <CardHeader><CardTitle className="text-center">Results</CardTitle></CardHeader>
+                      <CardContent className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <div className="flex justify-between font-bold text-lg"><p>End Balance</p><p>{formatCurrency(results.finalBalance)}</p></div>
+                          <div className="flex justify-between text-sm"><p>Starting Amount</p><p>{formatCurrency(results.startingAmount)}</p></div>
+                          <div className="flex justify-between text-sm"><p>Total Contributions</p><p>{formatCurrency(results.totalContributions)}</p></div>
+                          <div className="flex justify-between text-sm"><p>Total Interest</p><p>{formatCurrency(results.totalInterest)}</p></div>
+                        </div>
+                        <div className="h-48">
+                           <ResponsiveContainer width="100%" height="100%">
+                                <PieChart>
+                                    <Pie data={results.pieData} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={30} outerRadius={50} paddingAngle={5} label={({ percent }) => `${(percent * 100).toFixed(0)}%`}>
+                                        {results.pieData.map((_entry: any, index: number) => <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />)}
+                                    </Pie>
+                                    <Tooltip formatter={(value: number) => formatCurrency(value)} />
+                                    <Legend iconType="circle" />
+                                </PieChart>
+                            </ResponsiveContainer>
+                        </div>
+                      </CardContent>
                     </Card>
-
-                    <div className="grid md:grid-cols-2 gap-4">
-                        <Card>
-                            <CardContent className="p-4 h-64">
-                                <h4 className="font-semibold text-center mb-2">Growth Over Time</h4>
-                                <ResponsiveContainer width="100%" height="100%">
-                                <LineChart data={results.schedule} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
-                                    <CartesianGrid strokeDasharray="3 3" />
-                                    <XAxis dataKey="year" />
-                                    <YAxis tickFormatter={(value) => typeof value === 'number' ? formatCurrency(value) : ''} />
-                                    <RechartsTooltip formatter={(value: number) => formatCurrency(value)} />
-                                    <Legend />
-                                    <Line type="monotone" dataKey="endBalance" name="Total Balance" stroke="hsl(var(--primary))" dot={false} />
-                                </LineChart>
-                                </ResponsiveContainer>
-                            </CardContent>
-                        </Card>
-                        <Card>
-                             <CardContent className="p-4 h-64">
-                                <h4 className="font-semibold text-center mb-2">Final Balance Breakdown</h4>
-                                <ResponsiveContainer width="100%" height="100%">
-                                    <PieChart>
-                                        <Pie data={results.pieData} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={40} outerRadius={60} paddingAngle={5} label>
-                                            {results.pieData.map((_entry: any, index: number) => <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />)}
-                                        </Pie>
-                                        <RechartsTooltip formatter={(value: number) => formatCurrency(value)} />
-                                        <Legend iconType="circle" />
-                                    </PieChart>
-                                </ResponsiveContainer>
-                            </CardContent>
-                        </Card>
-                    </div>
 
                     <Card>
                       <CardContent className="p-4">
