@@ -180,8 +180,9 @@ export default function LoanCalculator() {
                   </div>
                 )}
               </div>
-               {amortizedResults && !amortizedResults.error && (
-                <div className="md:col-span-2 mt-8 space-y-8">
+            </div>
+            {amortizedResults && !amortizedResults.error && (
+                <div className="space-y-8">
                     <div className="grid md:grid-cols-2 gap-8">
                         <Card>
                             <CardHeader><CardTitle className="text-base text-center">Total Cost Breakdown</CardTitle></CardHeader>
@@ -236,7 +237,6 @@ export default function LoanCalculator() {
                     </div>
                 </div>
               )}
-            </div>
         </form>
       </TabsContent>
       <TabsContent value="deferred" className="mt-6">
