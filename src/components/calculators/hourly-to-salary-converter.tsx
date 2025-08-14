@@ -17,8 +17,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { Table, TableBody, TableCell, TableRow } from '@/components/ui/table';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 
 
@@ -35,7 +35,6 @@ const formSchema = z.object({
 type FormData = z.infer<typeof formSchema>;
 
 const formatCurrency = (value: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value);
-const PIE_COLORS = ['hsl(var(--chart-2))', 'hsl(var(--chart-1))'];
 
 export default function HourlyToSalaryConverter() {
   const [results, setResults] = useState<any | null>(null);
@@ -80,10 +79,9 @@ export default function HourlyToSalaryConverter() {
         weekly: totalAnnual / 52,
         daily: totalAnnual / (data.weeksPerYear * (data.hoursPerWeek / 5)), // assumes 5-day work week
         effectiveHourly: totalAnnual / (data.weeksPerYear * (data.hoursPerWeek + data.overtimeHours)),
-        pieData: [
-            { name: 'Base Pay', value: baseAnnual },
-            { name: 'Overtime Pay', value: overtimePay },
-        ].filter(d => d.value > 0),
+        chartData: [
+            { name: 'Pay Breakdown', base: baseAnnual, overtime: overtimePay }
+        ],
     });
     setFormData(data);
   };
@@ -95,9 +93,9 @@ export default function HourlyToSalaryConverter() {
     const filename = `hourly-salary-conversion.${format}`;
 
     if (format === 'txt') {
-      content = `Hourly/Salary Conversion\n\nInputs:\n${Object.entries(formData).map(([k,v]) => `- ${k}: ${v}`).join('\n')}\n\nResults:\n${Object.entries(results).filter(([k]) => k !== 'pieData').map(([k,v]) => `- ${k}: ${typeof v === 'number' ? formatCurrency(v) : v}`).join('\n')}`;
+      content = `Hourly/Salary Conversion\n\nInputs:\n${Object.entries(formData).map(([k,v]) => `- ${k}: ${v}`).join('\n')}\n\nResults:\n${Object.entries(results).filter(([k]) => k !== 'chartData').map(([k,v]) => `- ${k}: ${typeof v === 'number' ? formatCurrency(v) : v}`).join('\n')}`;
     } else {
-      content = `Category,Value\n${Object.entries(formData).map(([k,v]) => `${k},${v}`).join('\n')}\n\nResult,Value\n${Object.entries(results).filter(([k]) => k !== 'pieData').map(([k,v]) => `${k},${v}`).join('\n')}`;
+      content = `Category,Value\n${Object.entries(formData).map(([k,v]) => `${k},${v}`).join('\n')}\n\nResult,Value\n${Object.entries(results).filter(([k]) => k !== 'chartData').map(([k,v]) => `${k},${v}`).join('\n')}`;
     }
 
     const blob = new Blob([content], { type: `text/${format}` });
@@ -164,6 +162,16 @@ export default function HourlyToSalaryConverter() {
         <h3 className="text-xl font-semibold">Equivalent Earnings</h3>
         {results ? (
             <div className="space-y-4">
+                <Alert>
+                  <Info className="h-4 w-4" />
+                  <AlertTitle>Summary</AlertTitle>
+                  <AlertDescription>
+                    {conversionType === 'hourlyToSalary' ?
+                        `An hourly rate of ${formatCurrency(formData?.hourlyRate || 0)} translates to an annual salary of ${formatCurrency(results.baseAnnual)}, before overtime.`
+                        : `An annual salary of ${formatCurrency(formData?.annualSalary || 0)} is equivalent to an hourly rate of ${formatCurrency(results.effectiveHourly)}.`
+                    }
+                  </AlertDescription>
+                </Alert>
                 <Card>
                     <CardHeader>
                         <CardTitle className="text-center">
@@ -183,16 +191,18 @@ export default function HourlyToSalaryConverter() {
                     </CardContent>
                 </Card>
                  <Card>
-                    <CardHeader><CardTitle className="text-base text-center">Income Breakdown</CardTitle></CardHeader>
+                    <CardHeader><CardTitle className="text-base text-center">Income Breakdown (Annual)</CardTitle></CardHeader>
                     <CardContent className="h-60">
                         <ResponsiveContainer width="100%" height="100%">
-                            <PieChart>
-                                <Pie data={results.pieData} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={40} outerRadius={60} paddingAngle={5}>
-                                    {results.pieData.map((_entry: any, index: number) => <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />)}
-                                </Pie>
+                            <BarChart data={results.chartData} layout="vertical">
+                                <CartesianGrid strokeDasharray="3 3" />
+                                <XAxis type="number" tickFormatter={(value) => formatCurrency(value)} />
+                                <YAxis type="category" dataKey="name" hide />
                                 <Tooltip formatter={(value: number) => formatCurrency(value)} />
-                                <Legend iconType="circle" />
-                            </PieChart>
+                                <Legend />
+                                <Bar dataKey="base" stackId="a" fill="hsl(var(--chart-2))" name="Base Pay" />
+                                <Bar dataKey="overtime" stackId="a" fill="hsl(var(--chart-1))" name="Overtime Pay" />
+                            </BarChart>
                         </ResponsiveContainer>
                     </CardContent>
                 </Card>
@@ -204,3 +214,4 @@ export default function HourlyToSalaryConverter() {
     </form>
   );
 }
+
