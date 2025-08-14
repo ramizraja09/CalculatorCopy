@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Info, Download } from 'lucide-react';
+import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip as RechartsTooltip } from 'recharts';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -52,6 +53,7 @@ const formSchema = z.object({
 });
 
 type FormData = z.infer<typeof formSchema>;
+const PIE_COLORS = ['hsl(var(--chart-2))', 'hsl(var(--chart-1))'];
 
 export default function IncomeTaxCalculator() {
   const [results, setResults] = useState<any>(null);
@@ -82,11 +84,17 @@ export default function IncomeTaxCalculator() {
     }
 
     const effectiveRate = income > 0 ? (tax / income) * 100 : 0;
+    const netIncome = income - tax;
 
     setResults({
       totalTax: tax,
       taxableIncome,
       effectiveRate,
+      netIncome,
+      pieData: [
+        { name: 'Net Income', value: netIncome },
+        { name: 'Estimated Tax', value: tax },
+      ],
       error: null,
     });
     setFormData(data);
@@ -183,6 +191,19 @@ export default function IncomeTaxCalculator() {
                         <div><p className="text-muted-foreground">Effective Tax Rate</p><p className="font-semibold">{results.effectiveRate.toFixed(2)}%</p></div>
                     </CardContent>
                 </Card>
+                 <Card>
+                    <CardContent className="h-64">
+                         <ResponsiveContainer width="100%" height="100%">
+                            <PieChart>
+                                <Pie data={results.pieData} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={50} outerRadius={80} paddingAngle={5}>
+                                    {results.pieData.map((_entry: any, index: number) => <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />)}
+                                </Pie>
+                                <RechartsTooltip formatter={(value: number) => formatCurrency(value)} />
+                                <Legend iconType="circle" />
+                            </PieChart>
+                        </ResponsiveContainer>
+                    </CardContent>
+                 </Card>
             </div>
         ) : (
              <div className="flex items-center justify-center h-60 bg-muted/50 rounded-lg border border-dashed">

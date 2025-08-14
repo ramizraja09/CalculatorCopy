@@ -18,7 +18,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, Legend } from 'recharts';
+import { PieChart, Pie, Cell, Tooltip as RechartsTooltip, ResponsiveContainer, Legend } from 'recharts';
 
 
 const formSchema = z.object({
@@ -28,6 +28,7 @@ const formSchema = z.object({
 });
 
 type FormData = z.infer<typeof formSchema>;
+const PIE_COLORS = ['hsl(var(--chart-1))', 'hsl(var(--chart-2))'];
 
 export default function AmortizationCalculator() {
   const [results, setResults] = useState<any>(null);
@@ -90,7 +91,12 @@ export default function AmortizationCalculator() {
       totalInterestPaid,
       totalPaid,
       schedule,
+      principal,
       yearlyData: Object.entries(yearlyData).map(([year, data]) => ({ year: parseInt(year), ...data })),
+      pieData: [
+        { name: 'Principal', value: principal },
+        { name: 'Total Interest', value: totalInterestPaid },
+      ],
       error: null,
     });
     setFormData(data);
@@ -186,13 +192,29 @@ export default function AmortizationCalculator() {
                             <p className="text-destructive text-center p-4">{results.error}</p>
                         </Card>
                     ) : (
-                        <Card>
-                            <CardContent className="p-4 space-y-2">
-                                <div className="flex justify-between"><span>Monthly Payment:</span><span className="font-semibold">{formatCurrency(results.monthlyPayment)}</span></div>
-                                <div className="flex justify-between"><span>Total Interest:</span><span className="font-semibold">{formatCurrency(results.totalInterestPaid)}</span></div>
-                                <div className="flex justify-between"><span>Total Paid:</span><span className="font-semibold">{formatCurrency(results.totalPaid)}</span></div>
-                            </CardContent>
-                        </Card>
+                        <div className="space-y-4">
+                            <Card>
+                                <CardContent className="p-4 space-y-2">
+                                    <div className="flex justify-between"><span>Monthly Payment:</span><span className="font-semibold">{formatCurrency(results.monthlyPayment)}</span></div>
+                                    <div className="flex justify-between"><span>Total Interest:</span><span className="font-semibold">{formatCurrency(results.totalInterestPaid)}</span></div>
+                                    <div className="flex justify-between"><span>Total Paid:</span><span className="font-semibold">{formatCurrency(results.totalPaid)}</span></div>
+                                </CardContent>
+                            </Card>
+                            <Card>
+                                <CardHeader><CardTitle className="text-base text-center">Loan Breakdown</CardTitle></CardHeader>
+                                <CardContent className="h-64">
+                                    <ResponsiveContainer width="100%" height="100%">
+                                        <PieChart>
+                                            <Pie data={results.pieData} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={50} outerRadius={80} paddingAngle={5}>
+                                                {results.pieData.map((_entry: any, index: number) => <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />)}
+                                            </Pie>
+                                            <RechartsTooltip formatter={(value: number) => formatCurrency(value)} />
+                                            <Legend iconType="circle" />
+                                        </PieChart>
+                                    </ResponsiveContainer>
+                                </CardContent>
+                            </Card>
+                        </div>
                     )
                 ) : (
                     <Card className="flex items-center justify-center h-full min-h-[15rem] bg-muted/50 rounded-lg border border-dashed">
@@ -204,23 +226,6 @@ export default function AmortizationCalculator() {
         
         {results && !results.error && (
             <div className="md:col-span-2 mt-8 space-y-8">
-                <Card>
-                    <CardHeader><CardTitle className="text-lg text-center">Loan Balance Over Time</CardTitle></CardHeader>
-                    <CardContent className="h-80">
-                        <ResponsiveContainer width="100%" height="100%">
-                            <LineChart data={results.yearlyData} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
-                                <CartesianGrid strokeDasharray="3 3" />
-                                <XAxis dataKey="year" label={{ value: 'Year', position: 'insideBottom', offset: -5 }} />
-                                <YAxis tickFormatter={(value) => typeof value === 'number' ? formatCurrency(value) : ''} />
-                                <RechartsTooltip formatter={(value: number) => formatCurrency(value)} />
-                                <Legend />
-                                <Line type="monotone" dataKey="endBalance" name="Remaining Balance" stroke="hsl(var(--chart-1))" dot={false} />
-                                <Line type="monotone" dataKey="interest" name="Interest Paid This Year" stroke="hsl(var(--chart-2))" dot={false} />
-                            </LineChart>
-                        </ResponsiveContainer>
-                    </CardContent>
-                </Card>
-                
                 <Card>
                     <CardHeader><CardTitle className="text-xl">Amortization Schedule (Annual)</CardTitle></CardHeader>
                     <CardContent className="p-0">

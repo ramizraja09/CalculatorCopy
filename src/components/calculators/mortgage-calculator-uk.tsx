@@ -53,6 +53,8 @@ const calculateStampDuty = (price: number) => {
     return tax;
 }
 
+const PIE_COLORS = ['hsl(var(--chart-1))', 'hsl(var(--chart-2))'];
+
 export default function MortgageCalculatorUK() {
   const [results, setResults] = useState<any>(null);
   const [formData, setFormData] = useState<FormData | null>(null);
@@ -107,20 +109,16 @@ export default function MortgageCalculatorUK() {
       principal,
       stampDuty,
       amortization,
+      pieData: [
+        { name: 'Principal', value: principal },
+        { name: 'Total Interest', value: totalInterestPaid },
+      ],
       error: null,
     });
     setFormData(data);
   };
   
   const formatCurrency = (value: number) => new Intl.NumberFormat('en-GB', { style: 'currency', currency: 'GBP' }).format(value);
-  
-  const pieData = results && !results.error
-    ? [
-        { name: 'Principal & Interest', value: results.monthlyPayment },
-      ].filter(item => item.value > 0)
-    : [];
-
-  const PIE_COLORS = ['hsl(var(--chart-1))'];
   
   const handleExport = (format: 'txt' | 'csv') => {
     if (!results || !formData) return;
@@ -214,26 +212,26 @@ export default function MortgageCalculatorUK() {
               </CardContent>
             </Card>
             <Card>
+              <CardHeader><CardTitle className="text-base text-center">Loan Breakdown</CardTitle></CardHeader>
+              <CardContent className="h-64">
+                <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                        <Pie data={results.pieData} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={50} outerRadius={80} paddingAngle={5}>
+                            {results.pieData.map((_entry: any, index: number) => <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />)}
+                        </Pie>
+                        <RechartsTooltip formatter={(value: number) => formatCurrency(value)} />
+                        <Legend iconType="circle" />
+                    </PieChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+             <Card>
               <CardHeader><CardTitle className="text-base text-center">Loan & Cost Breakdown</CardTitle></CardHeader>
               <CardContent className="space-y-2 text-sm">
                  <div className="flex justify-between"><span className="text-muted-foreground">Loan Amount</span><span className="font-semibold">{formatCurrency(results.principal)}</span></div>
                  <div className="flex justify-between"><span className="text-muted-foreground">Total Interest Paid</span><span className="font-semibold">{formatCurrency(results.totalInterestPaid)}</span></div>
                  <div className="flex justify-between"><span className="text-muted-foreground">Stamp Duty Land Tax (Est.)</span><span className="font-semibold">{formatCurrency(results.stampDuty)}</span></div>
                  <div className="flex justify-between font-bold border-t pt-2 mt-2"><span>Total Amount Paid</span><span>{formatCurrency(results.totalPaid + (formData?.deposit || 0))}</span></div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader><CardTitle className="text-base text-center">Loan Balance Over Time</CardTitle></CardHeader>
-              <CardContent className="h-64">
-                <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={results.amortization} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="month" label={{ value: 'Month', position: 'insideBottom', offset: -5 }} />
-                        <YAxis tickFormatter={(tick) => formatCurrency(tick)} />
-                        <RechartsLineTooltip formatter={(value: number) => formatCurrency(value)} />
-                        <Line type="monotone" dataKey="remainingBalance" name="Remaining Balance" stroke="hsl(var(--primary))" dot={false} />
-                    </LineChart>
-                </ResponsiveContainer>
               </CardContent>
             </Card>
             <Alert variant="default">
