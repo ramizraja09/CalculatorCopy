@@ -105,8 +105,7 @@ export default function NetWorthCalculator() {
 
   return (
     <form onSubmit={handleSubmit(processSubmit)}>
-        <div className="grid md:grid-cols-2 gap-8">
-            {/* Inputs Column */}
+        <div className="grid lg:grid-cols-2 gap-8">
             <div className="space-y-4">
                 <Card>
                     <CardHeader><CardTitle>Assets</CardTitle></CardHeader>
@@ -138,7 +137,7 @@ export default function NetWorthCalculator() {
                         <Button type="button" variant="outline" size="sm" onClick={() => appendLiability({ name: '', amount: 0 })}>Add Liability</Button>
                     </CardContent>
                 </Card>
-                <div className="flex gap-2">
+                 <div className="flex gap-2">
                     <Button type="submit" className="flex-1">Calculate Net Worth</Button>
                     <DropdownMenu>
                     <DropdownMenuTrigger asChild>
@@ -153,10 +152,9 @@ export default function NetWorthCalculator() {
                     </DropdownMenu>
                 </div>
             </div>
-
-            {/* Results Column */}
+            
             <div className="space-y-4">
-                <h3 className="text-xl font-semibold">Your Net Worth</h3>
+                <h3 className="text-xl font-semibold">Your Net Worth Summary</h3>
                 {results ? (
                     <div className="space-y-4">
                         <Card>
@@ -171,6 +169,22 @@ export default function NetWorthCalculator() {
                                 <div><p className="text-muted-foreground">Total Liabilities</p><p className="font-semibold text-destructive">{formatCurrency(results.totalLiabilities)}</p></div>
                             </CardContent>
                         </Card>
+                        <Card>
+                          <CardHeader><CardTitle className="text-base text-center">Assets vs. Liabilities</CardTitle></CardHeader>
+                          <CardContent className="p-4 h-80">
+                            <ResponsiveContainer width="100%" height="100%">
+                                <BarChart data={results.chartData} layout="vertical" barSize={60}>
+                                  <CartesianGrid strokeDasharray="3 3" />
+                                  <XAxis type="number" tickFormatter={(value) => formatCurrency(value)} />
+                                  <YAxis type="category" dataKey="name" hide />
+                                  <Tooltip formatter={(value: number) => formatCurrency(Math.abs(value))} />
+                                  <Legend />
+                                  <Bar dataKey="assets" name="Assets" fill="hsl(var(--chart-2))" stackId="a" />
+                                  <Bar dataKey="liabilities" name="Liabilities" fill="hsl(var(--destructive))" stackId="a" />
+                                </BarChart>
+                              </ResponsiveContainer>
+                          </CardContent>
+                        </Card>
                     </div>
                 ) : (
                     <div className="flex items-center justify-center h-60 bg-muted/50 rounded-lg border border-dashed">
@@ -179,28 +193,6 @@ export default function NetWorthCalculator() {
                 )}
             </div>
         </div>
-        {results && (
-             <div className="md:col-span-2 mt-8">
-                <h3 className="text-xl font-semibold mb-4">Assets vs. Liabilities</h3>
-                <Card>
-                    <CardContent className="p-4">
-                        <div className="h-80">
-                        <ResponsiveContainer width="100%" height="100%">
-                            <BarChart data={results.chartData} layout="vertical" barSize={60}>
-                              <CartesianGrid strokeDasharray="3 3" />
-                              <XAxis type="number" tickFormatter={(value) => formatCurrency(value)} />
-                              <YAxis type="category" dataKey="name" hide />
-                              <Tooltip formatter={(value: number) => formatCurrency(Math.abs(value))} />
-                              <Legend />
-                              <Bar dataKey="assets" name="Assets" fill="hsl(var(--chart-2))" stackId="a" />
-                              <Bar dataKey="liabilities" name="Liabilities" fill="hsl(var(--destructive))" stackId="a" />
-                            </BarChart>
-                          </ResponsiveContainer>
-                        </div>
-                    </CardContent>
-                </Card>
-            </div>
-        )}
     </form>
   );
 }
