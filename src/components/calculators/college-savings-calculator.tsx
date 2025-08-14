@@ -129,8 +129,8 @@ export default function CollegeSavingsCalculator() {
 
   return (
     <form onSubmit={handleSubmit(calculateSavings)} className="space-y-8">
-      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-1 space-y-4">
+      <div className="grid md:grid-cols-2 gap-8">
+        <div className="space-y-4">
             <Card><CardHeader><CardTitle>Student & College</CardTitle></CardHeader>
                 <CardContent className="space-y-4">
                     <div className="grid grid-cols-2 gap-4">
@@ -151,16 +151,9 @@ export default function CollegeSavingsCalculator() {
                     <div><Label>College Cost Inflation Rate (%)</Label><Controller name="costIncreaseRate" control={control} render={({ field }) => <Input type="number" step="0.1" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} /></div>
                 </CardContent>
             </Card>
-            <div className="flex gap-2">
-                <Button type="submit" className="flex-1">Calculate</Button>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild><Button variant="outline" disabled={!results}><Download className="mr-2 h-4 w-4" /> Export</Button></DropdownMenuTrigger>
-                  <DropdownMenuContent><DropdownMenuItem onClick={() => handleExport('txt')}>Download .txt</DropdownMenuItem><DropdownMenuItem onClick={() => handleExport('csv')}>Download .csv</DropdownMenuItem></DropdownMenuContent>
-                </DropdownMenu>
-            </div>
         </div>
 
-        <div className="lg:col-span-2 space-y-4">
+        <div className="space-y-4">
             <h3 className="text-xl font-semibold">Results Summary</h3>
             {results ? (
                 <div className="space-y-4">
@@ -207,8 +200,17 @@ export default function CollegeSavingsCalculator() {
       </div>
       
        {results && (
-        <div className="md:col-span-2 lg:col-span-3 mt-4">
-            <h3 className="text-xl font-semibold mb-4">Year-by-Year Projection</h3>
+        <div className="col-span-full mt-4">
+             <div className="flex justify-between items-center mb-4">
+                <h3 className="text-xl font-semibold">Year-by-Year Projection</h3>
+                <div className="flex gap-2">
+                    <Button type="submit" className="flex-1">Calculate</Button>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild><Button variant="outline" disabled={!results}><Download className="mr-2 h-4 w-4" /> Export</Button></DropdownMenuTrigger>
+                      <DropdownMenuContent><DropdownMenuItem onClick={() => handleExport('txt')}>Download .txt</DropdownMenuItem><DropdownMenuItem onClick={() => handleExport('csv')}>Download .csv</DropdownMenuItem></DropdownMenuContent>
+                    </DropdownMenu>
+                </div>
+            </div>
             <Card>
                 <CardContent className="p-0">
                     <ScrollArea className="h-96">
