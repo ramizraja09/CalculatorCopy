@@ -33,7 +33,7 @@ const formatCurrency = (value: number) => new Intl.NumberFormat('en-US', { style
 export default function DiscountCalculator() {
   const [youSaved, setYouSaved] = useState<string>('');
   
-  const { control, watch, setValue, getValues, formState: { errors } } = useForm<FormData>({
+  const { control, watch, setValue, getValues } = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       priceBefore: '59.99',
@@ -47,57 +47,64 @@ export default function DiscountCalculator() {
   const formValues = watch();
 
    useEffect(() => {
-    const calculate = () => {
-      const { priceBefore, discountValue, priceAfter, discountType, solveFor } = getValues();
-      const pb = parseFloat(priceBefore);
-      const dv = parseFloat(discountValue);
-      const pa = parseFloat(priceAfter);
+    const subscription = watch((values) => {
+        const { priceBefore, discountValue, priceAfter, discountType, solveFor } = values;
+        const pb = parseFloat(priceBefore || '0');
+        const dv = parseFloat(discountValue || '0');
+        const pa = parseFloat(priceAfter || '0');
+        let saved = 0;
 
-      let saved = 0;
+        try {
+            if (solveFor === 'priceAfter' && pb > 0 && dv >= 0) {
+                if (discountType === 'percent') {
+                    saved = pb * (dv / 100);
+                    setValue('priceAfter', (pb - saved).toFixed(2));
+                } else { // fixed
+                    saved = dv;
+                    setValue('priceAfter', (pb - saved).toFixed(2));
+                }
+            } else if (solveFor === 'priceBefore' && pa > 0 && dv >= 0) {
+                if (discountType === 'percent' && dv < 100) {
+                    const newPriceBefore = pa / (1 - dv / 100);
+                    saved = newPriceBefore - pa;
+                    setValue('priceBefore', newPriceBefore.toFixed(2));
+                } else if (discountType === 'fixed') {
+                    saved = dv;
+                    setValue('priceBefore', (pa + saved).toFixed(2));
+                }
+            } else if (solveFor === 'discountValue' && pb > 0 && pa > 0) {
+                 saved = pb - pa;
+                 if (discountType === 'percent') {
+                    const newDiscountValue = (saved / pb) * 100;
+                    setValue('discountValue', newDiscountValue.toFixed(2));
+                 } else { // fixed
+                    setValue('discountValue', saved.toFixed(2));
+                 }
+            }
 
-      try {
-        if (solveFor === 'priceAfter' && !isNaN(pb) && !isNaN(dv)) {
-          if (discountType === 'percent') {
-            saved = pb * (dv / 100);
-            setValue('priceAfter', (pb - saved).toFixed(2));
-          } else { // fixed
-            saved = dv;
-            setValue('priceAfter', (pb - saved).toFixed(2));
-          }
-        } else if (solveFor === 'priceBefore' && !isNaN(pa) && !isNaN(dv)) {
-          if (discountType === 'percent' && dv < 100) {
-            const newPriceBefore = pa / (1 - dv / 100);
-            saved = newPriceBefore - pa;
-            setValue('priceBefore', newPriceBefore.toFixed(2));
-          } else if (discountType === 'fixed') { // fixed
-            saved = dv;
-            setValue('priceBefore', (pa + saved).toFixed(2));
-          }
-        } else if (solveFor === 'discountValue' && !isNaN(pb) && !isNaN(pa) && pb > 0) {
-           saved = pb - pa;
-           if (discountType === 'percent') {
-              if (pb < pa) { // price increased
-                setValue('discountValue', (((pa / pb) - 1) * 100).toFixed(2));
-              } else {
-                const newDiscountValue = (saved / pb) * 100;
-                setValue('discountValue', newDiscountValue.toFixed(2));
-              }
-           } else { // fixed
-              setValue('discountValue', saved.toFixed(2));
-           }
-        }
-        
-        if (!isNaN(saved) && isFinite(saved)) {
-            setYouSaved(formatCurrency(saved));
-        } else {
+            if (!isNaN(saved) && isFinite(saved)) {
+                setYouSaved(formatCurrency(saved));
+            } else {
+                setYouSaved('');
+            }
+        } catch(e) {
             setYouSaved('');
         }
-      } catch (e) {
-        setYouSaved('');
-      }
-    };
-    calculate();
-  }, [formValues, setValue, getValues]);
+    });
+
+    // Initial calculation
+    const initialValues = getValues();
+    const { priceBefore, discountValue, solveFor } = initialValues;
+    if (solveFor === 'priceAfter' && priceBefore && discountValue) {
+        const pb = parseFloat(priceBefore);
+        const dv = parseFloat(discountValue);
+        const saved = initialValues.discountType === 'percent' ? pb * (dv / 100) : dv;
+        setValue('priceAfter', (pb - saved).toFixed(2));
+        setYouSaved(formatCurrency(saved));
+    }
+
+    return () => subscription.unsubscribe();
+  }, [watch, setValue, getValues]);
   
 
   const handleExport = (format: 'txt' | 'csv') => {
