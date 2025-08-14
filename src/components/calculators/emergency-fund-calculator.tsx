@@ -25,7 +25,10 @@ const expenseSchema = z.object({
 
 const formSchema = z.object({
   expenses: z.array(expenseSchema),
-  monthsToCover: z.number().min(1).max(12),
+  monthsToCover: z.number().min(1).max(24),
+  currentSavings: z.number().min(0),
+  oneTimeBuffer: z.number().min(0),
+  monthlyContribution: z.number().min(0),
 });
 
 type FormData = z.infer<typeof formSchema>;
@@ -41,6 +44,9 @@ export default function EmergencyFundCalculator() {
     defaultValues: {
       expenses: defaultExpenses,
       monthsToCover: 6,
+      currentSavings: 5000,
+      oneTimeBuffer: 1000,
+      monthlyContribution: 500,
     },
   });
   
@@ -52,10 +58,21 @@ export default function EmergencyFundCalculator() {
 
   const processSubmit = (data: FormData) => {
     const totalMonthlyExpenses = data.expenses.reduce((acc, expense) => acc + expense.amount, 0);
-    const fundGoal = totalMonthlyExpenses * data.monthsToCover;
+    const fundGoal = (totalMonthlyExpenses * data.monthsToCover) + data.oneTimeBuffer;
+    const remainingToSave = Math.max(0, fundGoal - data.currentSavings);
+    
+    let monthsToGoal: number | string = 'N/A';
+    if (data.monthlyContribution > 0 && remainingToSave > 0) {
+      monthsToGoal = Math.ceil(remainingToSave / data.monthlyContribution);
+    } else if (remainingToSave === 0) {
+      monthsToGoal = 0;
+    }
+
     setResults({
         totalMonthlyExpenses,
         fundGoal,
+        remainingToSave,
+        monthsToGoal,
         monthsToCover: data.monthsToCover,
     });
     setFormData(data);
@@ -72,17 +89,24 @@ export default function EmergencyFundCalculator() {
       formData.expenses.forEach(item => {
         content += `- ${item.name}: ${formatCurrency(item.amount)}\n`;
       });
-      content += `Months to Cover: ${formData.monthsToCover}\n\n`;
-      content += `Results:\n- Total Monthly Expenses: ${formatCurrency(results.totalMonthlyExpenses)}\n- Emergency Fund Goal: ${formatCurrency(results.fundGoal)}\n`;
+      content += `Months to Cover: ${formData.monthsToCover}\n`;
+      content += `Current Savings: ${formatCurrency(formData.currentSavings)}\n`;
+      content += `One-Time Buffer: ${formatCurrency(formData.oneTimeBuffer)}\n`;
+      content += `Monthly Contribution: ${formatCurrency(formData.monthlyContribution)}\n\n`;
+      content += `Results:\n- Total Fund Goal: ${formatCurrency(results.fundGoal)}\n- Remaining to Save: ${formatCurrency(results.remainingToSave)}\n- Months to Goal: ${results.monthsToGoal}\n`;
     } else {
-      content = 'Expense,Amount\n';
+      content = 'Category,Value\n';
       formData.expenses.forEach(item => {
-        content += `"${item.name}",${item.amount}\n`;
+        content += `Expense: ${item.name},${item.amount}\n`;
       });
-      content += `\nMonths to Cover,${formData.monthsToCover}\n\n`;
+      content += `Months to Cover,${formData.monthsToCover}\n`;
+      content += `Current Savings,${formData.currentSavings}\n`;
+      content += `One-Time Buffer,${formData.oneTimeBuffer}\n`;
+      content += `Monthly Contribution,${formData.monthlyContribution}\n\n`;
       content += 'Result Category,Value\n';
-      content += `Total Monthly Expenses,${results.totalMonthlyExpenses}\n`;
-      content += `Emergency Fund Goal,${results.fundGoal}\n`;
+      content += `Total Fund Goal,${results.fundGoal}\n`;
+      content += `Remaining to Save,${results.remainingToSave}\n`;
+      content += `Months to Goal,${results.monthsToGoal}\n`;
     }
 
     const blob = new Blob([content], { type: `text/${format}` });
@@ -101,7 +125,7 @@ export default function EmergencyFundCalculator() {
       {/* Inputs Column */}
       <div className="space-y-4">
         <Card>
-            <CardHeader><CardTitle>Essential Monthly Expenses</CardTitle></CardHeader>
+            <CardHeader><CardTitle>Monthly Expenses</CardTitle></CardHeader>
             <CardContent className="space-y-2">
                 {fields.map((field, index) => (
                     <div key={field.id} className="flex gap-2 items-center">
@@ -115,19 +139,25 @@ export default function EmergencyFundCalculator() {
         </Card>
         <Card>
             <CardHeader><CardTitle>Savings Goal</CardTitle></CardHeader>
-            <CardContent>
-                <Label>Months of Expenses to Cover ({monthsToCover})</Label>
-                <Controller name="monthsToCover" control={control} render={({ field }) => (
-                     <Slider
-                        min={1} max={12} step={1}
-                        value={[field.value]}
-                        onValueChange={(value) => field.onChange(value[0])}
-                    />
-                )}/>
+            <CardContent className="space-y-4">
+                <div>
+                  <Label>Months of Expenses to Cover ({monthsToCover})</Label>
+                  <Controller name="monthsToCover" control={control} render={({ field }) => (
+                      <Slider min={1} max={24} step={1} value={[field.value]} onValueChange={(value) => field.onChange(value[0])}/>
+                  )}/>
+                </div>
+                <div><Label>Additional One-Time Emergency Buffer ($)</Label><Controller name="oneTimeBuffer" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} /></div>
+            </CardContent>
+        </Card>
+         <Card>
+            <CardHeader><CardTitle>Your Savings</CardTitle></CardHeader>
+            <CardContent className="space-y-4">
+                <div><Label>Current Emergency Savings ($)</Label><Controller name="currentSavings" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} /></div>
+                <div><Label>Monthly Contribution to Fund ($)</Label><Controller name="monthlyContribution" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} /></div>
             </CardContent>
         </Card>
         <div className="flex gap-2">
-            <Button type="submit" className="flex-1">Calculate Emergency Fund</Button>
+            <Button type="submit" className="flex-1">Calculate</Button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" disabled={!results}>
@@ -144,25 +174,37 @@ export default function EmergencyFundCalculator() {
 
       {/* Results Column */}
       <div className="space-y-4">
-        <h3 className="text-xl font-semibold">Your Emergency Fund Goal</h3>
+        <h3 className="text-xl font-semibold">Your Emergency Fund Plan</h3>
         {results ? (
             <div className="space-y-4">
                  <Card>
                     <CardContent className="p-4 text-center">
-                        <p className="text-sm text-muted-foreground">Emergency Fund Goal</p>
+                        <p className="text-sm text-muted-foreground">Your Total Fund Goal</p>
                         <p className="text-3xl font-bold text-primary">{formatCurrency(results.fundGoal)}</p>
                         <p className="text-sm text-muted-foreground">({results.monthsToCover} months of expenses)</p>
                     </CardContent>
                 </Card>
                 <Card>
-                    <CardContent className="p-4">
-                        <p className="text-muted-foreground text-center">Total Monthly Expenses: <span className="font-semibold text-foreground">{formatCurrency(results.totalMonthlyExpenses)}</span></p>
+                    <CardContent className="p-4 grid grid-cols-2 gap-2 text-sm">
+                         <div><p className="text-muted-foreground">Total Monthly Expenses</p><p className="font-semibold">{formatCurrency(results.totalMonthlyExpenses)}</p></div>
+                         <div><p className="text-muted-foreground">Remaining to Save</p><p className="font-semibold">{formatCurrency(results.remainingToSave)}</p></div>
+                    </CardContent>
+                </Card>
+                 <Card>
+                    <CardContent className="p-4 text-center">
+                        <p className="text-sm text-muted-foreground">Time to Reach Goal</p>
+                        <p className="text-xl font-bold">
+                            {typeof results.monthsToGoal === 'number'
+                                ? `${Math.floor(results.monthsToGoal / 12)} years, ${results.monthsToGoal % 12} months`
+                                : results.monthsToGoal
+                            }
+                        </p>
                     </CardContent>
                 </Card>
             </div>
         ) : (
              <div className="flex items-center justify-center h-60 bg-muted/50 rounded-lg border border-dashed">
-                <p className="text-sm text-muted-foreground">List your monthly expenses to calculate your fund goal</p>
+                <p className="text-sm text-muted-foreground">List your expenses to calculate your fund goal</p>
             </div>
         )}
       </div>
