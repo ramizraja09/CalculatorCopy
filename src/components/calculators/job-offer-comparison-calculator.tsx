@@ -18,6 +18,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
 
 const offerSchema = z.object({
@@ -40,6 +41,8 @@ const defaultOffers = [
     { name: 'Job Offer A', salary: 90000, bonus: 5000, benefitsValue: 12000, vacationDays: 20, otherPerks: 1000, costOfLivingIndex: 100, workingHours: 40 },
     { name: 'Job Offer B', salary: 85000, bonus: 10000, benefitsValue: 15000, vacationDays: 25, otherPerks: 500, costOfLivingIndex: 90, workingHours: 38 },
 ];
+
+const CHART_COLORS = ['hsl(var(--chart-1))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))', 'hsl(var(--chart-4))'];
 
 export default function JobOfferComparisonCalculator() {
   const [isClient, setIsClient] = useState(false);
@@ -171,6 +174,7 @@ export default function JobOfferComparisonCalculator() {
       
       <div className="flex justify-center gap-4">
         <Button type="button" variant="outline" onClick={handleAddNewOffer}>Add Another Offer</Button>
+         <Button type="button" variant="destructive" onClick={() => reset({ offers: defaultOffers })}>Clear</Button>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" disabled={calculatedResults.length === 0}>
@@ -185,30 +189,52 @@ export default function JobOfferComparisonCalculator() {
       </div>
 
       {calculatedResults.length > 0 && (
-        <Card>
-            <CardHeader>
-                <CardTitle>Comparison Summary</CardTitle>
-            </CardHeader>
-            <CardContent>
-                <Table>
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead>Metric</TableHead>
-                            {calculatedResults.map((res, index) => <TableHead key={index} className="text-right">{res.name}</TableHead>)}
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        <TableRow><TableCell>Base Salary</TableCell>{calculatedResults.map((r,i) => <TableCell key={i} className="text-right">{formatCurrency(r.salary)}</TableCell>)}</TableRow>
-                        <TableRow><TableCell>Bonus</TableCell>{calculatedResults.map((r,i) => <TableCell key={i} className="text-right">{formatCurrency(r.bonus)}</TableCell>)}</TableRow>
-                        <TableRow><TableCell>Benefits Value</TableCell>{calculatedResults.map((r,i) => <TableCell key={i} className="text-right">{formatCurrency(r.benefitsValue)}</TableCell>)}</TableRow>
-                        <TableRow><TableCell>Vacation Value</TableCell>{calculatedResults.map((r,i) => <TableCell key={i} className="text-right">{formatCurrency(r.vacationValue)}</TableCell>)}</TableRow>
-                         <TableRow className="font-semibold"><TableCell>Total Compensation</TableCell>{calculatedResults.map((r,i) => <TableCell key={i} className="text-right">{formatCurrency(r.totalCompensation)}</TableCell>)}</TableRow>
-                        <TableRow className="bg-muted/50 font-bold text-primary"><TableCell>Adj. Compensation</TableCell>{calculatedResults.map((r,i) => <TableCell key={i} className={cn("text-right", i === betterOfferIndex && "text-primary")}>{formatCurrency(r.costAdjustedSalary)}</TableCell>)}</TableRow>
-                         <TableRow><TableCell>Effective Hourly Rate</TableCell>{calculatedResults.map((r,i) => <TableCell key={i} className="text-right">{formatCurrency(r.hourlyRate)}</TableCell>)}</TableRow>
-                    </TableBody>
-                </Table>
-            </CardContent>
-        </Card>
+        <div className="space-y-8">
+            <Card>
+                <CardHeader>
+                    <CardTitle>Comparison Summary</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <Table>
+                        <TableHeader>
+                            <TableRow>
+                                <TableHead>Metric</TableHead>
+                                {calculatedResults.map((res, index) => <TableHead key={index} className="text-right">{res.name}</TableHead>)}
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            <TableRow><TableCell>Base Salary</TableCell>{calculatedResults.map((r,i) => <TableCell key={i} className="text-right">{formatCurrency(r.salary)}</TableCell>)}</TableRow>
+                            <TableRow><TableCell>Bonus</TableCell>{calculatedResults.map((r,i) => <TableCell key={i} className="text-right">{formatCurrency(r.bonus)}</TableCell>)}</TableRow>
+                            <TableRow><TableCell>Benefits Value</TableCell>{calculatedResults.map((r,i) => <TableCell key={i} className="text-right">{formatCurrency(r.benefitsValue)}</TableCell>)}</TableRow>
+                            <TableRow><TableCell>Vacation Value</TableCell>{calculatedResults.map((r,i) => <TableCell key={i} className="text-right">{formatCurrency(r.vacationValue)}</TableCell>)}</TableRow>
+                             <TableRow className="font-semibold"><TableCell>Total Compensation</TableCell>{calculatedResults.map((r,i) => <TableCell key={i} className="text-right">{formatCurrency(r.totalCompensation)}</TableCell>)}</TableRow>
+                            <TableRow className="bg-muted/50 font-bold text-primary"><TableCell>Adj. Compensation</TableCell>{calculatedResults.map((r,i) => <TableCell key={i} className={cn("text-right", i === betterOfferIndex && "text-primary")}>{formatCurrency(r.costAdjustedSalary)}</TableCell>)}</TableRow>
+                             <TableRow><TableCell>Effective Hourly Rate</TableCell>{calculatedResults.map((r,i) => <TableCell key={i} className="text-right">{formatCurrency(r.hourlyRate)}</TableCell>)}</TableRow>
+                        </TableBody>
+                    </Table>
+                </CardContent>
+            </Card>
+             <Card>
+                <CardHeader>
+                    <CardTitle>Compensation Breakdown</CardTitle>
+                </CardHeader>
+                <CardContent className="h-96">
+                    <ResponsiveContainer width="100%" height="100%">
+                        <BarChart data={calculatedResults} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                            <CartesianGrid strokeDasharray="3 3" />
+                            <XAxis dataKey="name" />
+                            <YAxis tickFormatter={(value) => `$${value / 1000}k`} />
+                            <Tooltip formatter={(value: number) => formatCurrency(value)} />
+                            <Legend />
+                            <Bar dataKey="salary" stackId="a" name="Base Salary" fill={CHART_COLORS[0]} />
+                            <Bar dataKey="bonus" stackId="a" name="Bonus" fill={CHART_COLORS[1]} />
+                            <Bar dataKey="benefitsValue" stackId="a" name="Benefits" fill={CHART_COLORS[2]} />
+                            <Bar dataKey="vacationValue" stackId="a" name="Vacation" fill={CHART_COLORS[3]} />
+                        </BarChart>
+                    </ResponsiveContainer>
+                </CardContent>
+             </Card>
+        </div>
       )}
     </div>
   );
