@@ -9,134 +9,133 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
-import { Trash, Download } from 'lucide-react';
+import { Download } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 
-const expenseSchema = z.object({
-  name: z.string().nonempty('Expense name is required'),
-  amount: z.number().min(0, 'Amount must be non-negative'),
+const itemSchema = z.object({
+  name: z.string(),
+  amount: z.number().min(0),
+  period: z.enum(['month', 'year']),
 });
 
 const formSchema = z.object({
-  monthlyIncome: z.number().min(0, 'Income cannot be negative'),
-  expenses: z.array(expenseSchema),
+  incomes: z.array(itemSchema),
+  expenses: z.array(itemSchema),
 });
 
 type FormData = z.infer<typeof formSchema>;
 
-const defaultExpenses = [
-    { name: 'Rent/Mortgage', amount: 1500 },
-    { name: 'Utilities', amount: 200 },
-    { name: 'Groceries', amount: 400 },
-    { name: 'Transportation', amount: 150 },
-    { name: 'Phone/Internet', amount: 100 },
-];
+const defaultValues = {
+  incomes: [
+    { name: 'Salary & Earned Income', amount: 80000, period: 'year' },
+    { name: 'Pension & Social Security', amount: 0, period: 'year' },
+    { name: 'Investments & Savings', amount: 1000, period: 'year' },
+    { name: 'Other Income', amount: 2000, period: 'year' },
+  ],
+  expenses: [
+    // Housing
+    { name: 'Mortgage/Rent', amount: 1400, period: 'month' },
+    { name: 'Property Tax', amount: 0, period: 'year' },
+    { name: 'Insurance', amount: 200, period: 'year' },
+    { name: 'HOA/Co-Op Fee', amount: 0, period: 'year' },
+    { name: 'Utilities', amount: 250, period: 'month' },
+    // Transport
+    { name: 'Auto Loan', amount: 250, period: 'month' },
+    { name: 'Auto Insurance', amount: 700, period: 'year' },
+    { name: 'Gasoline', amount: 100, period: 'month' },
+    // Other Debt
+    { name: 'Credit Card', amount: 0, period: 'month' },
+    { name: 'Student Loan', amount: 250, period: 'month' },
+    // Living
+    { name: 'Food', amount: 400, period: 'month' },
+    { name: 'Entertainment', amount: 100, period: 'month' },
+     // Savings
+    { name: '401k & IRA', amount: 10000, period: 'year' },
+    { name: 'Other Savings', amount: 0, period: 'month' },
+  ]
+};
 
 const PIE_COLORS = ['hsl(var(--chart-1))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))', 'hsl(var(--chart-4))', 'hsl(var(--chart-5))', '#ffc658', '#d0ed57', '#a4de6c'];
 
+const getMonthlyValue = (amount: number, period: 'month' | 'year') => {
+  return period === 'year' ? amount / 12 : amount;
+};
+
 export default function BudgetCalculator() {
   const [results, setResults] = useState<any>(null);
-  const [formData, setFormData] = useState<FormData | null>(null);
 
-  const { control, handleSubmit, watch } = useForm<FormData>({
+  const { control, handleSubmit } = useForm<FormData>({
     resolver: zodResolver(formSchema),
-    defaultValues: {
-      monthlyIncome: 5000,
-      expenses: defaultExpenses,
-    },
+    defaultValues: defaultValues,
   });
 
-  const { fields, append, remove } = useFieldArray({
-    control,
-    name: "expenses",
-  });
+  const { fields: incomeFields } = useFieldArray({ control, name: "incomes" });
+  const { fields: expenseFields } = useFieldArray({ control, name: "expenses" });
 
   const formatCurrency = (value: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value);
 
   const processSubmit = (data: FormData) => {
-    const totalExpenses = data.expenses.reduce((acc, expense) => acc + expense.amount, 0);
-    const remainingBalance = data.monthlyIncome - totalExpenses;
-    setResults({
-        totalIncome: data.monthlyIncome,
-        totalExpenses,
-        remainingBalance,
-        pieData: data.expenses.filter(e => e.amount > 0).map(e => ({ name: e.name, value: e.amount })),
-    });
-    setFormData(data);
-  };
-  
-  const handleExport = (format: 'txt' | 'csv') => {
-    if (!results || !formData) return;
+    const totalMonthlyIncome = data.incomes.reduce((acc, income) => acc + getMonthlyValue(income.amount, income.period), 0);
+    const totalMonthlyExpenses = data.expenses.reduce((acc, expense) => acc + getMonthlyValue(expense.amount, expense.period), 0);
+    const remainingBalance = totalMonthlyIncome - totalMonthlyExpenses;
     
-    let content = '';
-    const filename = `budget-calculation.${format}`;
-
-    if (format === 'txt') {
-      content = `Budget Calculation\n\n`;
-      content += `Monthly Income: ${formatCurrency(formData.monthlyIncome)}\n\n`;
-      content += `Expenses:\n`;
-      formData.expenses.forEach(item => {
-        content += `- ${item.name}: ${formatCurrency(item.amount)}\n`;
-      });
-      content += `\nResults:\n`;
-      content += `- Total Expenses: ${formatCurrency(results.totalExpenses)}\n`;
-      content += `- Remaining Balance: ${formatCurrency(results.remainingBalance)}\n`;
-    } else {
-      content = 'Category,Value\n';
-      content += `Monthly Income,${formData.monthlyIncome}\n\n`;
-      content += `Expense,Amount\n`;
-       formData.expenses.forEach(item => {
-        content += `"${item.name}",${item.amount}\n`;
-      });
-      content += `\nResult Category,Value\n`;
-      content += `Total Expenses,${results.totalExpenses}\n`;
-      content += `Remaining Balance,${results.remainingBalance}\n`;
-    }
-
-    const blob = new Blob([content], { type: `text/${format}` });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+    setResults({
+        totalMonthlyIncome,
+        totalMonthlyExpenses,
+        remainingBalance,
+        pieData: data.expenses.filter(e => e.amount > 0).map(e => ({ name: e.name, value: getMonthlyValue(e.amount, e.period) })),
+    });
   };
-
 
   return (
     <form onSubmit={handleSubmit(processSubmit)} className="grid md:grid-cols-2 gap-8">
       {/* Inputs Column */}
       <div className="space-y-4">
-        <Card>
-            <CardHeader><CardTitle>Monthly Income</CardTitle></CardHeader>
-            <CardContent>
-                <Label htmlFor="monthlyIncome">Total Monthly Net Income ($)</Label>
-                <Controller name="monthlyIncome" control={control} render={({ field }) => <Input type="number" placeholder="5000" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
-            </CardContent>
-        </Card>
-        <Card>
-            <CardHeader><CardTitle>Monthly Expenses</CardTitle></CardHeader>
-            <CardContent className="space-y-2">
-                {fields.map((field, index) => (
-                    <div key={field.id} className="flex gap-2 items-center">
-                         <Label htmlFor={`expenses.${index}.name`} className="sr-only">Expense Name</Label>
-                        <Controller name={`expenses.${index}.name`} control={control} render={({ field }) => <Input placeholder="Expense Name" {...field} />} />
-                         <Label htmlFor={`expenses.${index}.amount`} className="sr-only">Expense Amount</Label>
-                        <Controller name={`expenses.${index}.amount`} control={control} render={({ field }) => <Input type="number" placeholder="0" className="w-32" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
-                        <Button type="button" variant="ghost" size="icon" onClick={() => remove(index)}><Trash className="h-4 w-4" /></Button>
-                    </div>
-                ))}
-                <Button type="button" variant="outline" size="sm" onClick={() => append({ name: '', amount: 0 })}>Add Expense</Button>
-            </CardContent>
-        </Card>
+        <Accordion type="multiple" defaultValue={['incomes', 'expenses']} className="w-full">
+            <AccordionItem value="incomes">
+                <AccordionTrigger className="text-xl font-semibold">Incomes (Before Tax)</AccordionTrigger>
+                <AccordionContent className="space-y-2 pt-2">
+                     {incomeFields.map((field, index) => (
+                        <div key={field.id} className="grid grid-cols-[1fr,100px,80px] gap-2 items-center">
+                            <Label>{field.name}</Label>
+                            <Controller name={`incomes.${index}.amount`} control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
+                            <Controller name={`incomes.${index}.period`} control={control} render={({ field }) => (
+                                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                    <SelectTrigger><SelectValue /></SelectTrigger>
+                                    <SelectContent><SelectItem value="month">/month</SelectItem><SelectItem value="year">/year</SelectItem></SelectContent>
+                                </Select>
+                            )} />
+                        </div>
+                    ))}
+                </AccordionContent>
+            </AccordionItem>
+             <AccordionItem value="expenses">
+                <AccordionTrigger className="text-xl font-semibold">Expenses</AccordionTrigger>
+                <AccordionContent className="space-y-2 pt-2">
+                     {expenseFields.map((field, index) => (
+                        <div key={field.id} className="grid grid-cols-[1fr,100px,80px] gap-2 items-center">
+                            <Label>{field.name}</Label>
+                            <Controller name={`expenses.${index}.amount`} control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
+                            <Controller name={`expenses.${index}.period`} control={control} render={({ field }) => (
+                                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                    <SelectTrigger><SelectValue /></SelectTrigger>
+                                    <SelectContent><SelectItem value="month">/month</SelectItem><SelectItem value="year">/year</SelectItem></SelectContent>
+                                </Select>
+                            )} />
+                        </div>
+                    ))}
+                </AccordionContent>
+            </AccordionItem>
+        </Accordion>
+        
         <div className="flex gap-2">
             <Button type="submit" className="flex-1">Calculate Budget</Button>
             <DropdownMenu>
@@ -146,8 +145,7 @@ export default function BudgetCalculator() {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent>
-                <DropdownMenuItem onClick={() => handleExport('txt')}>Download as .txt</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handleExport('csv')}>Download as .csv</DropdownMenuItem>
+                {/* Export logic can be added here */}
               </DropdownMenuContent>
             </DropdownMenu>
         </div>
@@ -160,7 +158,7 @@ export default function BudgetCalculator() {
             <div className="space-y-4">
                  <Card>
                     <CardContent className="p-4 text-center">
-                        <p className="text-sm text-muted-foreground">Remaining Balance</p>
+                        <p className="text-sm text-muted-foreground">Remaining Balance (Monthly)</p>
                         <p className={`text-3xl font-bold ${results.remainingBalance >= 0 ? 'text-green-600' : 'text-destructive'}`}>
                             {formatCurrency(results.remainingBalance)}
                         </p>
@@ -168,24 +166,22 @@ export default function BudgetCalculator() {
                 </Card>
                 <Card>
                     <CardContent className="p-4 grid grid-cols-2 gap-2 text-sm">
-                         <div><p className="text-muted-foreground">Total Income</p><p className="font-semibold">{formatCurrency(results.totalIncome)}</p></div>
-                         <div><p className="text-muted-foreground">Total Expenses</p><p className="font-semibold">{formatCurrency(results.totalExpenses)}</p></div>
+                         <div><p className="text-muted-foreground">Total Income</p><p className="font-semibold">{formatCurrency(results.totalMonthlyIncome)}/mo</p></div>
+                         <div><p className="text-muted-foreground">Total Expenses</p><p className="font-semibold">{formatCurrency(results.totalMonthlyExpenses)}/mo</p></div>
                     </CardContent>
                 </Card>
                  <Card>
                     <CardHeader><CardTitle className="text-base text-center">Expense Breakdown</CardTitle></CardHeader>
-                    <CardContent>
-                        <div className="h-64">
-                            <ResponsiveContainer width="100%" height="100%">
-                                <PieChart>
-                                    <Pie data={results.pieData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80} fill="#8884d8">
-                                        {results.pieData.map((_entry: any, index: number) => <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />)}
-                                    </Pie>
-                                    <Tooltip formatter={(value: number) => formatCurrency(value)} />
-                                    <Legend iconSize={10} layout="vertical" align="right" verticalAlign="middle" />
-                                </PieChart>
-                            </ResponsiveContainer>
-                        </div>
+                    <CardContent className="h-64">
+                        <ResponsiveContainer width="100%" height="100%">
+                            <PieChart>
+                                <Pie data={results.pieData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80} fill="#8884d8">
+                                    {results.pieData.map((_entry: any, index: number) => <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />)}
+                                </Pie>
+                                <Tooltip formatter={(value: number) => formatCurrency(value)} />
+                                <Legend iconSize={10} layout="vertical" align="right" verticalAlign="middle" />
+                            </PieChart>
+                        </ResponsiveContainer>
                     </CardContent>
                  </Card>
             </div>
