@@ -170,10 +170,10 @@ function GrowthCalculator() {
                     </CardContent>
                   </Card>
                    <Card><CardHeader><CardTitle className="text-base text-center">Balance Breakdown</CardTitle></CardHeader>
-                    <CardContent className="h-48">
+                    <CardContent className="h-64">
                       <ResponsiveContainer width="100%" height="100%">
                         <PieChart>
-                          <Pie data={results.pieData} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={30} outerRadius={50} paddingAngle={5}>
+                          <Pie data={results.pieData} dataKey="value" nameKey="name" cx="50%" cy="45%" innerRadius={40} outerRadius={60} paddingAngle={5}>
                               {results.pieData.map((_entry: any, index: number) => <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />)}
                           </Pie>
                           <Tooltip formatter={(value: number) => formatCurrency(value)} /><Legend iconType="circle" />
