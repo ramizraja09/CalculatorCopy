@@ -22,16 +22,27 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 const formSchema = z.object({
   propertyPrice: z.number().min(1, 'Property price must be greater than 0'),
   deposit: z.number().min(0, 'Deposit must be non-negative'),
+  depositType: z.enum(['percent', 'amount']),
   loanTerm: z.number().int().min(1, 'Loan term must be at least 1 year'),
   interestRate: z.number().min(0.01, 'Interest rate must be positive'),
-}).refine(data => data.deposit < data.propertyPrice, {
-    message: "Deposit must be less than the property price.",
+  propertyTax: z.number().min(0, 'Property tax must be non-negative').optional(),
+  homeInsurance: z.number().min(0, 'Home insurance must be non-negative').optional(),
+  otherCosts: z.number().min(0, 'Other costs must be non-negative').optional(),
+}).refine(data => {
+    if (data.depositType === 'percent') {
+        return data.deposit >= 0 && data.deposit <= 100;
+    }
+    return data.deposit < data.propertyPrice;
+}, {
+    message: "Deposit is invalid.",
     path: ["deposit"],
 });
+
 
 type FormData = z.infer<typeof formSchema>;
 
@@ -63,9 +74,13 @@ export default function MortgageCalculatorUK() {
     resolver: zodResolver(formSchema),
     defaultValues: {
       propertyPrice: 275000,
-      deposit: 55000,
+      deposit: 20,
+      depositType: 'percent',
       loanTerm: 25,
       interestRate: 5.5,
+      propertyTax: 1800,
+      homeInsurance: 300,
+      otherCosts: 0
     },
   });
 
@@ -73,17 +88,30 @@ export default function MortgageCalculatorUK() {
     const {
       propertyPrice,
       deposit,
+      depositType,
       loanTerm,
       interestRate,
+      propertyTax = 0,
+      homeInsurance = 0,
+      otherCosts = 0
     } = data;
 
-    const principal = propertyPrice - deposit;
+    const depositAmount = depositType === 'percent' ? propertyPrice * (deposit / 100) : deposit;
+    
+    if (depositAmount >= propertyPrice) {
+        setResults({ error: "Deposit must be less than the property price."});
+        return;
+    }
+
+    const principal = propertyPrice - depositAmount;
     const monthlyInterestRate = interestRate / 100 / 12;
     const numberOfPayments = loanTerm * 12;
 
-    const monthlyPayment = principal * (monthlyInterestRate * Math.pow(1 + monthlyInterestRate, numberOfPayments)) / (Math.pow(1 + monthlyInterestRate, numberOfPayments) - 1);
+    const monthlyPAndI = principal * (monthlyInterestRate * Math.pow(1 + monthlyInterestRate, numberOfPayments)) / (Math.pow(1 + monthlyInterestRate, numberOfPayments) - 1);
     
-    const totalPaid = monthlyPayment * numberOfPayments;
+    const monthlyTotal = monthlyPAndI + (propertyTax / 12) + (homeInsurance / 12) + (otherCosts / 12);
+    
+    const totalPaid = monthlyPAndI * numberOfPayments;
     const totalInterestPaid = totalPaid - principal;
     const stampDuty = calculateStampDuty(propertyPrice);
 
@@ -92,7 +120,7 @@ export default function MortgageCalculatorUK() {
 
     for (let i = 1; i <= numberOfPayments; i++) {
         const interestPayment = remainingBalance * monthlyInterestRate;
-        const principalPayment = monthlyPayment - interestPayment;
+        const principalPayment = monthlyPAndI - interestPayment;
         remainingBalance -= principalPayment;
         amortization.push({
             month: i,
@@ -103,7 +131,7 @@ export default function MortgageCalculatorUK() {
     }
 
     setResults({
-      monthlyPayment,
+      monthlyTotal,
       totalInterestPaid,
       totalPaid,
       principal,
@@ -126,16 +154,16 @@ export default function MortgageCalculatorUK() {
     
     let content = '';
     const filename = `uk-mortgage-calculation.${format}`;
-    const { propertyPrice, deposit, loanTerm, interestRate } = formData;
+    const { propertyPrice, deposit, depositType, loanTerm, interestRate, propertyTax, homeInsurance, otherCosts } = formData;
 
     if (format === 'txt') {
-      content = `UK Mortgage Calculation\n\nInputs:\n- Property Price: ${formatCurrency(propertyPrice)}\n- Deposit: ${formatCurrency(deposit)}\n- Loan Term: ${loanTerm} years\n- Interest Rate: ${interestRate}%\n\n`;
-      content += `Results:\n- Monthly Payment: ${formatCurrency(results.monthlyPayment)}\n- Loan Amount: ${formatCurrency(results.principal)}\n- Total Interest Paid: ${formatCurrency(results.totalInterestPaid)}\n- Stamp Duty (Est.): ${formatCurrency(results.stampDuty)}\n`;
+      content = `UK Mortgage Calculation\n\nInputs:\n- Property Price: ${formatCurrency(propertyPrice)}\n- Deposit: ${deposit} ${depositType === 'percent' ? '%' : '£'}\n- Loan Term: ${loanTerm} years\n- Interest Rate: ${interestRate}%\n- Annual Property Tax: ${formatCurrency(propertyTax || 0)}\n- Annual Home Insurance: ${formatCurrency(homeInsurance || 0)}\n- Annual Other Costs: ${formatCurrency(otherCosts || 0)}\n\n`;
+      content += `Results:\n- Monthly Payment: ${formatCurrency(results.monthlyTotal)}\n- Loan Amount: ${formatCurrency(results.principal)}\n- Total Interest Paid: ${formatCurrency(results.totalInterestPaid)}\n- Stamp Duty (Est.): ${formatCurrency(results.stampDuty)}\n`;
     } else {
       content = 'Category,Value\n';
-      content += `Property Price,${propertyPrice}\nDeposit,${deposit}\nLoan Term (years),${loanTerm}\nInterest Rate (%),${interestRate}\n\n`;
+      content += `Property Price,${propertyPrice}\nDeposit,${deposit}\nDeposit Type,${depositType}\nLoan Term (years),${loanTerm}\nInterest Rate (%),${interestRate}\nAnnual Property Tax,${propertyTax || 0}\nAnnual Home Insurance,${homeInsurance || 0}\nAnnual Other Costs,${otherCosts || 0}\n\n`;
       content += 'Result Category,Value\n';
-      content += `Monthly Payment,${results.monthlyPayment.toFixed(2)}\nLoan Amount,${results.principal.toFixed(2)}\nTotal Interest Paid,${results.totalInterestPaid.toFixed(2)}\nStamp Duty (Est.),${results.stampDuty.toFixed(2)}\n`;
+      content += `Monthly Payment,${results.monthlyTotal.toFixed(2)}\nLoan Amount,${results.principal.toFixed(2)}\nTotal Interest Paid,${results.totalInterestPaid.toFixed(2)}\nStamp Duty (Est.),${results.stampDuty.toFixed(2)}\n`;
     }
 
     const blob = new Blob([content], { type: `text/${format}` });
@@ -155,29 +183,64 @@ export default function MortgageCalculatorUK() {
         {/* Left Pane: Inputs */}
         <section>
           <form onSubmit={handleSubmit(calculateMortgage)} className="space-y-4">
-            <Accordion type="single" defaultValue="loan-basics" collapsible className="w-full">
-              <AccordionItem value="loan-basics">
-                <AccordionTrigger>Mortgage Details</AccordionTrigger>
+            <Card>
+                <CardHeader>
+                    <CardTitle>Mortgage Details</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                    <div>
+                        <Label>Property Price (£)</Label>
+                        <Controller name="propertyPrice" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
+                        {errors.propertyPrice && <p className="text-destructive text-sm mt-1">{errors.propertyPrice.message}</p>}
+                    </div>
+                    <div className="grid grid-cols-3 gap-2">
+                      <div className="col-span-2">
+                          <Label>Deposit</Label>
+                          <Controller name="deposit" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
+                      </div>
+                      <div>
+                          <Label>&nbsp;</Label>
+                          <Controller name="depositType" control={control} render={({ field }) => (
+                                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                      <SelectTrigger><SelectValue /></SelectTrigger>
+                                      <SelectContent>
+                                          <SelectItem value="percent">%</SelectItem>
+                                          <SelectItem value="amount">£</SelectItem>
+                                      </SelectContent>
+                                  </Select>
+                              )}
+                          />
+                      </div>
+                    </div>
+                    {errors.deposit && <p className="text-destructive text-sm mt-1 col-span-3">{errors.deposit.message}</p>}
+                    <div>
+                        <Label>Loan Term (years)</Label>
+                        <Controller name="loanTerm" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseInt(e.target.value, 10))} />} />
+                        {errors.loanTerm && <p className="text-destructive text-sm mt-1">{errors.loanTerm.message}</p>}
+                    </div>
+                    <div>
+                        <Label>Interest Rate (%)</Label>
+                        <Controller name="interestRate" control={control} render={({ field }) => <Input type="number" step="0.01" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
+                        {errors.interestRate && <p className="text-destructive text-sm mt-1">{errors.interestRate.message}</p>}
+                    </div>
+                </CardContent>
+            </Card>
+
+            <Accordion type="single" collapsible className="w-full">
+              <AccordionItem value="optional-costs">
+                <AccordionTrigger>Optional Costs</AccordionTrigger>
                 <AccordionContent className="space-y-4 px-1 pt-4">
                   <div>
-                    <Label>Property Price (£)</Label>
-                    <Controller name="propertyPrice" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
-                    {errors.propertyPrice && <p className="text-destructive text-sm mt-1">{errors.propertyPrice.message}</p>}
+                      <Label>Annual Property Tax (Council Tax, £)</Label>
+                      <Controller name="propertyTax" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
                   </div>
                   <div>
-                    <Label>Deposit (£)</Label>
-                    <Controller name="deposit" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
-                    {errors.deposit && <p className="text-destructive text-sm mt-1">{errors.deposit.message}</p>}
+                      <Label>Annual Home Insurance (£)</Label>
+                      <Controller name="homeInsurance" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
                   </div>
                   <div>
-                    <Label>Loan Term (years)</Label>
-                    <Controller name="loanTerm" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseInt(e.target.value, 10))} />} />
-                    {errors.loanTerm && <p className="text-destructive text-sm mt-1">{errors.loanTerm.message}</p>}
-                  </div>
-                  <div>
-                    <Label>Interest Rate (%)</Label>
-                    <Controller name="interestRate" control={control} render={({ field }) => <Input type="number" step="0.01" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
-                    {errors.interestRate && <p className="text-destructive text-sm mt-1">{errors.interestRate.message}</p>}
+                      <Label>Other Annual Costs (£)</Label>
+                      <Controller name="otherCosts" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
                   </div>
                 </AccordionContent>
               </AccordionItem>
@@ -210,11 +273,11 @@ export default function MortgageCalculatorUK() {
                   <CardTitle className="text-base text-center text-muted-foreground">Estimated Monthly Payment</CardTitle>
                 </CardHeader>
                 <CardContent className="text-center">
-                  <p className="text-4xl font-bold">{formatCurrency(results.monthlyPayment)}</p>
+                  <p className="text-4xl font-bold">{formatCurrency(results.monthlyTotal)}</p>
                 </CardContent>
               </Card>
               <Card>
-                <CardHeader><CardTitle className="text-base text-center">Loan Breakdown</CardTitle></CardHeader>
+                <CardHeader><CardTitle className="text-base text-center">Total Cost Breakdown</CardTitle></CardHeader>
                 <CardContent className="h-64">
                   <ResponsiveContainer width="100%" height="100%">
                       <PieChart>
@@ -228,12 +291,17 @@ export default function MortgageCalculatorUK() {
                 </CardContent>
               </Card>
                <Card>
-                <CardHeader><CardTitle className="text-base text-center">Cost Breakdown</CardTitle></CardHeader>
-                <CardContent className="space-y-2 text-sm">
-                   <div className="flex justify-between"><span className="text-muted-foreground">Loan Amount</span><span className="font-semibold">{formatCurrency(results.principal)}</span></div>
-                   <div className="flex justify-between"><span className="text-muted-foreground">Total Interest Paid</span><span className="font-semibold">{formatCurrency(results.totalInterestPaid)}</span></div>
-                   <div className="flex justify-between"><span className="text-muted-foreground">Stamp Duty Land Tax (Est.)</span><span className="font-semibold">{formatCurrency(results.stampDuty)}</span></div>
-                   <div className="flex justify-between font-bold border-t pt-2 mt-2"><span>Total Amount Paid</span><span>{formatCurrency(results.totalPaid + (formData?.deposit || 0))}</span></div>
+                <CardHeader><CardTitle className="text-base text-center">Loan Balance Over Time</CardTitle></CardHeader>
+                <CardContent className="h-64">
+                  <ResponsiveContainer width="100%" height="100%">
+                      <LineChart data={results.amortization} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+                          <CartesianGrid strokeDasharray="3 3" />
+                          <XAxis dataKey="month" label={{ value: 'Month', position: 'insideBottom', offset: -5 }} />
+                          <YAxis tickFormatter={(value) => formatCurrency(value)} />
+                          <RechartsLineTooltip formatter={(value: number) => formatCurrency(value)} />
+                          <Line type="monotone" dataKey="remainingBalance" name="Remaining Balance" stroke="hsl(var(--primary))" dot={false} />
+                      </LineChart>
+                  </ResponsiveContainer>
                 </CardContent>
               </Card>
               <Alert variant="default">
@@ -253,43 +321,37 @@ export default function MortgageCalculatorUK() {
       </div>
       
       {/* Bottom Pane: Amortization Schedule */}
-      <aside className="col-span-1 md:col-span-2">
-        <h2 className="text-xl font-semibold mb-4">Amortization Schedule</h2>
-         <Card>
-            <CardContent className="p-0">
-                <ScrollArea className="h-[40rem]">
-                    <Table>
-                        <TableHeader className="sticky top-0 bg-muted z-10">
-                            <TableRow>
-                                <TableHead className="w-1/4">Month</TableHead>
-                                <TableHead className="w-1/4 text-right">Principal</TableHead>
-                                <TableHead className="w-1/4 text-right">Interest</TableHead>
-                                <TableHead className="w-1/4 text-right">Balance</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {results && !results.error ? (
-                                results.amortization.map((row: any) => (
+      {results && !results.error && (
+        <aside className="col-span-1 md:col-span-2">
+            <h2 className="text-xl font-semibold mb-4">Amortization Schedule</h2>
+            <Card>
+                <CardContent className="p-0">
+                    <ScrollArea className="h-[40rem]">
+                        <Table>
+                            <TableHeader className="sticky top-0 bg-muted z-10">
+                                <TableRow>
+                                    <TableHead className="w-1/4">Month</TableHead>
+                                    <TableHead className="w-1/4 text-right">Principal</TableHead>
+                                    <TableHead className="w-1/4 text-right">Interest</TableHead>
+                                    <TableHead className="w-1/4 text-right">Balance</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {results.amortization.map((row: any) => (
                                     <TableRow key={row.month}>
                                         <TableCell>{row.month}</TableCell>
                                         <TableCell className="text-right">{formatCurrency(row.principalPayment)}</TableCell>
                                         <TableCell className="text-right">{formatCurrency(row.interestPayment)}</TableCell>
                                         <TableCell className="text-right">{formatCurrency(row.remainingBalance)}</TableCell>
                                     </TableRow>
-                                ))
-                            ) : (
-                                <TableRow>
-                                    <TableCell colSpan={4} className="text-center h-96 text-muted-foreground">
-                                        Schedule will appear here.
-                                    </TableCell>
-                                </TableRow>
-                            )}
-                        </TableBody>
-                    </Table>
-                </ScrollArea>
-            </CardContent>
-        </Card>
-      </aside>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </ScrollArea>
+                </CardContent>
+            </Card>
+        </aside>
+      )}
     </main>
   );
 }
