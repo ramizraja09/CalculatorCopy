@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
@@ -16,6 +16,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
 const formSchema = z.object({
   distance: z.number().min(0.1, "Distance must be positive"),
@@ -83,16 +84,32 @@ export default function CommuteCostCalculator() {
     URL.revokeObjectURL(url);
   };
 
+  const chartData = results ? [
+    { name: 'Daily', Cost: results.daily },
+    { name: 'Weekly', Cost: results.weekly },
+    { name: 'Monthly', Cost: results.monthly },
+    { name: 'Yearly', Cost: results.yearly },
+  ] : [];
+
+
   return (
     <form onSubmit={handleSubmit(calculateCost)} className="grid md:grid-cols-2 gap-8">
       {/* Inputs Column */}
       <div className="space-y-4">
-        <h3 className="text-xl font-semibold">Commute Details</h3>
-        <div><Label>One-Way Distance (miles)</Label><Controller name="distance" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} /></div>
-        <div><Label>Commuting Days Per Week</Label><Controller name="daysPerWeek" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseInt(e.target.value, 10))} />} /></div>
-        <h3 className="text-xl font-semibold pt-4">Vehicle & Fuel</h3>
-        <div><Label>Vehicle Fuel Efficiency (MPG)</Label><Controller name="fuelEfficiency" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} /></div>
-        <div><Label>Price Per Gallon ($)</Label><Controller name="fuelPrice" control={control} render={({ field }) => <Input type="number" step="0.01" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} /></div>
+        <Card>
+            <CardHeader><CardTitle>Commute Details</CardTitle></CardHeader>
+            <CardContent className="space-y-4">
+                <div><Label>One-Way Distance (miles)</Label><Controller name="distance" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} /></div>
+                <div><Label>Commuting Days Per Week</Label><Controller name="daysPerWeek" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseInt(e.target.value, 10))} />} /></div>
+            </CardContent>
+        </Card>
+        <Card>
+            <CardHeader><CardTitle>Vehicle & Fuel</CardTitle></CardHeader>
+            <CardContent className="space-y-4">
+                <div><Label>Vehicle Fuel Efficiency (MPG)</Label><Controller name="fuelEfficiency" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} /></div>
+                <div><Label>Price Per Gallon ($)</Label><Controller name="fuelPrice" control={control} render={({ field }) => <Input type="number" step="0.01" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} /></div>
+            </CardContent>
+        </Card>
         <div className="flex gap-2">
             <Button type="submit" className="flex-1">Calculate Commute Cost</Button>
             <DropdownMenu>
@@ -113,16 +130,37 @@ export default function CommuteCostCalculator() {
       <div className="space-y-4">
         <h3 className="text-xl font-semibold">Estimated Fuel Cost</h3>
         {results ? (
-            <Card>
-                <CardContent className="p-4 grid grid-cols-2 gap-4 text-center">
-                    <div><p className="font-semibold">Daily</p><p>{formatCurrency(results.daily)}</p></div>
-                    <div><p className="font-semibold">Weekly</p><p>{formatCurrency(results.weekly)}</p></div>
-                    <div><p className="font-semibold">Monthly</p><p className="text-2xl font-bold">{formatCurrency(results.monthly)}</p></div>
-                    <div><p className="font-semibold">Yearly</p><p className="text-2xl font-bold">{formatCurrency(results.yearly)}</p></div>
-                </CardContent>
-            </Card>
+            <div className="space-y-4">
+                <Card>
+                    <CardHeader><CardTitle className="text-base text-center">Estimated Monthly Cost</CardTitle></CardHeader>
+                    <CardContent className="text-center">
+                        <p className="text-4xl font-bold">{formatCurrency(results.monthly)}</p>
+                    </CardContent>
+                </Card>
+                <Card>
+                    <CardContent className="p-4 grid grid-cols-3 gap-2 text-center">
+                        <div><p className="font-semibold text-sm">Daily</p><p>{formatCurrency(results.daily)}</p></div>
+                        <div><p className="font-semibold text-sm">Weekly</p><p>{formatCurrency(results.weekly)}</p></div>
+                        <div><p className="font-semibold text-sm">Yearly</p><p>{formatCurrency(results.yearly)}</p></div>
+                    </CardContent>
+                </Card>
+                <Card>
+                    <CardHeader><CardTitle className="text-base text-center">Cost Accumulation</CardTitle></CardHeader>
+                    <CardContent className="h-64">
+                         <ResponsiveContainer width="100%" height="100%">
+                            <BarChart data={chartData} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
+                                <CartesianGrid strokeDasharray="3 3" />
+                                <XAxis dataKey="name" />
+                                <YAxis tickFormatter={(value) => formatCurrency(value)} />
+                                <Tooltip formatter={(value: number) => formatCurrency(value)} />
+                                <Bar dataKey="Cost" fill="hsl(var(--primary))" />
+                            </BarChart>
+                        </ResponsiveContainer>
+                    </CardContent>
+                </Card>
+            </div>
         ) : (
-          <div className="flex items-center justify-center h-40 bg-muted/50 rounded-lg border border-dashed"><p>Enter details to estimate commute cost</p></div>
+          <div className="flex items-center justify-center h-full min-h-[30rem] bg-muted/50 rounded-lg border border-dashed"><p>Enter details to estimate commute cost</p></div>
         )}
       </div>
     </form>
