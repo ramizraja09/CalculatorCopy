@@ -18,6 +18,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 
 // 2024 Federal Tax Data (simplified)
 const taxBrackets = {
@@ -42,9 +43,11 @@ const payPeriods: { [key: string]: number } = {
 };
 
 const formSchema = z.object({
-  grossIncome: z.number().min(1, 'Gross income must be positive'),
+  grossIncome: z.number().min(1, 'Gross income is required'),
   filingStatus: z.enum(['single', 'married_jointly']),
   payFrequency: z.enum(['annually', 'monthly', 'bi_weekly', 'weekly']),
+  childrenUnder17: z.number().int().min(0).default(0),
+  otherDependents: z.number().int().min(0).default(0),
   preTaxDeductions: z.number().min(0, 'Deductions must be non-negative'),
 });
 
@@ -60,23 +63,26 @@ export default function SalaryCalculator() {
       grossIncome: 75000,
       filingStatus: 'single',
       payFrequency: 'bi_weekly',
+      childrenUnder17: 0,
+      otherDependents: 0,
       preTaxDeductions: 6000,
     },
   });
 
   const calculateTakeHomePay = (data: FormData) => {
-    const { grossIncome, filingStatus, payFrequency, preTaxDeductions } = data;
+    const { grossIncome, filingStatus, payFrequency, preTaxDeductions, childrenUnder17, otherDependents } = data;
     
-    // Income subject to FICA is gross pay
+    // FICA taxes are based on gross income before pre-tax deductions
     const socialSecurityTaxable = Math.min(grossIncome, FICA_RATES.socialSecurity.limit);
     const socialSecurityTax = socialSecurityTaxable * FICA_RATES.socialSecurity.rate;
     const medicareTax = grossIncome * FICA_RATES.medicare.rate;
     const totalFicaTax = socialSecurityTax + medicareTax;
 
-    // Income subject to federal tax is after pre-tax deductions
+    // Federal income tax is calculated after pre-tax deductions and standard/itemized deductions
     const adjustedGrossIncome = grossIncome - preTaxDeductions;
     const deduction = standardDeductions[filingStatus];
     const taxableIncome = Math.max(0, adjustedGrossIncome - deduction);
+    
     const brackets = taxBrackets[filingStatus];
     let federalTax = 0;
     for (const bracket of brackets) {
@@ -86,7 +92,14 @@ export default function SalaryCalculator() {
       }
     }
     
-    const totalTax = totalFicaTax + federalTax;
+    // Apply credits
+    const childTaxCredit = childrenUnder17 * 2000;
+    const otherDependentCredit = otherDependents * 500;
+    const totalCredits = childTaxCredit + otherDependentCredit;
+    
+    const finalFederalTax = Math.max(0, federalTax - totalCredits);
+    
+    const totalTax = totalFicaTax + finalFederalTax;
     const netIncome = grossIncome - totalTax - preTaxDeductions;
     const payPeriodsPerYear = payPeriods[payFrequency];
     
@@ -95,7 +108,7 @@ export default function SalaryCalculator() {
       netPay: netIncome / payPeriodsPerYear,
       totalDeductions: (totalTax + preTaxDeductions) / payPeriodsPerYear,
       preTaxDeductions: preTaxDeductions / payPeriodsPerYear,
-      federalTax: federalTax / payPeriodsPerYear,
+      federalTax: finalFederalTax / payPeriodsPerYear,
       socialSecurityTax: socialSecurityTax / payPeriodsPerYear,
       medicareTax: medicareTax / payPeriodsPerYear,
       payFrequencyLabel: payFrequency.replace('_', '-'),
@@ -110,14 +123,14 @@ export default function SalaryCalculator() {
     
     let content = '';
     const filename = `salary-calculation.${format}`;
-    const { grossIncome, filingStatus, payFrequency, preTaxDeductions } = formData;
+    const { grossIncome, filingStatus, payFrequency, preTaxDeductions, childrenUnder17, otherDependents } = formData;
 
     if (format === 'txt') {
-      content = `Salary Calculation\n\nInputs:\n- Gross Annual Income: ${formatCurrency(grossIncome)}\n- Filing Status: ${filingStatus}\n- Pay Frequency: ${payFrequency}\n- Annual Pre-tax Deductions: ${formatCurrency(preTaxDeductions)}\n\n`;
+      content = `Salary Calculation\n\nInputs:\n- Gross Annual Income: ${formatCurrency(grossIncome)}\n- Filing Status: ${filingStatus}\n- Pay Frequency: ${payFrequency}\n- Children < 17: ${childrenUnder17}\n- Other Dependents: ${otherDependents}\n- Annual Pre-tax Deductions: ${formatCurrency(preTaxDeductions)}\n\n`;
       content += `Results (per ${results.payFrequencyLabel} period):\n- Gross Pay: ${formatCurrency(results.grossPay)}\n- Net Pay: ${formatCurrency(results.netPay)}\n- Federal Tax: ${formatCurrency(results.federalTax)}\n- Social Security: ${formatCurrency(results.socialSecurityTax)}\n- Medicare: ${formatCurrency(results.medicareTax)}\n- Pre-tax Deductions: ${formatCurrency(results.preTaxDeductions)}`;
     } else {
        content = 'Category,Value\n';
-       content += `Gross Annual Income,${grossIncome}\nFiling Status,${filingStatus}\nPay Frequency,${payFrequency}\nAnnual Pre-tax Deductions,${preTaxDeductions}\n\n`;
+       content += `Gross Annual Income,${grossIncome}\nFiling Status,${filingStatus}\nPay Frequency,${payFrequency}\nChildren < 17,${childrenUnder17}\nOther Dependents,${otherDependents}\nAnnual Pre-tax Deductions,${preTaxDeductions}\n\n`;
        content += `Result (per ${results.payFrequencyLabel} period),Value\n`;
        content += `Gross Pay,${results.grossPay.toFixed(2)}\nNet Pay,${results.netPay.toFixed(2)}\nFederal Tax,${results.federalTax.toFixed(2)}\nSocial Security,${results.socialSecurityTax.toFixed(2)}\nMedicare,${results.medicareTax.toFixed(2)}\nPre-tax Deductions,${results.preTaxDeductions.toFixed(2)}`;
     }
@@ -141,10 +154,34 @@ export default function SalaryCalculator() {
           <CardHeader><CardTitle>Your Job Income</CardTitle></CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <Label htmlFor="grossIncome">Gross Annual Income ($)</Label>
-              <Controller name="grossIncome" control={control} render={({ field }) => <Input id="grossIncome" type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
+              <Label htmlFor="grossIncome">Your job income (salary)</Label>
+               <div className="flex items-center">
+                 <Controller name="grossIncome" control={control} render={({ field }) => <Input id="grossIncome" type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
+                 <span className="ml-2 text-sm text-muted-foreground">/year</span>
+               </div>
               {errors.grossIncome && <p className="text-destructive text-sm mt-1">{errors.grossIncome.message}</p>}
             </div>
+            
+            <div>
+              <Label htmlFor="payFrequency">Pay Frequency</Label>
+              <Controller name="payFrequency" control={control} render={({ field }) => (
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="weekly">Weekly</SelectItem>
+                    <SelectItem value="bi_weekly">Bi-Weekly</SelectItem>
+                    <SelectItem value="monthly">Monthly</SelectItem>
+                    <SelectItem value="annually">Annually</SelectItem>
+                  </SelectContent>
+                </Select>
+              )} />
+            </div>
+            </CardContent>
+            </Card>
+
+            <Card>
+            <CardHeader><CardTitle>Federal Filing Status</CardTitle></CardHeader>
+            <CardContent className="space-y-4">
 
             <div>
               <Label htmlFor="filingStatus">Filing Status</Label>
@@ -158,27 +195,29 @@ export default function SalaryCalculator() {
                 </Select>
               )} />
             </div>
-            
             <div>
-              <Label htmlFor="payFrequency">Pay Frequency</Label>
-              <Controller name="payFrequency" control={control} render={({ field }) => (
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="annually">Annually</SelectItem>
-                    <SelectItem value="monthly">Monthly</SelectItem>
-                    <SelectItem value="bi_weekly">Bi-Weekly</SelectItem>
-                    <SelectItem value="weekly">Weekly</SelectItem>
-                  </SelectContent>
-                </Select>
-              )} />
+                <Label htmlFor="childrenUnder17">Number of children under age 17</Label>
+                <Controller name="childrenUnder17" control={control} render={({ field }) => <Input id="childrenUnder17" type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseInt(e.target.value, 10))} />} />
             </div>
-            <div>
-              <Label htmlFor="preTaxDeductions">Annual Pre-Tax Deductions ($)</Label>
-              <Controller name="preTaxDeductions" control={control} render={({ field }) => <Input id="preTaxDeductions" type="number" placeholder="401k, health insurance, etc." {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
+             <div>
+                <Label htmlFor="otherDependents">Number of other dependents</Label>
+                <Controller name="otherDependents" control={control} render={({ field }) => <Input id="otherDependents" type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseInt(e.target.value, 10))} />} />
             </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+            </Card>
+
+            <Card>
+             <CardHeader><CardTitle>Deductions</CardTitle></CardHeader>
+                <CardContent>
+                    <div>
+                    <Label htmlFor="preTaxDeductions">Pre-tax deductions withheld</Label>
+                    <div className="flex items-center">
+                        <Controller name="preTaxDeductions" control={control} render={({ field }) => <Input id="preTaxDeductions" type="number" placeholder="401k, health insurance, etc." {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
+                        <span className="ml-2 text-sm text-muted-foreground">/year</span>
+                    </div>
+                    </div>
+                </CardContent>
+            </Card>
         
         <div className="flex gap-2">
             <Button type="submit" className="flex-1">Calculate</Button>
@@ -198,7 +237,7 @@ export default function SalaryCalculator() {
           <Info className="h-4 w-4" />
           <AlertTitle>For Estimation Only</AlertTitle>
           <AlertDescription className="text-xs">
-            This calculator provides an estimate based on Federal and FICA taxes for 2024. It does not account for state/local taxes or tax credits, which can significantly affect your take-home pay.
+            This calculator provides an estimate based on Federal and FICA taxes for 2024. It does not account for state/local taxes or complex tax situations, which can significantly affect your take-home pay.
           </AlertDescription>
         </Alert>
       </div>
@@ -235,5 +274,3 @@ export default function SalaryCalculator() {
     </form>
   );
 }
-
-    
