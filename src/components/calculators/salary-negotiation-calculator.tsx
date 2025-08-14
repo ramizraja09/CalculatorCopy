@@ -1,15 +1,15 @@
 
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm, useFieldArray, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
-import { Download } from 'lucide-react';
+import { Label } from '@/components/ui/label';
+import { Trash, Download } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -37,9 +37,8 @@ const formatCurrency = (value: number) => new Intl.NumberFormat('en-US', { style
 
 export default function SalaryNegotiationCalculator() {
   const [isClient, setIsClient] = useState(false);
-  const [results, setResults] = useState<any>(null);
 
-  const { control, watch } = useForm<FormData>({
+  const { control, watch, reset } = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       baseSalary: 100000,
@@ -52,51 +51,40 @@ export default function SalaryNegotiationCalculator() {
       vestingSchedule: [25, 25, 25, 25],
     },
   });
-
-  const { fields } = useFieldArray({
-    control,
-    name: "vestingSchedule",
-  });
   
+  const { fields } = useFieldArray({ control, name: "vestingSchedule" });
   const formValues = watch();
-
+  
   useEffect(() => {
     setIsClient(true);
   }, []);
 
-  useEffect(() => {
-    const { baseSalary, bonusType, bonusValue, signOnBonus1, signOnBonus2, grantValue, vestingSchedule } = formValues;
+  const { baseSalary, bonusType, bonusValue, signOnBonus1, signOnBonus2, grantValue, vestingSchedule } = formValues;
 
-    const bonusAmount = bonusType === 'percent' ? baseSalary * (bonusValue / 100) : bonusValue;
+  const bonusAmount = bonusType === 'percent' ? baseSalary * (bonusValue / 100) : bonusValue;
 
-    const yearlyData = Array.from({ length: 4 }, (_, i) => {
-      const year = i + 1;
-      const equity = grantValue * ((vestingSchedule[i] || 0) / 100);
-      const signOn = i === 0 ? signOnBonus1 : i === 1 ? signOnBonus2 : 0;
-      const total = baseSalary + bonusAmount + equity + signOn;
-      return {
-        year: `Year ${year}`,
-        baseSalary,
-        bonus: bonusAmount,
-        equity,
-        signOn,
-        total
-      };
-    });
-
-    setResults({ yearlyData });
-  }, [formValues]);
-
+  const yearlyData = Array.from({ length: 4 }, (_, i) => {
+    const year = i + 1;
+    const equity = grantValue * ((vestingSchedule[i] || 0) / 100);
+    const signOn = i === 0 ? signOnBonus1 : i === 1 ? signOnBonus2 : 0;
+    const total = baseSalary + bonusAmount + equity + signOn;
+    return {
+      year: `Year ${year}`,
+      baseSalary,
+      bonus: bonusAmount,
+      equity,
+      signOn,
+      total
+    };
+  });
 
   const handleExport = (format: 'txt' | 'csv') => {
-    if (!results) return;
-    
     let content = '';
     const filename = `compensation-summary.${format}`;
 
     if (format === 'txt') {
         content = `Total Compensation Summary\n\n`;
-        results.yearlyData.forEach((yearData: any) => {
+        yearlyData.forEach((yearData: any) => {
             content += `${yearData.year}\n`;
             content += `Base Salary: ${formatCurrency(yearData.baseSalary)}\n`;
             content += `Performance Bonus: ${formatCurrency(yearData.bonus)}\n`;
@@ -112,7 +100,7 @@ export default function SalaryNegotiationCalculator() {
         components.forEach(comp => {
             let row = `${labels[comp]}`;
             let total = 0;
-            results.yearlyData.forEach((yearData: any) => {
+            yearlyData.forEach((yearData: any) => {
                 const value = yearData[comp];
                 row += `,${value}`;
                 total += value;
@@ -188,57 +176,55 @@ export default function SalaryNegotiationCalculator() {
         <div className="flex justify-between items-center">
           <h3 className="text-xl font-semibold">Compensation Summary</h3>
           <DropdownMenu>
-            <DropdownMenuTrigger asChild><Button variant="outline" disabled={!results}><Download className="mr-2 h-4 w-4" /> Export</Button></DropdownMenuTrigger>
+            <DropdownMenuTrigger asChild><Button variant="outline"><Download className="mr-2 h-4 w-4" /> Export</Button></DropdownMenuTrigger>
             <DropdownMenuContent><DropdownMenuItem onClick={() => handleExport('txt')}>Download .txt</DropdownMenuItem><DropdownMenuItem onClick={() => handleExport('csv')}>Download .csv</DropdownMenuItem></DropdownMenuContent>
           </DropdownMenu>
         </div>
         
-        {results ? (
-            <div className="space-y-4">
-                <Card>
-                    <CardContent className="p-2">
-                        <Table>
-                            <TableHeader>
-                                <TableRow>
-                                    <TableHead>Comp Component</TableHead>
-                                    <TableHead className="text-right">Year 1</TableHead>
-                                    <TableHead className="text-right">Year 2</TableHead>
-                                    <TableHead className="text-right">Year 3</TableHead>
-                                    <TableHead className="text-right">Year 4</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                <TableRow><TableCell>Base Salary</TableCell>{results.yearlyData.map((d:any) => <TableCell key={d.year} className="text-right">{formatCurrency(d.baseSalary)}</TableCell>)}</TableRow>
-                                <TableRow><TableCell>Perf. Bonus</TableCell>{results.yearlyData.map((d:any) => <TableCell key={d.year} className="text-right">{formatCurrency(d.bonus)}</TableCell>)}</TableRow>
-                                <TableRow><TableCell>Equity ($)</TableCell>{results.yearlyData.map((d:any) => <TableCell key={d.year} className="text-right">{formatCurrency(d.equity)}</TableCell>)}</TableRow>
-                                <TableRow><TableCell>Sign-on Bonus</TableCell>{results.yearlyData.map((d:any) => <TableCell key={d.year} className="text-right">{formatCurrency(d.signOn)}</TableCell>)}</TableRow>
-                                <TableRow className="font-bold bg-muted/50"><TableCell>Total Comp.</TableCell>{results.yearlyData.map((d:any) => <TableCell key={d.year} className="text-right">{formatCurrency(d.total)}</TableCell>)}</TableRow>
-                            </TableBody>
-                        </Table>
-                    </CardContent>
-                </Card>
-                <Card>
-                    <CardContent className="p-4 h-96">
-                      <ResponsiveContainer width="100%" height="100%">
-                        <BarChart data={results.yearlyData}>
-                          <CartesianGrid strokeDasharray="3 3" />
-                          <XAxis dataKey="year" />
-                          <YAxis tickFormatter={(value) => `$${value / 1000}k`} />
-                          <Tooltip formatter={(value: number) => formatCurrency(value)} />
-                          <Legend />
-                          <Bar dataKey="baseSalary" stackId="a" fill="hsl(var(--chart-1))" name="Base Salary" />
-                          <Bar dataKey="bonus" stackId="a" fill="hsl(var(--chart-2))" name="Bonus" />
-                          <Bar dataKey="equity" stackId="a" fill="hsl(var(--chart-3))" name="Equity" />
-                          <Bar dataKey="signOn" stackId="a" fill="hsl(var(--chart-4))" name="Sign On" />
-                        </BarChart>
-                      </ResponsiveContainer>
-                    </CardContent>
-                </Card>
-            </div>
-        ) : (
-             <div className="flex items-center justify-center h-full bg-muted/50 rounded-lg border border-dashed"><p className="text-sm text-muted-foreground p-8 text-center">Enter compensation details to see the breakdown.</p></div>
-        )}
+        <div className="space-y-4">
+            <Card>
+                <CardContent className="p-2">
+                    <Table>
+                        <TableHeader>
+                            <TableRow>
+                                <TableHead>Comp Component</TableHead>
+                                <TableHead className="text-right">Year 1</TableHead>
+                                <TableHead className="text-right">Year 2</TableHead>
+                                <TableHead className="text-right">Year 3</TableHead>
+                                <TableHead className="text-right">Year 4</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            <TableRow><TableCell>Base Salary</TableCell>{yearlyData.map((d:any) => <TableCell key={d.year} className="text-right">{formatCurrency(d.baseSalary)}</TableCell>)}</TableRow>
+                            <TableRow><TableCell>Perf. Bonus</TableCell>{yearlyData.map((d:any) => <TableCell key={d.year} className="text-right">{formatCurrency(d.bonus)}</TableCell>)}</TableRow>
+                            <TableRow><TableCell>Equity ($)</TableCell>{yearlyData.map((d:any) => <TableCell key={d.year} className="text-right">{formatCurrency(d.equity)}</TableCell>)}</TableRow>
+                            <TableRow><TableCell>Sign-on Bonus</TableCell>{yearlyData.map((d:any) => <TableCell key={d.year} className="text-right">{formatCurrency(d.signOn)}</TableCell>)}</TableRow>
+                            <TableRow className="font-bold bg-muted/50"><TableCell>Total Comp.</TableCell>{yearlyData.map((d:any) => <TableCell key={d.year} className="text-right">{formatCurrency(d.total)}</TableCell>)}</TableRow>
+                        </TableBody>
+                    </Table>
+                </CardContent>
+            </Card>
+            <Card>
+                <CardContent className="p-4 h-96">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={yearlyData}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="year" />
+                      <YAxis tickFormatter={(value) => `$${value / 1000}k`} />
+                      <Tooltip formatter={(value: number) => formatCurrency(value)} />
+                      <Legend />
+                      <Bar dataKey="baseSalary" stackId="a" fill="hsl(var(--chart-1))" name="Base Salary" />
+                      <Bar dataKey="bonus" stackId="a" fill="hsl(var(--chart-2))" name="Bonus" />
+                      <Bar dataKey="equity" stackId="a" fill="hsl(var(--chart-3))" name="Equity" />
+                      <Bar dataKey="signOn" stackId="a" fill="hsl(var(--chart-4))" name="Sign On" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </CardContent>
+            </Card>
+        </div>
       </div>
     </form>
   );
 }
+
+    
