@@ -151,7 +151,10 @@ export default function CommuteCostCalculator() {
                             <BarChart data={chartData} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
                                 <CartesianGrid strokeDasharray="3 3" />
                                 <XAxis dataKey="name" />
-                                <YAxis tickFormatter={(value) => formatCurrency(value)} />
+                                <YAxis 
+                                  tickFormatter={(value) => formatCurrency(value)} 
+                                  domain={[0, 'dataMax']}
+                                />
                                 <Tooltip formatter={(value: number) => formatCurrency(value)} />
                                 <Bar dataKey="Cost" fill="hsl(var(--primary))" />
                             </BarChart>
