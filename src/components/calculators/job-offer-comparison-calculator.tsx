@@ -42,6 +42,11 @@ const defaultOffers = [
     { name: 'Job Offer B', salary: 85000, bonus: 10000, benefitsValue: 15000, vacationDays: 25, otherPerks: 500, costOfLivingIndex: 90, workingHours: 38 },
 ];
 
+const clearedOffers = [
+    { name: 'Job Offer A', salary: 0, bonus: 0, benefitsValue: 0, vacationDays: 0, otherPerks: 0, costOfLivingIndex: 100, workingHours: 40 },
+    { name: 'Job Offer B', salary: 0, bonus: 0, benefitsValue: 0, vacationDays: 0, otherPerks: 0, costOfLivingIndex: 100, workingHours: 40 },
+]
+
 const CHART_COLORS = ['hsl(var(--chart-1))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))', 'hsl(var(--chart-4))'];
 
 export default function JobOfferComparisonCalculator() {
@@ -89,6 +94,10 @@ export default function JobOfferComparisonCalculator() {
 
   const handleAddNewOffer = () => {
     append({ name: `Job Offer ${String.fromCharCode(65 + fields.length)}`, salary: 0, bonus: 0, benefitsValue: 0, vacationDays: 15, otherPerks: 0, costOfLivingIndex: 100, workingHours: 40 });
+  };
+  
+  const handleClear = () => {
+    reset({ offers: clearedOffers });
   };
   
   const handleExport = (format: 'txt' | 'csv') => {
@@ -174,7 +183,7 @@ export default function JobOfferComparisonCalculator() {
       
       <div className="flex justify-center gap-4">
         <Button type="button" variant="outline" onClick={handleAddNewOffer}>Add Another Offer</Button>
-         <Button type="button" variant="destructive" onClick={() => reset({ offers: defaultOffers })}>Clear</Button>
+         <Button type="button" variant="destructive" onClick={handleClear}>Clear</Button>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" disabled={calculatedResults.length === 0}>
