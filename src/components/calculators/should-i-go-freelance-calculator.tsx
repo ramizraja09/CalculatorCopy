@@ -17,6 +17,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
 const formSchema = z.object({
   // Salaried Job
@@ -67,6 +68,10 @@ export default function ShouldIGoFreelanceCalculator() {
       totalSalaryComp,
       netFreelanceIncome,
       difference,
+      chartData: [
+        { name: 'Salaried', Compensation: totalSalaryComp },
+        { name: 'Freelance', Compensation: netFreelanceIncome },
+      ]
     });
     setFormData(data);
   };
@@ -149,6 +154,7 @@ export default function ShouldIGoFreelanceCalculator() {
                     </AlertDescription>
                 </Alert>
                 <Card>
+                    <CardHeader><CardTitle className="text-base text-center">Summary</CardTitle></CardHeader>
                     <CardContent className="p-4 grid grid-cols-2 gap-4 text-center">
                          <div>
                             <p className="text-muted-foreground">Total Salaried Compensation</p>
@@ -158,6 +164,20 @@ export default function ShouldIGoFreelanceCalculator() {
                             <p className="text-muted-foreground">Net Freelance Income</p>
                             <p className="font-semibold text-xl">{formatCurrency(results.netFreelanceIncome)}</p>
                         </div>
+                    </CardContent>
+                </Card>
+                 <Card>
+                    <CardHeader><CardTitle className="text-base text-center">Visual Comparison</CardTitle></CardHeader>
+                    <CardContent className="h-64">
+                         <ResponsiveContainer width="100%" height="100%">
+                            <BarChart data={results.chartData} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
+                                <CartesianGrid strokeDasharray="3 3" />
+                                <XAxis dataKey="name" />
+                                <YAxis tickFormatter={(value) => `$${value / 1000}k`} />
+                                <Tooltip formatter={(value: number) => formatCurrency(value)} />
+                                <Bar dataKey="Compensation" fill="hsl(var(--primary))" />
+                            </BarChart>
+                        </ResponsiveContainer>
                     </CardContent>
                 </Card>
             </div>
