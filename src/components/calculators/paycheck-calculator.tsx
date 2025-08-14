@@ -10,7 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Info, Download } from 'lucide-react';
+import { Info, Download, HelpCircle } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
 import {
   DropdownMenu,
@@ -18,6 +18,9 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Tooltip as ShadTooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+
 
 // 2024 Federal Tax Data (simplified)
 const taxData = {
@@ -36,12 +39,19 @@ const payPeriods = { annually: 1, monthly: 12, 'bi-weekly': 26, weekly: 52 };
 const PIE_COLORS = ['hsl(var(--chart-2))', 'hsl(var(--destructive))', 'hsl(var(--chart-3))', 'hsl(var(--chart-4))'];
 
 const formSchema = z.object({
-  grossIncome: z.number().min(1, 'Gross income is required'),
-  filingStatus: z.enum(['single', 'married_jointly']),
+  jobIncome: z.number().min(0),
   payFrequency: z.enum(['annually', 'monthly', 'bi-weekly', 'weekly']),
+  filingStatus: z.enum(['single', 'married_jointly']),
   childrenUnder17: z.number().int().min(0).default(0),
   otherDependents: z.number().int().min(0).default(0),
-  preTaxDeductions: z.number().min(0, 'Deductions must be non-negative'),
+  otherIncome: z.number().min(0).default(0),
+  pretaxDeductions: z.number().min(0).default(0),
+  nonWithheldDeductions: z.number().min(0).default(0),
+  itemizedDeductions: z.number().min(0).default(0),
+  hasMultipleJobs: z.enum(['yes', 'no']),
+  stateTaxRate: z.number().min(0).max(100).default(0),
+  cityTaxRate: z.number().min(0).max(100).default(0),
+  isSelfEmployed: z.enum(['yes', 'no']),
 });
 
 type FormData = z.infer<typeof formSchema>;
@@ -53,64 +63,79 @@ export default function PaycheckCalculator() {
   const { control, handleSubmit, reset } = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      grossIncome: 80000,
-      filingStatus: 'single',
+      jobIncome: 80000,
       payFrequency: 'bi-weekly',
+      filingStatus: 'single',
       childrenUnder17: 0,
       otherDependents: 0,
-      preTaxDeductions: 6000,
+      otherIncome: 0,
+      pretaxDeductions: 6000,
+      nonWithheldDeductions: 0,
+      itemizedDeductions: 0,
+      hasMultipleJobs: 'no',
+      stateTaxRate: 0,
+      cityTaxRate: 0,
+      isSelfEmployed: 'no',
     },
   });
   
   const formatCurrency = (value: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value);
 
   const calculatePay = (data: FormData) => {
-    const { grossIncome, filingStatus, payFrequency, preTaxDeductions, childrenUnder17, otherDependents } = data;
+    const grossAnnualIncome = data.jobIncome + data.otherIncome;
     
-    // FICA taxes are based on gross income
-    const socialSecurityTax = Math.min(grossIncome, FICA_RATES.socialSecurity.limit) * FICA_RATES.socialSecurity.rate;
-    const medicareTax = grossIncome * FICA_RATES.medicare.rate;
-    const totalFicaTax = socialSecurityTax + medicareTax;
+    // FICA taxes
+    const selfEmploymentTax = data.isSelfEmployed === 'yes' ? (grossAnnualIncome * 0.9235) * 0.153 : 0;
+    const socialSecurityTax = data.isSelfEmployed === 'no' ? Math.min(grossAnnualIncome, FICA_RATES.socialSecurity.limit) * FICA_RATES.socialSecurity.rate : 0;
+    const medicareTax = data.isSelfEmployed === 'no' ? grossAnnualIncome * FICA_RATES.medicare.rate : 0;
+    const totalFicaTax = selfEmploymentTax + socialSecurityTax + medicareTax;
 
-    const adjustedGrossIncome = grossIncome - preTaxDeductions;
-    const deduction = taxData[2024].standardDeduction[filingStatus];
+    // Federal tax
+    const adjustedGrossIncome = grossAnnualIncome - data.pretaxDeductions;
+    const standardDeduction = taxData[2024].standardDeduction[data.filingStatus];
+    const deduction = Math.max(standardDeduction, data.itemizedDeductions) + data.nonWithheldDeductions;
     const taxableIncome = Math.max(0, adjustedGrossIncome - deduction);
     
-    const brackets = taxData[2024].brackets[filingStatus];
+    const brackets = taxData[2024].brackets[data.filingStatus];
     let federalTax = 0;
     for (const bracket of brackets) {
       if (taxableIncome > bracket.from) {
-        const incomeInBracket = Math.min(taxableIncome, bracket.to) - bracket.from;
-        federalTax += incomeInBracket * bracket.rate;
+        const taxableInBracket = Math.min(taxableIncome, bracket.to) - bracket.from;
+        federalTax += taxableInBracket * bracket.rate;
       }
     }
     
-    const childTaxCredit = childrenUnder17 * taxData[2024].childTaxCredit;
-    const otherDependentCredit = otherDependents * taxData[2024].otherDependentCredit;
+    const childTaxCredit = data.childrenUnder17 * taxData[2024].childTaxCredit;
+    const otherDependentCredit = data.otherDependents * taxData[2024].otherDependentCredit;
     const totalCredits = childTaxCredit + otherDependentCredit;
     
     const finalFederalTax = Math.max(0, federalTax - totalCredits);
+
+    const stateTax = grossAnnualIncome * (data.stateTaxRate / 100);
+    const cityTax = grossAnnualIncome * (data.cityTaxRate / 100);
     
-    const totalTax = totalFicaTax + finalFederalTax;
-    const netIncome = grossIncome - totalTax - preTaxDeductions;
-    const periods = payPeriods[payFrequency];
+    const totalTax = totalFicaTax + finalFederalTax + stateTax + cityTax;
+    const netIncome = grossAnnualIncome - totalTax - data.pretaxDeductions - data.nonWithheldDeductions - data.itemizedDeductions;
+    const periods = payPeriods[data.payFrequency];
     
     const perPeriod = (val: number) => val / periods;
 
     setResults({
-      grossPay: perPeriod(grossIncome),
+      grossPay: perPeriod(grossAnnualIncome),
       netPay: perPeriod(netIncome),
-      totalDeductions: perPeriod(totalTax + preTaxDeductions),
-      preTaxDeductions: perPeriod(preTaxDeductions),
+      totalDeductions: perPeriod(totalTax + data.pretaxDeductions + data.nonWithheldDeductions + data.itemizedDeductions),
+      preTaxDeductions: perPeriod(data.pretaxDeductions),
       federalTax: perPeriod(finalFederalTax),
-      socialSecurityTax: perPeriod(socialSecurityTax),
-      medicareTax: perPeriod(medicareTax),
-      payFrequencyLabel: payFrequency.replace('_', '-'),
+      stateTax: perPeriod(stateTax),
+      cityTax: perPeriod(cityTax),
+      ficaTax: perPeriod(totalFicaTax),
+      payFrequencyLabel: data.payFrequency.replace('_', '-'),
       pieData: [
         { name: 'Take-Home Pay', value: perPeriod(netIncome) },
         { name: 'Federal Tax', value: perPeriod(finalFederalTax) },
+        { name: 'State/City Tax', value: perPeriod(stateTax + cityTax)},
         { name: 'FICA Tax', value: perPeriod(totalFicaTax) },
-        { name: 'Pre-Tax Deductions', value: perPeriod(preTaxDeductions) },
+        { name: 'Deductions', value: perPeriod(data.pretaxDeductions + data.nonWithheldDeductions + data.itemizedDeductions)},
       ].filter(item => item.value > 0),
     });
     setFormData(data);
@@ -144,29 +169,102 @@ export default function PaycheckCalculator() {
   };
 
   return (
+    <TooltipProvider>
     <div className="grid lg:grid-cols-3 gap-8">
       <form onSubmit={handleSubmit(calculatePay)} className="lg:col-span-2 space-y-4">
         <Card>
-          <CardHeader><CardTitle>Your Job Income (Salary)</CardTitle></CardHeader>
-          <CardContent className="grid md:grid-cols-2 gap-4">
-            <div><Label>Gross Income ($/year)</Label><Controller name="grossIncome" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} /></div>
-            <div><Label>Pay Frequency</Label><Controller name="payFrequency" control={control} render={({ field }) => ( <Select onValueChange={field.onChange} defaultValue={field.value}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="annually">Annually</SelectItem><SelectItem value="monthly">Monthly</SelectItem><SelectItem value="bi-weekly">Bi-Weekly</SelectItem><SelectItem value="weekly">Weekly</SelectItem></SelectContent></Select> )} /></div>
-          </CardContent>
-        </Card>
+          <CardContent className="p-4 grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
+            
+            <div className="md:col-span-2 grid grid-cols-[1fr,200px] gap-2 items-center">
+                <Label>Your job income (salary)</Label>
+                <div className="flex items-center">
+                    <Controller name="jobIncome" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
+                    <span className="text-sm text-muted-foreground ml-2">/year</span>
+                </div>
+            </div>
 
-        <Card>
-          <CardHeader><CardTitle>Federal Filing Status</CardTitle></CardHeader>
-          <CardContent className="grid md:grid-cols-2 gap-4">
-             <div><Label>Filing Status</Label><Controller name="filingStatus" control={control} render={({ field }) => ( <Select onValueChange={field.onChange} defaultValue={field.value}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="single">Single</SelectItem><SelectItem value="married_jointly">Married Filing Jointly</SelectItem></SelectContent></Select> )} /></div>
-            <div><Label>Children Under Age 17</Label><Controller name="childrenUnder17" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value, 10) || 0)} />} /></div>
-            <div><Label>Other Dependents</Label><Controller name="otherDependents" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value, 10) || 0)} />} /></div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader><CardTitle>Deductions</CardTitle></CardHeader>
-          <CardContent>
-            <div><Label>Pre-Tax Deductions ($/year)</Label><Controller name="preTaxDeductions" control={control} render={({ field }) => <Input type="number" placeholder="e.g. 401k, health insurance" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} /></div>
+            <div className="md:col-span-2 grid grid-cols-[1fr,200px] gap-2 items-center">
+                <Label>Pay frequency</Label>
+                <Controller name="payFrequency" control={control} render={({ field }) => ( <Select onValueChange={field.onChange} defaultValue={field.value}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="annually">Annually</SelectItem><SelectItem value="monthly">Monthly</SelectItem><SelectItem value="bi-weekly">Bi-Weekly</SelectItem><SelectItem value="weekly">Weekly</SelectItem></SelectContent></Select> )} />
+            </div>
+
+            <div className="md:col-span-2 grid grid-cols-[1fr,200px] gap-2 items-center">
+                <Label>File status</Label>
+                <Controller name="filingStatus" control={control} render={({ field }) => ( <Select onValueChange={field.onChange} defaultValue={field.value}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="single">Single</SelectItem><SelectItem value="married_jointly">Married Filing Jointly</SelectItem></SelectContent></Select> )} />
+            </div>
+
+            <div className="md:col-span-2 grid grid-cols-[1fr,200px] gap-2 items-center">
+                <Label>Number of children under age 17</Label>
+                <Controller name="childrenUnder17" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value, 10) || 0)} />} />
+            </div>
+
+            <div className="md:col-span-2 grid grid-cols-[1fr,200px] gap-2 items-center">
+                <Label>Number of other dependents</Label>
+                <Controller name="otherDependents" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value, 10) || 0)} />} />
+            </div>
+
+            <div className="md:col-span-2 grid grid-cols-[1fr,200px,1fr] gap-2 items-center">
+                <Label>Other income (not from jobs)</Label>
+                <div className="flex items-center">
+                    <Controller name="otherIncome" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
+                    <span className="text-sm text-muted-foreground ml-2">/year</span>
+                </div>
+                <p className="text-xs text-muted-foreground">interest, dividends, retirement income, etc.</p>
+            </div>
+            
+            <div className="md:col-span-2 grid grid-cols-[1fr,200px,1fr] gap-2 items-center">
+                <Label>Pretax deductions withheld</Label>
+                <div className="flex items-center">
+                    <Controller name="pretaxDeductions" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
+                    <span className="text-sm text-muted-foreground ml-2">/year</span>
+                </div>
+                 <p className="text-xs text-muted-foreground">401k, health insurance, HSA, etc.</p>
+            </div>
+
+            <div className="md:col-span-2 grid grid-cols-[1fr,200px,1fr] gap-2 items-center">
+                <Label className="flex items-center gap-1">Deductions not withheld <ShadTooltip><TooltipTrigger asChild><Button type="button" variant="ghost" size="icon" className="h-4 w-4"><HelpCircle className="h-4 w-4"/></Button></TooltipTrigger><TooltipContent><p>e.g. Traditional IRA contributions</p></TooltipContent></ShadTooltip></Label>
+                <div className="flex items-center">
+                    <Controller name="nonWithheldDeductions" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
+                    <span className="text-sm text-muted-foreground ml-2">/year</span>
+                </div>
+                 <p className="text-xs text-muted-foreground">IRA, student loan interest, etc.</p>
+            </div>
+
+            <div className="md:col-span-2 grid grid-cols-[1fr,200px,1fr] gap-2 items-center">
+                <Label className="flex items-center gap-1">Itemized deductions <ShadTooltip><TooltipTrigger asChild><Button type="button" variant="ghost" size="icon" className="h-4 w-4"><HelpCircle className="h-4 w-4"/></Button></TooltipTrigger><TooltipContent><p>Only enter if greater than standard deduction</p></TooltipContent></ShadTooltip></Label>
+                <div className="flex items-center">
+                    <Controller name="itemizedDeductions" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
+                    <span className="text-sm text-muted-foreground ml-2">/year</span>
+                </div>
+                 <p className="text-xs text-muted-foreground">mortgage interest, charitable donations, etc.</p>
+            </div>
+
+            <div className="md:col-span-2 grid grid-cols-[1fr,200px] gap-2 items-center">
+                 <Label>Has 2nd, 3rd job income?</Label>
+                <Controller name="hasMultipleJobs" control={control} render={({ field }) => (<RadioGroup onValueChange={field.onChange} defaultValue={field.value} className="flex gap-4 pt-2"><div className="flex items-center space-x-2"><RadioGroupItem value="yes" id="yesJobs" /><Label htmlFor="yesJobs">Yes</Label></div><div className="flex items-center space-x-2"><RadioGroupItem value="no" id="noJobs" /><Label htmlFor="noJobs">No</Label></div></RadioGroup>)} />
+            </div>
+
+            <div className="md:col-span-2 grid grid-cols-[1fr,200px,1fr] gap-2 items-center">
+                <Label>State income tax rate</Label>
+                <div className="flex items-center">
+                    <Controller name="stateTaxRate" control={control} render={({ field }) => <Input type="number" step="0.1" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
+                    <span className="text-sm text-muted-foreground ml-2">%</span>
+                </div>
+                <a href="#" className="text-xs text-primary hover:underline">click here to find out</a>
+            </div>
+             <div className="md:col-span-2 grid grid-cols-[1fr,200px] gap-2 items-center">
+                <Label>City income tax rate</Label>
+                <div className="flex items-center">
+                    <Controller name="cityTaxRate" control={control} render={({ field }) => <Input type="number" step="0.1" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
+                    <span className="text-sm text-muted-foreground ml-2">%</span>
+                </div>
+            </div>
+
+             <div className="md:col-span-2 grid grid-cols-[1fr,200px] gap-2 items-center">
+                 <Label>Are you self-employed or an independent contractor?</Label>
+                <Controller name="isSelfEmployed" control={control} render={({ field }) => (<RadioGroup onValueChange={field.onChange} defaultValue={field.value} className="flex gap-4 pt-2"><div className="flex items-center space-x-2"><RadioGroupItem value="yes" id="yesSelf" /><Label htmlFor="yesSelf">Yes</Label></div><div className="flex items-center space-x-2"><RadioGroupItem value="no" id="noSelf" /><Label htmlFor="noSelf">No</Label></div></RadioGroup>)} />
+            </div>
+
           </CardContent>
         </Card>
 
@@ -189,6 +287,8 @@ export default function PaycheckCalculator() {
                         <div className="flex justify-between"><span className="text-muted-foreground">Gross Pay</span><span>{formatCurrency(results.grossPay)}</span></div>
                         <div className="flex justify-between pl-4 text-destructive"><span>Pre-Tax Deductions</span><span>-{formatCurrency(results.preTaxDeductions)}</span></div>
                         <div className="flex justify-between pl-4 text-destructive"><span>Federal Tax</span><span>-{formatCurrency(results.federalTax)}</span></div>
+                        <div className="flex justify-between pl-4 text-destructive"><span>State Tax</span><span>-{formatCurrency(results.stateTax)}</span></div>
+                        <div className="flex justify-between pl-4 text-destructive"><span>City Tax</span><span>-{formatCurrency(results.cityTax)}</span></div>
                         <div className="flex justify-between pl-4 text-destructive"><span>FICA Taxes</span><span>-{formatCurrency(results.ficaTax)}</span></div>
                         <div className="flex justify-between font-bold border-t pt-2 mt-2"><span>Net Pay (Take-Home)</span><span>{formatCurrency(results.netPay)}</span></div>
                     </CardContent>
@@ -215,5 +315,6 @@ export default function PaycheckCalculator() {
         )}
       </div>
     </div>
+    </TooltipProvider>
   );
 }
