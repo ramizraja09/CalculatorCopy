@@ -180,63 +180,63 @@ export default function LoanCalculator() {
                   </div>
                 )}
               </div>
+               {amortizedResults && !amortizedResults.error && (
+                <div className="md:col-span-2 mt-8 space-y-8">
+                    <div className="grid md:grid-cols-2 gap-8">
+                        <Card>
+                            <CardHeader><CardTitle className="text-base text-center">Total Cost Breakdown</CardTitle></CardHeader>
+                            <CardContent className="h-64">
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <PieChart>
+                                        <Pie data={amortizedResults.pieData} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={50} outerRadius={80} paddingAngle={5}>
+                                            {amortizedResults.pieData.map((_entry: any, index: number) => <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />)}
+                                        </Pie>
+                                        <RechartsTooltip formatter={(value: number) => formatCurrency(value)} />
+                                        <Legend iconType="circle" />
+                                    </PieChart>
+                                </ResponsiveContainer>
+                            </CardContent>
+                        </Card>
+                        <Card>
+                            <CardHeader><CardTitle className="text-base text-center">Loan Balance Over Time</CardTitle></CardHeader>
+                            <CardContent className="h-64">
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <LineChart data={amortizedResults.schedule} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+                                        <CartesianGrid strokeDasharray="3 3" />
+                                        <XAxis dataKey="month" label={{ value: 'Month', position: 'insideBottom', offset: -5 }} />
+                                        <YAxis tickFormatter={(value) => formatCurrency(value)} />
+                                        <RechartsTooltip formatter={(value: number) => formatCurrency(value)} />
+                                        <Line type="monotone" dataKey="balance" name="Remaining Balance" stroke="hsl(var(--primary))" dot={false} />
+                                    </LineChart>
+                                </ResponsiveContainer>
+                            </CardContent>
+                        </Card>
+                    </div>
+                    <div>
+                      <h2 className="text-xl font-semibold mb-4">Amortization Schedule</h2>
+                      <Card>
+                          <CardContent className="p-0">
+                              <ScrollArea className="h-[30rem]">
+                                  <Table>
+                                      <TableHeader className="sticky top-0 bg-muted"><TableRow><TableHead className="w-1/4">Month</TableHead><TableHead className="w-1/4 text-right">Principal</TableHead><TableHead className="w-1/4 text-right">Interest</TableHead><TableHead className="w-1/4 text-right">Balance</TableHead></TableRow></TableHeader>
+                                      <TableBody>
+                                          {amortizedResults.schedule.map((row: any) => (
+                                              <TableRow key={row.month}>
+                                                  <TableCell>{row.month}</TableCell>
+                                                  <TableCell className="text-right">{formatCurrency(row.principalPayment)}</TableCell>
+                                                  <TableCell className="text-right">{formatCurrency(row.interestPayment)}</TableCell>
+                                                  <TableCell className="text-right">{formatCurrency(row.balance)}</TableCell>
+                                              </TableRow>
+                                          ))}
+                                      </TableBody>
+                                  </Table>
+                              </ScrollArea>
+                          </CardContent>
+                      </Card>
+                    </div>
+                </div>
+              )}
             </div>
-            {amortizedResults && !amortizedResults.error && (
-              <div className="mt-8 space-y-8">
-                  <div className="grid md:grid-cols-2 gap-8">
-                      <Card>
-                          <CardHeader><CardTitle className="text-base text-center">Total Cost Breakdown</CardTitle></CardHeader>
-                          <CardContent className="h-64">
-                              <ResponsiveContainer width="100%" height="100%">
-                                  <PieChart>
-                                      <Pie data={amortizedResults.pieData} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={50} outerRadius={80} paddingAngle={5}>
-                                          {amortizedResults.pieData.map((_entry: any, index: number) => <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />)}
-                                      </Pie>
-                                      <RechartsTooltip formatter={(value: number) => formatCurrency(value)} />
-                                      <Legend iconType="circle" />
-                                  </PieChart>
-                              </ResponsiveContainer>
-                          </CardContent>
-                      </Card>
-                      <Card>
-                          <CardHeader><CardTitle className="text-base text-center">Loan Balance Over Time</CardTitle></CardHeader>
-                          <CardContent className="h-64">
-                              <ResponsiveContainer width="100%" height="100%">
-                                  <LineChart data={amortizedResults.schedule} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
-                                      <CartesianGrid strokeDasharray="3 3" />
-                                      <XAxis dataKey="month" label={{ value: 'Month', position: 'insideBottom', offset: -5 }} />
-                                      <YAxis tickFormatter={(value) => formatCurrency(value)} />
-                                      <RechartsTooltip formatter={(value: number) => formatCurrency(value)} />
-                                      <Line type="monotone" dataKey="balance" name="Remaining Balance" stroke="hsl(var(--primary))" dot={false} />
-                                  </LineChart>
-                              </ResponsiveContainer>
-                          </CardContent>
-                      </Card>
-                  </div>
-                  <div>
-                    <h2 className="text-xl font-semibold mb-4">Amortization Schedule</h2>
-                    <Card>
-                        <CardContent className="p-0">
-                            <ScrollArea className="h-[30rem]">
-                                <Table>
-                                    <TableHeader className="sticky top-0 bg-muted"><TableRow><TableHead className="w-1/4">Month</TableHead><TableHead className="w-1/4 text-right">Principal</TableHead><TableHead className="w-1/4 text-right">Interest</TableHead><TableHead className="w-1/4 text-right">Balance</TableHead></TableRow></TableHeader>
-                                    <TableBody>
-                                        {amortizedResults.schedule.map((row: any) => (
-                                            <TableRow key={row.month}>
-                                                <TableCell>{row.month}</TableCell>
-                                                <TableCell className="text-right">{formatCurrency(row.principalPayment)}</TableCell>
-                                                <TableCell className="text-right">{formatCurrency(row.interestPayment)}</TableCell>
-                                                <TableCell className="text-right">{formatCurrency(row.balance)}</TableCell>
-                                            </TableRow>
-                                        ))}
-                                    </TableBody>
-                                </Table>
-                            </ScrollArea>
-                        </CardContent>
-                    </Card>
-                  </div>
-              </div>
-            )}
         </form>
       </TabsContent>
       <TabsContent value="deferred" className="mt-6">
