@@ -38,7 +38,7 @@ const formatCurrency = (value: number) => new Intl.NumberFormat('en-US', { style
 export default function SalaryNegotiationCalculator() {
   const [isClient, setIsClient] = useState(false);
 
-  const { control, watch, reset } = useForm<FormData>({
+  const { control, watch } = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       baseSalary: 100000,
