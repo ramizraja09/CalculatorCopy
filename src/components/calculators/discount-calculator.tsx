@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -16,52 +16,99 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 
 const formSchema = z.object({
-  originalPrice: z.number().min(0.01, 'Original price must be positive'),
-  discountPercentage: z.number().min(0, 'Discount cannot be negative').max(100, 'Discount cannot exceed 100%'),
+  priceBefore: z.string(),
+  discountValue: z.string(),
+  priceAfter: z.string(),
+  discountType: z.enum(['percent', 'fixed']),
+  solveFor: z.enum(['priceAfter', 'priceBefore', 'discountValue']),
 });
 
 type FormData = z.infer<typeof formSchema>;
 
+const formatCurrency = (value: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value);
+
 export default function DiscountCalculator() {
-  const [results, setResults] = useState<any>(null);
+  const [youSaved, setYouSaved] = useState<string>('');
   const [formData, setFormData] = useState<FormData | null>(null);
 
-  const { control, handleSubmit, formState: { errors } } = useForm<FormData>({
+  const { control, handleSubmit, watch, setValue, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      originalPrice: 100,
-      discountPercentage: 25,
+      priceBefore: '59.99',
+      discountValue: '15',
+      priceAfter: '',
+      discountType: 'percent',
+      solveFor: 'priceAfter',
     },
   });
 
-  const calculateDiscount = (data: FormData) => {
-    const { originalPrice, discountPercentage } = data;
-    const amountSaved = originalPrice * (discountPercentage / 100);
-    const finalPrice = originalPrice - amountSaved;
+  const formValues = watch();
 
-    setResults({
-      finalPrice,
-      amountSaved,
-      error: null,
-    });
-    setFormData(data);
-  };
+  useEffect(() => {
+    const calculate = () => {
+      const { priceBefore, discountValue, priceAfter, discountType, solveFor } = formValues;
+      const pb = parseFloat(priceBefore);
+      const dv = parseFloat(discountValue);
+      const pa = parseFloat(priceAfter);
 
-  const formatCurrency = (value: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value);
-  
+      let newPriceAfter = NaN;
+      let newPriceBefore = NaN;
+      let newDiscountValue = NaN;
+      let saved = 0;
+
+      try {
+        if (solveFor === 'priceAfter' && !isNaN(pb) && !isNaN(dv)) {
+          if (discountType === 'percent') {
+            saved = pb * (dv / 100);
+            newPriceAfter = pb - saved;
+          } else { // fixed
+            saved = dv;
+            newPriceAfter = pb - saved;
+          }
+        } else if (solveFor === 'priceBefore' && !isNaN(pa) && !isNaN(dv)) {
+          if (discountType === 'percent') {
+            newPriceBefore = pa / (1 - dv / 100);
+            saved = newPriceBefore - pa;
+          } else { // fixed
+            saved = dv;
+            newPriceBefore = pa + saved;
+          }
+        } else if (solveFor === 'discountValue' && !isNaN(pb) && !isNaN(pa)) {
+           saved = pb - pa;
+           if (discountType === 'percent') {
+              newDiscountValue = (saved / pb) * 100;
+           } else { // fixed
+              newDiscountValue = saved;
+           }
+        }
+        
+        if (!isNaN(newPriceAfter)) setValue('priceAfter', newPriceAfter.toFixed(2));
+        if (!isNaN(newPriceBefore)) setValue('priceBefore', newPriceBefore.toFixed(2));
+        if (!isNaN(newDiscountValue)) setValue('discountValue', newDiscountValue.toFixed(2));
+        setYouSaved(formatCurrency(saved));
+
+      } catch (e) {
+        setYouSaved('');
+      }
+    };
+    calculate();
+  }, [formValues, setValue]);
+
+
   const handleExport = (format: 'txt' | 'csv') => {
-    if (!results || !formData) return;
+    if (!formValues) return;
     
     let content = '';
     const filename = `discount-calculation.${format}`;
-    const { originalPrice, discountPercentage } = formData;
+    const { priceBefore, discountValue, priceAfter, discountType } = formValues;
 
     if (format === 'txt') {
-      content = `Discount Calculation\n\nInputs:\n- Original Price: ${formatCurrency(originalPrice)}\n- Discount: ${discountPercentage}%\n\nResult:\n- Final Price: ${formatCurrency(results.finalPrice)}\n- You Saved: ${formatCurrency(results.amountSaved)}`;
+      content = `Discount Calculation\n\nInputs:\n- Price Before Discount: ${priceBefore}\n- Discount: ${discountValue} ${discountType === 'percent' ? '%' : '$'}\n- Price After Discount: ${priceAfter}\n\nResult:\n- You Saved: ${youSaved}`;
     } else {
-       content = `Category,Value\nOriginal Price,${originalPrice}\nDiscount (%),${discountPercentage}\nFinal Price,${results.finalPrice}\nAmount Saved,${results.amountSaved}`;
+       content = `Price Before,Discount,Discount Type,Price After,Amount Saved\n${priceBefore},${discountValue},${discountType},${priceAfter},${youSaved.replace('$', '')}`;
     }
 
     const blob = new Blob([content], { type: `text/${format}` });
@@ -74,71 +121,82 @@ export default function DiscountCalculator() {
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
   };
+  
+  const handleClear = () => {
+    setValue('priceBefore', '');
+    setValue('priceAfter', '');
+    setValue('discountValue', '');
+    setYouSaved('');
+  }
+
+  const isInputDisabled = (field: 'priceBefore' | 'priceAfter' | 'discountValue') => formValues.solveFor === field;
 
   return (
-    <form onSubmit={handleSubmit(calculateDiscount)} className="grid md:grid-cols-2 gap-8">
-      {/* Inputs Column */}
-      <div className="space-y-4">
-        <h3 className="text-xl font-semibold">Inputs</h3>
-        
-        <div>
-          <Label htmlFor="originalPrice">Original Price ($)</Label>
-          <Controller name="originalPrice" control={control} render={({ field }) => <Input id="originalPrice" type="number" step="0.01" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
-          {errors.originalPrice && <p className="text-destructive text-sm mt-1">{errors.originalPrice.message}</p>}
-        </div>
+    <div className="grid md:grid-cols-2 gap-8">
+      <Card>
+        <CardContent className="p-6 space-y-4">
+          <form onSubmit={(e) => e.preventDefault()}>
+            <p className="text-sm text-muted-foreground mb-4">Please provide any 2 values to calculate the third.</p>
+            
+            <div className="space-y-4">
+              <div>
+                  <Label htmlFor="priceBefore">Price before discount</Label>
+                  <div className="flex items-center gap-2">
+                    <RadioGroup value={formValues.solveFor} onValueChange={(val) => setValue('solveFor', val as any)}><RadioGroupItem value="priceBefore" id="solveForPriceBefore" checked={isInputDisabled('priceBefore')} /></RadioGroup>
+                    <Controller name="priceBefore" control={control} render={({ field }) => <Input type="text" {...field} disabled={isInputDisabled('priceBefore')} />} />
+                  </div>
+              </div>
 
-        <div>
-          <Label htmlFor="discountPercentage">Discount Percentage (%)</Label>
-          <Controller name="discountPercentage" control={control} render={({ field }) => <Input id="discountPercentage" type="number" step="1" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
-          {errors.discountPercentage && <p className="text-destructive text-sm mt-1">{errors.discountPercentage.message}</p>}
-        </div>
-        
-        <div className="flex gap-2">
-            <Button type="submit" className="flex-1">Calculate</Button>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" disabled={!results}>
-                  <Download className="mr-2 h-4 w-4" /> Export
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent>
-                <DropdownMenuItem onClick={() => handleExport('txt')}>Download as .txt</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handleExport('csv')}>Download as .csv</DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-        </div>
-      </div>
+              <div>
+                  <Label htmlFor="discountValue">Discount</Label>
+                  <div className="flex items-center gap-2">
+                    <RadioGroup value={formValues.solveFor} onValueChange={(val) => setValue('solveFor', val as any)}><RadioGroupItem value="discountValue" id="solveForDiscountValue" checked={isInputDisabled('discountValue')} /></RadioGroup>
+                    <Controller name="discountValue" control={control} render={({ field }) => <Input type="text" {...field} disabled={isInputDisabled('discountValue')} />} />
+                     <span className="font-semibold">{formValues.discountType === 'percent' ? '%' : '$'}</span>
+                  </div>
+              </div>
 
-      {/* Results Column */}
-      <div className="space-y-4">
-        <h3 className="text-xl font-semibold">Results</h3>
-        {results ? (
-            results.error ? (
-                <Card className="flex items-center justify-center h-60 bg-muted/50 border-dashed">
-                    <p className="text-destructive">{results.error}</p>
-                </Card>
-            ) : (
-                <div className="space-y-4">
-                    <Card>
-                        <CardContent className="p-4 text-center">
-                            <p className="text-sm text-muted-foreground">Final Price</p>
-                            <p className="text-3xl font-bold">{formatCurrency(results.finalPrice)}</p>
-                        </CardContent>
-                    </Card>
-                    <Card>
-                        <CardContent className="p-4 text-center">
-                             <p className="text-muted-foreground">You Saved</p>
-                             <p className="font-semibold">{formatCurrency(results.amountSaved)}</p>
-                        </CardContent>
-                    </Card>
-                </div>
-            )
-        ) : (
-             <div className="flex items-center justify-center h-60 bg-muted/50 rounded-lg border border-dashed">
-                <p className="text-sm text-muted-foreground">Enter price and discount to see the final cost</p>
+               <div>
+                  <Label htmlFor="priceAfter">Price after discount</Label>
+                  <div className="flex items-center gap-2">
+                     <RadioGroup value={formValues.solveFor} onValueChange={(val) => setValue('solveFor', val as any)}><RadioGroupItem value="priceAfter" id="solveForPriceAfter" checked={isInputDisabled('priceAfter')} /></RadioGroup>
+                     <Controller name="priceAfter" control={control} render={({ field }) => <Input type="text" {...field} disabled={isInputDisabled('priceAfter')} />} />
+                  </div>
+              </div>
+
+              <div>
+                  <Label>You saved</Label>
+                  <Input value={youSaved} readOnly className="font-bold border-dashed" />
+              </div>
+
+              <div>
+                <Label>Discount type</Label>
+                <Controller name="discountType" control={control} render={({ field }) => (
+                  <RadioGroup onValueChange={field.onChange} value={field.value} className="flex gap-4 pt-2">
+                    <div className="flex items-center space-x-2"><RadioGroupItem value="percent" id="percent" /><Label htmlFor="percent">Percent off</Label></div>
+                    <div className="flex items-center space-x-2"><RadioGroupItem value="fixed" id="fixed" /><Label htmlFor="fixed">Fixed amount off</Label></div>
+                  </RadioGroup>
+                )} />
+              </div>
+
+              <div className="flex gap-2 pt-4">
+                  <Button type="button" onClick={handleClear} variant="outline" className="flex-1">Clear</Button>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild><Button variant="outline" disabled={!youSaved}><Download className="mr-2 h-4 w-4" /> Export</Button></DropdownMenuTrigger>
+                    <DropdownMenuContent><DropdownMenuItem onClick={() => handleExport('txt')}>Download .txt</DropdownMenuItem><DropdownMenuItem onClick={() => handleExport('csv')}>Download .csv</DropdownMenuItem></DropdownMenuContent>
+                  </DropdownMenu>
+              </div>
             </div>
-        )}
+          </form>
+        </CardContent>
+      </Card>
+      
+      <div className="flex items-center justify-center">
+        {/* Placeholder for a potential graphic or ad space */}
+        <div className="w-full h-64 bg-muted/50 rounded-lg border border-dashed flex items-center justify-center">
+            <p className="text-sm text-muted-foreground">Ad Placeholder</p>
+        </div>
       </div>
-    </form>
+    </div>
   );
 }
