@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
@@ -16,11 +16,15 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
+
+const PIE_COLORS = ['hsl(var(--chart-1))', 'hsl(var(--chart-3))', 'hsl(var(--destructive))', 'hsl(var(--chart-2))'];
 
 const formSchema = z.object({
   revenue: z.number().min(1, "Revenue must be positive"),
   cogs: z.number().min(0, "COGS must be non-negative"),
   operatingExpenses: z.number().min(0, "Operating Expenses must be non-negative"),
+  taxes: z.number().min(0, "Taxes must be non-negative"),
 }).refine(data => data.revenue > data.cogs, {
     message: "Revenue must be greater than COGS.",
     path: ["revenue"],
@@ -38,13 +42,14 @@ export default function BusinessProfitMarginCalculator() {
       revenue: 100000,
       cogs: 40000,
       operatingExpenses: 25000,
+      taxes: 5000,
     },
   });
 
   const calculateMargin = (data: FormData) => {
-    const { revenue, cogs, operatingExpenses } = data;
+    const { revenue, cogs, operatingExpenses, taxes } = data;
     const grossProfit = revenue - cogs;
-    const netProfit = grossProfit - operatingExpenses;
+    const netProfit = grossProfit - operatingExpenses - taxes;
 
     const grossMargin = (grossProfit / revenue) * 100;
     const netMargin = (netProfit / revenue) * 100;
@@ -54,6 +59,12 @@ export default function BusinessProfitMarginCalculator() {
       netMargin: netMargin.toFixed(2),
       grossProfit: grossProfit,
       netProfit: netProfit,
+      pieData: [
+        { name: 'COGS', value: cogs },
+        { name: 'Operating Expenses', value: operatingExpenses },
+        { name: 'Taxes', value: taxes },
+        { name: 'Net Profit', value: netProfit },
+      ].filter(item => item.value > 0),
     });
     setFormData(data);
   };
@@ -65,12 +76,12 @@ export default function BusinessProfitMarginCalculator() {
     
     let content = '';
     const filename = `profit-margin-calculation.${format}`;
-    const { revenue, cogs, operatingExpenses } = formData;
+    const { revenue, cogs, operatingExpenses, taxes } = formData;
 
     if (format === 'txt') {
-      content = `Business Profit Margin Calculation\n\nInputs:\n- Revenue: ${formatCurrency(revenue)}\n- COGS: ${formatCurrency(cogs)}\n- Operating Expenses: ${formatCurrency(operatingExpenses)}\n\nResult:\n- Gross Profit Margin: ${results.grossMargin}%\n- Net Profit Margin: ${results.netMargin}%`;
+      content = `Business Profit Margin Calculation\n\nInputs:\n- Revenue: ${formatCurrency(revenue)}\n- COGS: ${formatCurrency(cogs)}\n- Operating Expenses: ${formatCurrency(operatingExpenses)}\n- Taxes: ${formatCurrency(taxes)}\n\nResult:\n- Gross Profit Margin: ${results.grossMargin}%\n- Net Profit Margin: ${results.netMargin}%`;
     } else {
-       content = `Revenue,COGS,Operating Expenses,Gross Margin (%),Net Margin (%)\n${revenue},${cogs},${operatingExpenses},${results.grossMargin},${results.netMargin}`;
+       content = `Revenue,COGS,Operating Expenses,Taxes,Gross Margin (%),Net Margin (%)\n${revenue},${cogs},${operatingExpenses},${taxes},${results.grossMargin},${results.netMargin}`;
     }
 
     const blob = new Blob([content], { type: `text/${format}` });
@@ -105,6 +116,11 @@ export default function BusinessProfitMarginCalculator() {
           <Label htmlFor="operatingExpenses">Operating Expenses ($)</Label>
           <Controller name="operatingExpenses" control={control} render={({ field }) => <Input id="operatingExpenses" type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
         </div>
+
+         <div>
+          <Label htmlFor="taxes">Taxes ($)</Label>
+          <Controller name="taxes" control={control} render={({ field }) => <Input id="taxes" type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
+        </div>
         
         <div className="flex gap-2">
             <Button type="submit" className="flex-1">Calculate Margin</Button>
@@ -128,17 +144,29 @@ export default function BusinessProfitMarginCalculator() {
         {results ? (
             <div className="space-y-4">
                 <Card>
-                    <CardContent className="p-4 text-center">
-                        <p className="text-sm text-muted-foreground">Gross Profit Margin</p>
-                        <p className="text-3xl font-bold">{results.grossMargin}%</p>
-                        <p className="text-xs text-muted-foreground">Profit from sales: {formatCurrency(results.grossProfit)}</p>
+                    <CardContent className="p-4 grid grid-cols-2 gap-4 text-center">
+                        <div>
+                            <p className="text-sm text-muted-foreground">Gross Profit Margin</p>
+                            <p className="text-2xl font-bold">{results.grossMargin}%</p>
+                        </div>
+                        <div>
+                            <p className="text-sm text-muted-foreground">Net Profit Margin</p>
+                            <p className="text-2xl font-bold">{results.netMargin}%</p>
+                        </div>
                     </CardContent>
                 </Card>
                 <Card>
-                    <CardContent className="p-4 text-center">
-                         <p className="text-sm text-muted-foreground">Net Profit Margin</p>
-                         <p className="text-3xl font-bold">{results.netMargin}%</p>
-                         <p className="text-xs text-muted-foreground">Overall profit: {formatCurrency(results.netProfit)}</p>
+                    <CardHeader><CardTitle className="text-base text-center">Revenue Breakdown</CardTitle></CardHeader>
+                    <CardContent className="h-64">
+                         <ResponsiveContainer width="100%" height="100%">
+                            <PieChart>
+                                <Pie data={results.pieData} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={50} outerRadius={80} paddingAngle={5}>
+                                    {results.pieData.map((_entry: any, index: number) => <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />)}
+                                </Pie>
+                                <Tooltip formatter={(value: number) => formatCurrency(value)} />
+                                <Legend iconType="circle" />
+                            </PieChart>
+                        </ResponsiveContainer>
                     </CardContent>
                 </Card>
             </div>
@@ -151,5 +179,3 @@ export default function BusinessProfitMarginCalculator() {
     </form>
   );
 }
-
-  
