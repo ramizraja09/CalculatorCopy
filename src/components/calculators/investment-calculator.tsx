@@ -9,11 +9,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
-import { Download } from 'lucide-react';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+import { Info, Download } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -21,112 +19,146 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 
+// Financial functions
+const calcFV = (rate: number, nper: number, pmt: number, pv: number) => {
+    if (rate === 0) return -(pv + pmt * nper);
+    return -(pv * Math.pow(1 + rate, nper) + pmt * (Math.pow(1 + rate, nper) - 1) / rate);
+};
+
+const calcPMT = (rate: number, nper: number, pv: number, fv: number) => {
+    if (rate === 0) return -(pv + fv) / nper;
+    return -(fv + pv * Math.pow(1 + rate, nper)) * rate / (Math.pow(1 + rate, nper) - 1);
+};
+
+const calcPV = (rate: number, nper: number, pmt: number, fv: number) => {
+    if (rate === 0) return -(fv + pmt * nper);
+    return -( (pmt * (Math.pow(1 + rate, nper) - 1) / rate + fv) / Math.pow(1 + rate, nper) );
+};
+
+const calcNPER = (rate: number, pmt: number, pv: number, fv: number) => {
+    if (rate === 0) {
+        if (pmt === 0) return NaN; // Cannot solve
+        return -(pv + fv) / pmt;
+    }
+    const logVal = (pmt - fv * rate) / (pmt + pv * rate);
+    if (logVal <= 0) return NaN; // No real solution
+    return Math.log(logVal) / Math.log(1 + rate);
+};
+
+
 const formSchema = z.object({
-  initialPrincipal: z.number().min(0, 'Initial principal must be non-negative'),
-  monthlyContribution: z.number().min(0, 'Monthly contribution must be non-negative'),
-  interestRate: z.number().min(0, 'Interest rate must be non-negative'),
-  years: z.number().int().min(1, 'Must invest for at least 1 year'),
-  compoundFrequency: z.enum(['annually', 'semiannually', 'quarterly', 'monthly']),
+  solveFor: z.enum(['fv', 'pmt', 'pv', 'nper', 'rate']),
+  pv: z.number().optional(), // Starting Amount
+  fv: z.number().optional(), // End Amount
+  pmt: z.number().optional(), // Additional Contribution
+  nper: z.number().optional(), // Investment Length (in months)
+  rate: z.number().optional(), // Annual Rate
 });
 
 type FormData = z.infer<typeof formSchema>;
-const PIE_COLORS = ['hsl(var(--chart-1))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))'];
-
 
 export default function InvestmentCalculator() {
-  const [results, setResults] = useState<any>(null);
-  const [formData, setFormData] = useState<FormData | null>(null);
+  const [results, setResults] = useState<{ [key: string]: string | number | null }>({});
+  const [activeTab, setActiveTab] = useState('fv');
+  const [lastCalculatedData, setLastCalculatedData] = useState<FormData | null>(null);
 
-  const { control, handleSubmit, formState: { errors } } = useForm<FormData>({
+
+  const { control, handleSubmit, setValue, getValues } = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      initialPrincipal: 20000,
-      monthlyContribution: 1000,
-      interestRate: 6,
-      years: 10,
-      compoundFrequency: 'annually',
+      solveFor: 'fv',
+      pv: 1000,
+      pmt: 100,
+      nper: 120, // 10 years
+      rate: 7,
+      fv: 0,
     },
   });
 
-  const calculateCompoundInterest = (data: FormData) => {
-    const { initialPrincipal, monthlyContribution, interestRate, years, compoundFrequency } = data;
+  const calculate = () => {
+    const data = getValues();
+    let res: number | string = 0;
+    const { pv = 0, fv = 0, pmt = 0, nper = 0, rate = 0 } = data;
+    const monthlyRate = (rate ?? 0) / 100 / 12;
 
-    const annualRate = interestRate / 100;
-    const compoundMap: { [key: string]: number } = {
-      annually: 1,
-      semiannually: 2,
-      quarterly: 4,
-      monthly: 12,
-    };
-    const n = compoundMap[compoundFrequency];
-    const schedule = [];
-    let balance = initialPrincipal;
-    let totalPrincipal = initialPrincipal;
-    let totalInterest = 0;
-    
-    schedule.push({
-      year: 0,
-      endBalance: initialPrincipal,
-      totalContributions: initialPrincipal,
-      totalInterest: 0,
-    });
-    
-    for (let year = 1; year <= years; year++) {
-        let yearStartBalance = balance;
-        let yearlyContribution = monthlyContribution * 12;
-        
-        balance += yearlyContribution; // Assuming contributions are made at the beginning of the year for simplicity
-        
-        const interestForYear = balance * (Math.pow(1 + annualRate / n, n) - 1);
-        balance += interestForYear;
-        
-        totalPrincipal += yearlyContribution;
-        totalInterest += interestForYear;
+    try {
+        switch (activeTab) {
+            case 'fv':
+                res = calcFV(monthlyRate, nper, pmt, pv);
+                break;
+            case 'pmt':
+                res = calcPMT(monthlyRate, nper, pv, fv);
+                break;
+            case 'pv':
+                res = calcPV(monthlyRate, nper, pmt, fv);
+                break;
+            case 'nper':
+                res = calcNPER(monthlyRate, pmt, pv, fv);
+                if (isNaN(res)) throw new Error("Cannot calculate periods with these values.");
+                break;
+            case 'rate':
+                res = 'Rate calculation is complex and not yet implemented.';
+                break;
+        }
 
-        schedule.push({
-            year,
-            endBalance: balance,
-            totalContributions: totalPrincipal,
-            totalInterest,
-        });
+        const newResults = {...results};
+
+        if (typeof res === 'number') {
+            if (activeTab === 'nper') {
+                 const years = Math.floor(res / 12);
+                 const months = Math.round(res % 12);
+                 newResults[activeTab] = `${years} years, ${months} months`;
+            } else {
+                 newResults[activeTab] = (Math.abs(res)).toFixed(2);
+            }
+        } else {
+            newResults[activeTab] = res;
+        }
+        setResults(newResults);
+        setLastCalculatedData(data); // Store data for export
+
+    } catch (error: any) {
+       setResults({ ...results, [activeTab]: `Error: ${error.message}` });
+       setLastCalculatedData(null);
     }
-    
-    setResults({
-      finalBalance: balance,
-      startingAmount: initialPrincipal,
-      totalContributions: totalPrincipal - initialPrincipal,
-      totalInterest: totalInterest,
-      schedule,
-      pieData: [
-        { name: 'Starting Amount', value: initialPrincipal },
-        { name: 'Total Contributions', value: totalPrincipal - initialPrincipal },
-        { name: 'Total Interest', value: totalInterest },
-      ],
-      error: null,
-    });
-    setFormData(data);
   };
 
-  const formatCurrency = (value: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value);
-  
+  const isInputDisabled = (field: keyof FormData) => activeTab === field;
+  const formatCurrency = (value: string | number | null) => {
+    if (value === null || value === undefined) return '';
+    const num = parseFloat(String(value));
+    if (isNaN(num)) return String(value); // Return original string if not a number
+    return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(num);
+  }
+
   const handleExport = (format: 'txt' | 'csv') => {
-    if (!results || !formData) return;
-    
+    if (!lastCalculatedData || !results[activeTab]) return;
+
     let content = '';
-    const filename = `investment-calculation.${format}`;
-    const { initialPrincipal, monthlyContribution, interestRate, years, compoundFrequency } = formData;
+    const filename = `tvm-calculation.${format}`;
+
+    const { pv, fv, pmt, nper, rate } = lastCalculatedData;
+    const resultValue = results[activeTab];
 
     if (format === 'txt') {
-      content = `Investment Calculation\n\nInputs:\n`;
-      content += `- Starting Amount: ${formatCurrency(initialPrincipal)}\n- Additional Contribution: ${formatCurrency(monthlyContribution * 12)}/year\n- Return Rate: ${interestRate}%\n`;
-      content += `- After: ${years} years\n- Compound Frequency: ${compoundFrequency}\n\n`;
-      content += `Results:\n- End Balance: ${formatCurrency(results.finalBalance)}\n- Total Contributions: ${formatCurrency(results.totalContributions)}\n- Total Interest: ${formatCurrency(results.totalInterest)}\n`;
-    } else {
-      content = 'Category,Value\n';
-      content += `Starting Amount,${initialPrincipal}\nAdditional Contribution,${monthlyContribution*12}\nReturn Rate (%),${interestRate}\n`;
-      content += `After (years),${years}\nCompound Frequency,${compoundFrequency}\n\n`;
-      content += 'Result Category,Value\n';
-      content += `End Balance,${results.finalBalance.toFixed(2)}\nTotal Contributions,${results.totalContributions.toFixed(2)}\nTotal Interest,${results.totalInterest.toFixed(2)}\n`;
+        content = `Time Value of Money Calculation\n\n`;
+        content += `Solving for: ${activeTab.toUpperCase()}\n\n`;
+        content += `Inputs:\n`;
+        content += `- Present Value (PV): ${pv !== undefined ? formatCurrency(pv) : 'N/A'}\n`;
+        content += `- Future Value (FV): ${fv !== undefined ? formatCurrency(fv) : 'N/A'}\n`;
+        content += `- Payment (PMT): ${pmt !== undefined ? formatCurrency(pmt) : 'N/A'}\n`;
+        content += `- Periods (NPER): ${nper !== undefined ? `${nper} months` : 'N/A'}\n`;
+        content += `- Annual Rate: ${rate !== undefined ? `${rate}%` : 'N/A'}\n\n`;
+        content += `Result:\n- ${activeTab.toUpperCase()}: ${resultValue}\n`;
+    } else { // csv
+        content = 'Category,Value\n';
+        content += `Solving For,${activeTab.toUpperCase()}\n`;
+        content += `Present Value (PV),${pv || ''}\n`;
+        content += `Future Value (FV),${fv || ''}\n`;
+        content += `Payment (PMT),${pmt || ''}\n`;
+        content += `Periods (NPER),${nper || ''}\n`;
+        content += `Annual Rate (%),${rate || ''}\n`;
+        content += `Result,"${resultValue}"\n`;
     }
 
     const blob = new Blob([content], { type: `text/${format}` });
@@ -141,130 +173,78 @@ export default function InvestmentCalculator() {
   };
 
   return (
-    <form onSubmit={handleSubmit(calculateCompoundInterest)} className="grid xl:grid-cols-3 gap-8">
-      {/* Inputs Column */}
-      <div className="xl:col-span-1 space-y-4">
-        <h3 className="text-xl font-semibold">Inputs</h3>
-        
-        <div>
-          <Label htmlFor="initialPrincipal">Starting Amount ($)</Label>
-          <Controller name="initialPrincipal" control={control} render={({ field }) => <Input id="initialPrincipal" type="number" step="0.01" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
-        </div>
-
-        <div>
-          <Label htmlFor="monthlyContribution">Additional Contribution ($/month)</Label>
-          <Controller name="monthlyContribution" control={control} render={({ field }) => <Input id="monthlyContribution" type="number" step="0.01" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
-        </div>
-
-        <div>
-          <Label htmlFor="interestRate">Return Rate (%)</Label>
-          <Controller name="interestRate" control={control} render={({ field }) => <Input id="interestRate" type="number" step="0.01" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
-        </div>
-        
-        <div>
-          <Label htmlFor="years">After (years)</Label>
-          <Controller name="years" control={control} render={({ field }) => <Input id="years" type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseInt(e.target.value, 10))} />} />
-        </div>
-        
-        <div>
-          <Label htmlFor="compoundFrequency">Compound</Label>
-          <Controller name="compoundFrequency" control={control} render={({ field }) => (
-            <Select onValueChange={field.onChange} defaultValue={field.value}>
-              <SelectTrigger id="compoundFrequency"><SelectValue /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="annually">Annually</SelectItem>
-                <SelectItem value="semiannually">Semiannually</SelectItem>
-                <SelectItem value="quarterly">Quarterly</SelectItem>
-                <SelectItem value="monthly">Monthly</SelectItem>
-              </SelectContent>
-            </Select>
-          )} />
-        </div>
-        
-        <div className="flex gap-2">
-            <Button type="submit" className="flex-1">Calculate</Button>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" disabled={!results}>
-                  <Download className="mr-2 h-4 w-4" /> Export
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent>
-                <DropdownMenuItem onClick={() => handleExport('txt')}>Download as .txt</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handleExport('csv')}>Download as .csv</DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-        </div>
-      </div>
-
-      {/* Results Column */}
-      <div className="xl:col-span-2 space-y-4">
-        <h3 className="text-xl font-semibold">Results</h3>
-        {results ? (
-            results.error ? (
-                <Card className="flex items-center justify-center h-60 bg-muted/50 border-dashed">
-                    <p className="text-destructive">{results.error}</p>
-                </Card>
-            ) : (
-                <div className="space-y-4">
-                    <Card>
-                      <CardHeader><CardTitle className="text-center">Results</CardTitle></CardHeader>
-                      <CardContent className="grid grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <div className="flex justify-between font-bold text-lg"><p>End Balance</p><p>{formatCurrency(results.finalBalance)}</p></div>
-                          <div className="flex justify-between text-sm"><p>Starting Amount</p><p>{formatCurrency(results.startingAmount)}</p></div>
-                          <div className="flex justify-between text-sm"><p>Total Contributions</p><p>{formatCurrency(results.totalContributions)}</p></div>
-                          <div className="flex justify-between text-sm"><p>Total Interest</p><p>{formatCurrency(results.totalInterest)}</p></div>
-                        </div>
-                        <div className="h-48">
-                           <ResponsiveContainer width="100%" height="100%">
-                                <PieChart>
-                                    <Pie data={results.pieData} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={30} outerRadius={50} paddingAngle={5} label={({ percent }) => `${(percent * 100).toFixed(0)}%`}>
-                                        {results.pieData.map((_entry: any, index: number) => <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />)}
-                                    </Pie>
-                                    <Tooltip formatter={(value: number) => formatCurrency(value)} />
-                                    <Legend iconType="circle" />
-                                </PieChart>
-                            </ResponsiveContainer>
-                        </div>
-                      </CardContent>
-                    </Card>
-
-                    <Card>
-                      <CardContent className="p-4">
-                        <h4 className="font-semibold mb-2">Yearly Breakdown</h4>
-                         <ScrollArea className="h-48">
-                              <Table>
-                                  <TableHeader className="sticky top-0 bg-muted">
-                                      <TableRow>
-                                          <TableHead>Year</TableHead>
-                                          <TableHead className="text-right">Contributions</TableHead>
-                                          <TableHead className="text-right">Interest</TableHead>
-                                          <TableHead className="text-right">End Balance</TableHead>
-                                      </TableRow>
-                                  </TableHeader>
-                                  <TableBody>
-                                      {results.schedule.slice(1).map((row: any) => (
-                                          <TableRow key={row.year}>
-                                              <TableCell>{row.year}</TableCell>
-                                              <TableCell className="text-right">{formatCurrency(row.totalContributions)}</TableCell>
-                                              <TableCell className="text-right">{formatCurrency(row.totalInterest)}</TableCell>
-                                              <TableCell className="text-right">{formatCurrency(row.endBalance)}</TableCell>
-                                          </TableRow>
-                                      ))}
-                                  </TableBody>
-                              </Table>
-                          </ScrollArea>
-                      </CardContent>
-                    </Card>
-                </div>
-            )
-        ) : (
-             <div className="flex items-center justify-center h-60 bg-muted/50 rounded-lg border border-dashed">
-                <p className="text-sm text-muted-foreground">Enter your investment details to see the returns</p>
+    <Tabs defaultValue="fv" onValueChange={setActiveTab} className="w-full">
+      <TabsList className="grid w-full grid-cols-2 md:grid-cols-5">
+        <TabsTrigger value="fv">End Amount</TabsTrigger>
+        <TabsTrigger value="pmt">Contribution</TabsTrigger>
+        <TabsTrigger value="pv">Starting Amount</TabsTrigger>
+        <TabsTrigger value="nper">Investment Length</TabsTrigger>
+        <TabsTrigger value="rate" disabled>Return Rate</TabsTrigger>
+      </TabsList>
+      
+      <Card className="mt-4">
+        <CardHeader>
+          <CardTitle className="capitalize">Calculate {
+            {fv: "End Amount (Future Value)", pmt: "Additional Contribution (Payment)", pv: "Starting Amount (Present Value)", nper: "Investment Length (Periods)", rate: "Return Rate"}[activeTab]
+          }</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={(e) => { e.preventDefault(); calculate(); }} className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="pv">Starting Amount ($)</Label>
+                <Controller name="pv" control={control} render={({ field }) => <Input type="number" step="any" {...field} disabled={isInputDisabled('pv')} value={isInputDisabled('pv') ? (results.pv ? formatCurrency(results.pv).replace(/[^0-9.-]+/g,"") : '') : field.value} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
+              </div>
+              <div>
+                <Label htmlFor="pmt">Additional Contribution ($/month)</Label>
+                <Controller name="pmt" control={control} render={({ field }) => <Input type="number" step="any" {...field} disabled={isInputDisabled('pmt')} value={isInputDisabled('pmt') ? (results.pmt ? formatCurrency(results.pmt).replace(/[^0-9.-]+/g,"") : '') : field.value} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))}/>} />
+              </div>
+              <div>
+                <Label htmlFor="nper">Investment Length (months)</Label>
+                <Controller name="nper" control={control} render={({ field }) => <Input type="number" {...field} disabled={isInputDisabled('nper')} value={isInputDisabled('nper') ? (typeof results.nper === 'string' ? results.nper.split(' ')[0] : '') : field.value} onChange={e => field.onChange(e.target.value === '' ? '' : parseInt(e.target.value, 10))}/>} />
+              </div>
+              <div>
+                <Label htmlFor="rate">Annual Return Rate (%)</Label>
+                <Controller name="rate" control={control} render={({ field }) => <Input type="number" step="any" {...field} disabled={isInputDisabled('rate')} value={isInputDisabled('rate') ? results.rate || '' : field.value} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))}/>} />
+              </div>
+              <div>
+                <Label htmlFor="fv">End Amount ($)</Label>
+                <Controller name="fv" control={control} render={({ field }) => <Input type="number" step="any" {...field} disabled={isInputDisabled('fv')} value={isInputDisabled('fv') ? (results.fv ? formatCurrency(results.fv).replace(/[^0-9.-]+/g,"") : '') : field.value} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))}/>} />
+              </div>
             </div>
-        )}
-      </div>
-    </form>
+            
+            <div className="flex gap-2">
+                <Button type="submit" className="flex-1">Calculate</Button>
+                 <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <Button variant="outline" disabled={!lastCalculatedData}>
+                            <Download className="mr-2 h-4 w-4" /> Export
+                        </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent>
+                        <DropdownMenuItem onClick={() => handleExport('txt')}>Download as .txt</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleExport('csv')}>Download as .csv</DropdownMenuItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
+            </div>
+
+            {results[activeTab] && (
+                <Alert className="mt-4">
+                    <Info className="h-4 w-4" />
+                    <AlertTitle>Result</AlertTitle>
+                    <AlertDescription className="text-lg font-bold">
+                        {
+                           activeTab === 'nper' ? results[activeTab] : 
+                           activeTab === 'rate' ? results[activeTab] :
+                           formatCurrency(results[activeTab])
+                        }
+                    </AlertDescription>
+                </Alert>
+            )}
+
+          </form>
+        </CardContent>
+      </Card>
+    </Tabs>
   );
 }
