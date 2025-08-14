@@ -289,10 +289,10 @@ export default function MortgageCalculator() {
                 <CardHeader><CardTitle className="text-base text-center">Loan Balance Over Time</CardTitle></CardHeader>
                 <CardContent className="h-64">
                   <ResponsiveContainer width="100%" height="100%">
-                      <LineChart data={results.amortization} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
+                      <LineChart data={results.amortization} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
                           <CartesianGrid strokeDasharray="3 3" />
                           <XAxis dataKey="month" label={{ value: 'Month', position: 'insideBottom', offset: -5 }} />
-                          <YAxis tickFormatter={(value) => typeof value === 'number' ? formatCurrency(value) : ''} />
+                          <YAxis tickFormatter={(value) => formatCurrency(value)} />
                           <RechartsLineTooltip formatter={(value: number) => formatCurrency(value)} />
                           <Line type="monotone" dataKey="remainingBalance" name="Remaining Balance" stroke="hsl(var(--primary))" dot={false} />
                       </LineChart>
