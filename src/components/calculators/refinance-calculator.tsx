@@ -17,6 +17,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
+
 
 const formSchema = z.object({
   // Current Loan
@@ -33,6 +35,8 @@ const formSchema = z.object({
 });
 
 type FormData = z.infer<typeof formSchema>;
+const PIE_COLORS = ['hsl(var(--chart-1))', 'hsl(var(--chart-2))'];
+
 
 export default function RefinanceCalculator() {
   const [results, setResults] = useState<any>(null);
@@ -87,6 +91,7 @@ export default function RefinanceCalculator() {
     }
 
     const totalPaidNew = newMonthlyPayment * newNumberOfPayments;
+    const totalInterestNew = totalPaidNew - finalNewPrincipal;
     const monthlySavings = currentMonthlyPayment - newMonthlyPayment;
     const lifetimeSavings = totalPaidCurrent - totalPaidNew;
     
@@ -97,6 +102,10 @@ export default function RefinanceCalculator() {
         monthlySavings,
         lifetimeSavings,
         breakEvenMonths,
+        pieData: [
+            { name: 'New Principal', value: finalNewPrincipal },
+            { name: 'New Total Interest', value: totalInterestNew },
+        ],
         error: null,
     });
     setFormData(data);
@@ -116,9 +125,9 @@ export default function RefinanceCalculator() {
     let content = '';
     const filename = `refinance-calculation.${format}`;
     if (format === 'txt') {
-        content = `Refinance Calculation\n\nInputs:\n${Object.entries(formData).map(([k,v]) => `- ${k}: ${v}`).join('\n')}\n\nResults:\n${Object.entries(results).filter(([k]) => k !== 'error').map(([k,v]) => `- ${k}: ${typeof v === 'number' ? v.toFixed(2) : v}`).join('\n')}`;
+        content = `Refinance Calculation\n\nInputs:\n${Object.entries(formData).map(([k,v]) => `- ${k}: ${v}`).join('\n')}\n\nResults:\n${Object.entries(results).filter(([k]) => k !== 'error' && k !== 'pieData').map(([k,v]) => `- ${k}: ${typeof v === 'number' ? v.toFixed(2) : v}`).join('\n')}`;
     } else {
-        content = `Category,Value\n${Object.entries(formData).map(([k,v]) => `${k},${v}`).join('\n')}\n\nResult Category,Value\n${Object.entries(results).filter(([k]) => k !== 'error').map(([k,v]) => `${k},${typeof v === 'number' ? v.toFixed(2) : v}`).join('\n')}`;
+        content = `Category,Value\n${Object.entries(formData).map(([k,v]) => `${k},${v}`).join('\n')}\n\nResult Category,Value\n${Object.entries(results).filter(([k]) => k !== 'error' && k !== 'pieData').map(([k,v]) => `${k},${typeof v === 'number' ? v.toFixed(2) : v}`).join('\n')}`;
     }
 
     const blob = new Blob([content], { type: `text/${format}` });
@@ -176,6 +185,20 @@ export default function RefinanceCalculator() {
                       <div><p className="text-muted-foreground">Monthly Savings</p><p className={`font-semibold text-xl ${results.monthlySavings > 0 ? 'text-green-600' : 'text-destructive'}`}>{formatCurrency(results.monthlySavings)}</p></div>
                   </CardContent></Card>
                   <Card><CardContent className="p-4 text-center"><p className="text-muted-foreground">Potential Lifetime Savings</p><p className={`font-bold text-3xl ${results.lifetimeSavings > 0 ? 'text-green-600' : 'text-destructive'}`}>{formatCurrency(results.lifetimeSavings)}</p></CardContent></Card>
+                   <Card>
+                      <CardHeader><CardTitle className="text-base text-center">New Loan Breakdown</CardTitle></CardHeader>
+                      <CardContent className="h-64">
+                          <ResponsiveContainer width="100%" height="100%">
+                              <PieChart>
+                                  <Pie data={results.pieData} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={50} outerRadius={80} paddingAngle={5}>
+                                      {results.pieData.map((_entry: any, index: number) => <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />)}
+                                  </Pie>
+                                  <Tooltip formatter={(value: number) => formatCurrency(value)} />
+                                  <Legend iconType="circle" />
+                              </PieChart>
+                          </ResponsiveContainer>
+                      </CardContent>
+                  </Card>
                   <Alert><Info className="h-4 w-4" /><AlertTitle>Break-Even Point</AlertTitle><AlertDescription className="text-xs">{isFinite(results.breakEvenMonths) ? `It will take approximately ${Math.ceil(results.breakEvenMonths)} months to recoup the closing costs.` : `You won't save money monthly, so a break-even point cannot be calculated.`}</AlertDescription></Alert>
               </div>
           )) : (
