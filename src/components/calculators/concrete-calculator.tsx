@@ -239,7 +239,7 @@ export default function ConcreteCalculator() {
               <path d="M170 50 V 100" stroke="hsl(var(--foreground))" strokeWidth="2"/>
               <ellipse cx="100" cy="100" rx="70" ry="20" stroke="hsl(var(--foreground))" strokeWidth="2" fill="hsl(var(--muted))"/>
               <path d="M30 100 A 70 20 0 0 0 170 100" stroke="hsl(var(--foreground))" strokeWidth="2" fill="none"/>
-              <path d="M30 100 A 70 20 0 0 1 170 100" stroke="hsl(var(--foreground))" strokeWidth="2" fill="none" stroke-dasharray="3 3"/>
+              <path d="M30 100 A 70 20 0 0 1 170 100" stroke="hsl(var(--foreground))" strokeWidth="2" fill="none" strokeDasharray="3 3"/>
               <ellipse cx="100" cy="100" rx="35" ry="10" fill="hsl(var(--background))" stroke="hsl(var(--foreground))" strokeWidth="2"/>
               <text x="5" y="80" className="text-xs font-sans fill-muted-foreground">Height</text>
               <text x="135" y="45" className="text-xs font-sans fill-muted-foreground">d₁</text>
@@ -271,7 +271,7 @@ export default function ConcreteCalculator() {
         <CalculatorTab
           title="Curb and Gutter Barrier"
           image={<svg width="200" height="150" viewBox="0 0 200 150" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-auto">
-            <path d="M50 120 L150 120 L150 110 L80 110 L80 60 L50 60 L50 120Z" stroke="hsl(var(--foreground))" fill="hsl(var(--muted))" stroke-width="2"/>
+            <path d="M50 120 L150 120 L150 110 L80 110 L80 60 L50 60 L50 120Z" stroke="hsl(var(--foreground))" fill="hsl(var(--muted))" strokeWidth="2"/>
             <text x="85" y="130" className="text-xs font-sans fill-muted-foreground">Gutter Width</text>
             <text x="20" y="95" className="text-xs font-sans fill-muted-foreground">Curb Height</text>
             <text x="85" y="85" className="text-xs font-sans fill-muted-foreground" transform="rotate(90 85 85)">Curb Depth</text>
@@ -309,7 +309,7 @@ export default function ConcreteCalculator() {
         <CalculatorTab
           title="Stairs"
           image={<svg width="200" height="150" viewBox="0 0 200 150" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-auto">
-            <path d="M40 120 L40 100 L70 100 L70 80 L100 80 L100 60 L130 60 L130 40 L160 40 L160 120 L40 120Z" stroke="hsl(var(--foreground))" fill="hsl(var(--muted))" stroke-width="2"/>
+            <path d="M40 120 L40 100 L70 100 L70 80 L100 80 L100 60 L130 60 L130 40 L160 40 L160 120 L40 120Z" stroke="hsl(var(--foreground))" fill="hsl(var(--muted))" strokeWidth="2"/>
             <text x="135" y="85" className="text-xs font-sans fill-muted-foreground">Run</text>
             <text x="165" y="60" className="text-xs font-sans fill-muted-foreground" transform="rotate(90 165 60)">Rise</text>
             <text x="10" y="80" className="text-xs font-sans fill-muted-foreground">Width (not shown)</text>
