@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
@@ -17,6 +17,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
 
 
 const formSchema = z.object({
@@ -31,6 +32,8 @@ const formSchema = z.object({
 
 type FormData = z.infer<typeof formSchema>;
 const formatCurrency = (value: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value);
+const PIE_COLORS = ['hsl(var(--chart-1))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))'];
+
 
 export default function HomeAffordabilityCalculator() {
   const [results, setResults] = useState<any>(null);
@@ -84,7 +87,8 @@ export default function HomeAffordabilityCalculator() {
     }
     
     const affordableHomePrice = maxLoanAmount + downPayment;
-    const estimatedMonthlyPayment = maxPITI; // The monthly payment is capped by this rule
+    const estimatedMonthlyPayment = maxPITI;
+    const monthlyPrincipalAndInterest = loanPaymentFactor * maxLoanAmount;
 
     setResults({
         affordableHomePrice,
@@ -92,6 +96,11 @@ export default function HomeAffordabilityCalculator() {
         estimatedMonthlyPayment,
         downPayment,
         maxPITI,
+        pieData: [
+            { name: 'P&I', value: monthlyPrincipalAndInterest },
+            { name: 'Property Tax', value: (affordableHomePrice * (propertyTaxRate / 100)) / 12 },
+            { name: 'Insurance', value: (affordableHomePrice * (homeInsuranceRate / 100)) / 12 },
+        ].filter(item => item.value > 0),
         error: null,
     });
     setFormData(data);
@@ -216,6 +225,20 @@ export default function HomeAffordabilityCalculator() {
                              <div><p className="text-muted-foreground">Down Payment</p><p className="font-semibold">{formatCurrency(results.downPayment)}</p></div>
                              <div><p className="text-muted-foreground">Estimated Monthly Payment</p><p className="font-semibold">{formatCurrency(results.estimatedMonthlyPayment)}</p></div>
                              <div><p className="text-muted-foreground">Max Housing Payment</p><p className="font-semibold">{formatCurrency(results.maxPITI)} / mo</p></div>
+                        </CardContent>
+                    </Card>
+                     <Card>
+                        <CardHeader><CardTitle className="text-base text-center">Monthly Payment Breakdown</CardTitle></CardHeader>
+                        <CardContent className="h-48">
+                            <ResponsiveContainer width="100%" height="100%">
+                                <PieChart>
+                                    <Pie data={results.pieData} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={40} outerRadius={60}>
+                                        {results.pieData.map((_entry: any, index: number) => <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />)}
+                                    </Pie>
+                                    <Tooltip formatter={(value: number) => formatCurrency(value)} />
+                                    <Legend iconType="circle" />
+                                </PieChart>
+                            </ResponsiveContainer>
                         </CardContent>
                     </Card>
                      <Alert>
