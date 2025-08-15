@@ -860,6 +860,13 @@ export const calculators: Calculator[] = [
 
   // Everyday Utilities
   {
+    name: 'Concrete Calculator',
+    slug: 'concrete-calculator',
+    description: 'Estimate the amount of concrete needed for slabs, footings, columns, and stairs.',
+    category: 'Everyday Utilities',
+    icon: Shovel,
+  },
+  {
     name: 'Sun Angle Calculator',
     slug: 'sun-angle-calculator',
     description: 'Find the sun\'s position (azimuth and elevation) for any location and time.',
@@ -879,13 +886,6 @@ export const calculators: Calculator[] = [
     description: 'Calculate the distance between two points on a map.',
     category: 'Everyday Utilities',
     icon: Map,
-  },
-  {
-    name: 'Concrete Calculator',
-    slug: 'concrete-calculator',
-    description: 'Estimate the amount of concrete you need for a slab, footing, or post.',
-    category: 'Everyday Utilities',
-    icon: Shovel,
   },
   {
     name: 'Paint Calculator',
