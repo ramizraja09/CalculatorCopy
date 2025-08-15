@@ -34,32 +34,33 @@ const efficiencyFactors = {
 }
 
 export default function BatteryLifeCalculator() {
-  const { control, watch } = useForm<FormData>({
+  const [results, setResults] = useState<any | null>(null);
+  const [formData, setFormData] = useState<FormData | null>(null);
+
+  const { control, handleSubmit, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: { capacity: 2000, consumption: 150, usageHours: 4, batteryType: 'li-ion' },
   });
   
-  const formValues = watch();
-
-  let results: { totalHours: string; totalDays: string } | null = null;
-  const { capacity, consumption, usageHours, batteryType } = formValues;
-  if (capacity > 0 && consumption > 0 && usageHours > 0) {
-      const efficiency = efficiencyFactors[batteryType];
-      const effectiveCapacity = capacity * efficiency;
-      const totalHours = effectiveCapacity / consumption;
-      const totalDays = totalHours / usageHours;
-      results = {
-          totalHours: totalHours.toFixed(1),
-          totalDays: totalDays.toFixed(1)
-      };
+  const calculateLife = (data: FormData) => {
+    const { capacity, consumption, usageHours, batteryType } = data;
+    const efficiency = efficiencyFactors[batteryType];
+    const effectiveCapacity = capacity * efficiency;
+    const totalHours = effectiveCapacity / consumption;
+    const totalDays = totalHours / usageHours;
+    setResults({
+        totalHours: totalHours.toFixed(1),
+        totalDays: totalDays.toFixed(1)
+    });
+    setFormData(data);
   }
 
   const handleExport = (format: 'txt' | 'csv') => {
-    if (!results || !formValues) return;
+    if (!results || !formData) return;
     
     let content = '';
     const filename = `battery-life-calculation.${format}`;
-    const { capacity, consumption, usageHours, batteryType } = formValues;
+    const { capacity, consumption, usageHours, batteryType } = formData;
 
     if (format === 'txt') {
       content = `Battery Life Calculation\n\nInputs:\n- Capacity: ${capacity} mAh\n- Consumption: ${consumption} mA\n- Usage: ${usageHours} hrs/day\n- Type: ${batteryType}\n\nResult:\n- Total Hours: ${results.totalHours}\n- Total Days: ${results.totalDays}`;
@@ -79,12 +80,24 @@ export default function BatteryLifeCalculator() {
   };
 
   return (
-    <form onSubmit={(e) => e.preventDefault()} className="grid md:grid-cols-2 gap-8">
+    <form onSubmit={handleSubmit(calculateLife)} className="grid md:grid-cols-2 gap-8">
       <div className="space-y-4">
         <h3 className="text-xl font-semibold">Device & Battery Details</h3>
-        <div><Label>Battery Capacity (mAh)</Label><Controller name="capacity" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseInt(e.target.value, 10))} />} /></div>
-        <div><Label>Device Consumption (mA)</Label><Controller name="consumption" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseInt(e.target.value, 10))} />} /></div>
-        <div><Label>Usage (Hours per Day)</Label><Controller name="usageHours" control={control} render={({ field }) => <Input type="number" step="0.5" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} /></div>
+        <div>
+            <Label>Battery Capacity (mAh)</Label>
+            <Controller name="capacity" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value, 10) || 0)} />} />
+            {errors.capacity && <p className="text-destructive text-sm mt-1">{errors.capacity.message}</p>}
+        </div>
+        <div>
+            <Label>Device Consumption (mA)</Label>
+            <Controller name="consumption" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value, 10) || 0)} />} />
+            {errors.consumption && <p className="text-destructive text-sm mt-1">{errors.consumption.message}</p>}
+        </div>
+        <div>
+            <Label>Usage (Hours per Day)</Label>
+            <Controller name="usageHours" control={control} render={({ field }) => <Input type="number" step="0.5" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
+            {errors.usageHours && <p className="text-destructive text-sm mt-1">{errors.usageHours.message}</p>}
+        </div>
         <div>
             <Label>Battery Type</Label>
             <Controller name="batteryType" control={control} render={({ field }) => (
@@ -98,17 +111,20 @@ export default function BatteryLifeCalculator() {
                 </Select>
             )} />
         </div>
-         <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-                <Button variant="outline" disabled={!results} className="w-full">
-                    <Download className="mr-2 h-4 w-4" /> Export Results
-                </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent>
-                <DropdownMenuItem onClick={() => handleExport('txt')}>Download as .txt</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handleExport('csv')}>Download as .csv</DropdownMenuItem>
-            </DropdownMenuContent>
-        </DropdownMenu>
+         <div className="flex gap-2">
+            <Button type="submit" className="flex-1">Calculate</Button>
+            <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                    <Button variant="outline" disabled={!results} className="flex-1">
+                        <Download className="mr-2 h-4 w-4" /> Export Results
+                    </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent>
+                    <DropdownMenuItem onClick={() => handleExport('txt')}>Download as .txt</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => handleExport('csv')}>Download as .csv</DropdownMenuItem>
+                </DropdownMenuContent>
+            </DropdownMenu>
+        </div>
       </div>
 
       <div className="space-y-4">
