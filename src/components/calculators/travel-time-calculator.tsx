@@ -5,24 +5,32 @@ import { useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
-import { Download } from 'lucide-react';
+import { Download, Info } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Table, TableBody, TableCell, TableRow, TableHead, TableHeader } from '@/components/ui/table';
+import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip as RechartsTooltip } from 'recharts';
 
 const formSchema = z.object({
   distance: z.number().min(0.1, 'Distance must be positive'),
   speed: z.number().min(0.1, 'Speed must be positive'),
+  unit: z.enum(['miles', 'km']),
+  numBreaks: z.number().int().min(0).optional(),
+  breakMinutes: z.number().int().min(0).optional(),
+  delayMinutes: z.number().int().min(0).optional(),
 });
 
 type FormData = z.infer<typeof formSchema>;
+const PIE_COLORS = ['hsl(var(--chart-1))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))'];
 
 export default function TravelTimeCalculator() {
   const [results, setResults] = useState<any>(null);
@@ -33,19 +41,38 @@ export default function TravelTimeCalculator() {
     defaultValues: {
       distance: 100,
       speed: 60,
+      unit: 'miles',
+      numBreaks: 1,
+      breakMinutes: 15,
+      delayMinutes: 0,
     },
   });
 
+  const formatTime = (totalMinutes: number) => {
+    if (totalMinutes < 0) return '0h 0m';
+    const hours = Math.floor(totalMinutes / 60);
+    const minutes = Math.round(totalMinutes % 60);
+    return `${hours}h ${minutes}m`;
+  };
+
   const calculateTravelTime = (data: FormData) => {
-    const { distance, speed } = data;
-    const timeHours = distance / speed;
-    const hours = Math.floor(timeHours);
-    const minutes = Math.round((timeHours - hours) * 60);
+    const { distance, speed, numBreaks = 0, breakMinutes = 0, delayMinutes = 0 } = data;
+    const baseTimeHours = distance / speed;
+    const baseTimeMinutes = baseTimeHours * 60;
+    
+    const breakTimeMinutes = numBreaks * breakMinutes;
+    const totalTimeMinutes = baseTimeMinutes + breakTimeMinutes + delayMinutes;
 
     setResults({
-      hours,
-      minutes,
-      totalHours: timeHours,
+      baseTime: formatTime(baseTimeMinutes),
+      breakTime: formatTime(breakTimeMinutes),
+      delayTime: formatTime(delayMinutes),
+      totalTime: formatTime(totalTimeMinutes),
+      pieData: [
+        { name: 'Driving Time', value: baseTimeMinutes },
+        { name: 'Break Time', value: breakTimeMinutes },
+        { name: 'Delay Time', value: delayMinutes },
+      ].filter(item => item.value > 0),
       error: null,
     });
     setFormData(data);
@@ -56,12 +83,14 @@ export default function TravelTimeCalculator() {
 
     let content = '';
     const filename = `travel-time-calculation.${format}`;
-    const { distance, speed } = formData;
-
+    
     if (format === 'txt') {
-      content = `Travel Time Calculation\n\nInputs:\n- Distance: ${distance} miles\n- Average Speed: ${speed} mph\n\nResult:\n- Estimated Travel Time: ${results.hours}h ${results.minutes}m\n- Total Time in Hours: ${results.totalHours.toFixed(2)} hours`;
+      content = `Travel Time Calculation\n\nInputs:\n${Object.entries(formData).map(([key, value]) => `- ${key}: ${value}`).join('\n')}\n\nResult:\n- Base Travel Time: ${results.baseTime}\n- Break Time: ${results.breakTime}\n- Delay Time: ${results.delayTime}\n- Total Travel Time: ${results.totalTime}`;
     } else {
-      content = `Category,Value\nDistance (miles),${distance}\nAverage Speed (mph),${speed}\nTravel Time,${results.hours}h ${results.minutes}m\nTotal Hours,${results.totalHours.toFixed(2)}`;
+      content = `Category,Value\n`;
+      Object.entries(formData).forEach(([key, value]) => content += `${key},${value}\n`);
+      content += `\nResult Category,Value\n`;
+      content += `Base Travel Time,${results.baseTime}\nBreak Time,${results.breakTime}\nDelay Time,${results.delayTime}\nTotal Travel Time,${results.totalTime}\n`;
     }
 
     const blob = new Blob([content], { type: `text/${format}` });
@@ -79,19 +108,29 @@ export default function TravelTimeCalculator() {
     <form onSubmit={handleSubmit(calculateTravelTime)} className="grid md:grid-cols-2 gap-8">
       {/* Inputs Column */}
       <div className="space-y-4">
-        <h3 className="text-xl font-semibold">Inputs</h3>
-        
-        <div>
-          <Label htmlFor="distance">Distance (miles)</Label>
-          <Controller name="distance" control={control} render={({ field }) => <Input id="distance" type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
-          {errors.distance && <p className="text-destructive text-sm mt-1">{errors.distance.message}</p>}
-        </div>
-
-        <div>
-          <Label htmlFor="speed">Average Speed (mph)</Label>
-          <Controller name="speed" control={control} render={({ field }) => <Input id="speed" type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} />
-          {errors.speed && <p className="text-destructive text-sm mt-1">{errors.speed.message}</p>}
-        </div>
+        <Card>
+            <CardHeader><CardTitle>Trip Details</CardTitle></CardHeader>
+            <CardContent className="space-y-4">
+                <Controller name="unit" control={control} render={({ field }) => (
+                    <RadioGroup onValueChange={field.onChange} defaultValue={field.value} className="grid grid-cols-2 gap-4">
+                        <Label className="flex items-center justify-center rounded-md border-2 border-muted bg-popover p-4 peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary"><RadioGroupItem value="miles" className="sr-only"/>Miles / MPH</Label>
+                        <Label className="flex items-center justify-center rounded-md border-2 border-muted bg-popover p-4 peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary"><RadioGroupItem value="km" className="sr-only"/>Kilometers / KPH</Label>
+                    </RadioGroup>
+                )}/>
+                <div><Label>Distance</Label><Controller name="distance" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} /></div>
+                <div><Label>Average Speed</Label><Controller name="speed" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} /></div>
+            </CardContent>
+        </Card>
+        <Card>
+            <CardHeader><CardTitle>Stops & Delays (Optional)</CardTitle></CardHeader>
+            <CardContent className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                    <div><Label>Number of Rest Breaks</Label><Controller name="numBreaks" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseInt(e.target.value))} />} /></div>
+                    <div><Label>Minutes per Break</Label><Controller name="breakMinutes" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseInt(e.target.value))} />} /></div>
+                </div>
+                 <div><Label>Total Delay Time (minutes)</Label><Controller name="delayMinutes" control={control} render={({ field }) => <Input type="number" placeholder="Traffic, etc." {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseInt(e.target.value))} />} /></div>
+            </CardContent>
+        </Card>
         
         <div className="flex gap-2">
             <Button type="submit" className="flex-1">Calculate</Button>
@@ -111,32 +150,46 @@ export default function TravelTimeCalculator() {
 
       {/* Results Column */}
       <div className="space-y-4">
-        <h3 className="text-xl font-semibold">Results</h3>
+        <h3 className="text-xl font-semibold">Travel Time Summary</h3>
         {results ? (
             results.error ? (
-                <Card className="flex items-center justify-center h-60 bg-muted/50 border-dashed">
-                    <p className="text-destructive">{results.error}</p>
-                </Card>
+                <Card className="flex items-center justify-center h-60 bg-muted/50 border-dashed"><p className="text-destructive">{results.error}</p></Card>
             ) : (
                 <div className="space-y-4">
-                    <Card>
-                        <CardContent className="p-4 text-center">
-                            <p className="text-sm text-muted-foreground">Estimated Travel Time</p>
-                            <p className="text-3xl font-bold">{results.hours}h {results.minutes}m</p>
+                    <Card><CardContent className="p-4 text-center">
+                        <p className="text-sm text-muted-foreground">Total Travel Time</p>
+                        <p className="text-3xl font-bold">{results.totalTime}</p>
+                    </CardContent></Card>
+                     <Card>
+                        <CardHeader><CardTitle className="text-base text-center">Time Breakdown</CardTitle></CardHeader>
+                        <CardContent className="h-64">
+                            <ResponsiveContainer width="100%" height="100%">
+                                <PieChart>
+                                    <Pie data={results.pieData} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={40} outerRadius={70} paddingAngle={5} label={({ name, percent }) => `${name} (${(percent * 100).toFixed(0)}%)`}>
+                                        {results.pieData.map((_entry: any, index: number) => <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />)}
+                                    </Pie>
+                                    <RechartsTooltip formatter={(value: number) => formatTime(value)} />
+                                </PieChart>
+                            </ResponsiveContainer>
                         </CardContent>
-                    </Card>
-                    <Card>
-                        <CardContent className="p-4 text-center">
-                             <p className="text-muted-foreground">Total Time in Hours</p>
-                             <p className="font-semibold">{results.totalHours.toFixed(2)} hours</p>
+                     </Card>
+                     <Card>
+                        <CardContent className="p-2">
+                             <Table>
+                                <TableHeader><TableRow><TableHead>Component</TableHead><TableHead className="text-right">Duration</TableHead></TableRow></TableHeader>
+                                <TableBody>
+                                    <TableRow><TableCell>Base Driving Time</TableCell><TableCell className="text-right font-semibold">{results.baseTime}</TableCell></TableRow>
+                                    <TableRow><TableCell>Rest Break Time</TableCell><TableCell className="text-right font-semibold">{results.breakTime}</TableCell></TableRow>
+                                    <TableRow><TableCell>Delay Time</TableCell><TableCell className="text-right font-semibold">{results.delayTime}</TableCell></TableRow>
+                                    <TableRow className="font-bold border-t"><TableCell>Total Time</TableCell><TableCell className="text-right">{results.totalTime}</TableCell></TableRow>
+                                </TableBody>
+                            </Table>
                         </CardContent>
-                    </Card>
+                     </Card>
                 </div>
             )
         ) : (
-             <div className="flex items-center justify-center h-60 bg-muted/50 rounded-lg border border-dashed">
-                <p className="text-sm text-muted-foreground">Enter distance and speed to estimate travel time</p>
-            </div>
+             <div className="flex items-center justify-center h-60 bg-muted/50 rounded-lg border border-dashed"><p className="text-sm text-muted-foreground">Enter details to estimate travel time</p></div>
         )}
       </div>
     </form>
