@@ -281,7 +281,6 @@ const calculatorComponents: { [key: string]: React.ComponentType<any> } = {
   'wallpaper-calculator': WallpaperCalculator,
   'dilution-calculator': DilutionCalculator,
   'ohms-law-calculator': OhmsLawCalculator,
-  'bandwidth-calculator': BandwidthCalculator,
   'vo2-max-estimator': Vo2MaxEstimator,
   'ffmi-calculator': FfmiCalculator,
   'sleep-calculator': SleepCalculator,

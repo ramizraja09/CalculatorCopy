@@ -916,9 +916,9 @@ export const calculators: Calculator[] = [
     icon: CircuitBoard,
   },
   {
-    name: 'Home Affordability Calculator',
+    name: 'Cost of Living Comparison',
     slug: 'cost-of-living-calculator',
-    description: 'Estimate the home price you can afford based on your income, debt, and down payment.',
+    description: 'Compare the cost of living between two cities and calculate the required salary to maintain your lifestyle.',
     category: 'Everyday Utilities',
     icon: Building,
   },
