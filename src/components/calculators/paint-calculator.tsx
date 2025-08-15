@@ -119,15 +119,15 @@ export default function PaintCalculator() {
                 </div>
                 <h4 className="font-semibold">Openings</h4>
                  <div className="grid grid-cols-2 gap-4">
-                    <div><Label>Number of Doors</Label><Controller name="numDoors" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value) || 0)} />} /></div>
-                    <div><Label>Number of Windows</Label><Controller name="numWindows" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value) || 0)} />} /></div>
+                    <div><Label>Number of Doors</Label><Controller name="numDoors" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value) || 0)} />} />} /></div>
+                    <div><Label>Number of Windows</Label><Controller name="numWindows" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value) || 0)} />} />} /></div>
                 </div>
                 <h4 className="font-semibold">Paint Details</h4>
                 <div className="grid grid-cols-2 gap-4">
-                    <div><Label>Number of Coats</Label><Controller name="coats" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value) || 0)} />} /></div>
-                    <div><Label>Coverage (sq.ft/gallon)</Label><Controller name="coveragePerGallon" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} /></div>
+                    <div><Label>Number of Coats</Label><Controller name="coats" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value) || 0)} />} />} /></div>
+                    <div><Label>Coverage (sq.ft/gallon)</Label><Controller name="coveragePerGallon" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />} /></div>
                 </div>
-                <div><Label>Price per Gallon ($)</Label><Controller name="pricePerGallon" control={control} render={({ field }) => <Input type="number" step="0.01" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} /></div>
+                <div><Label>Price per Gallon ($)</Label><Controller name="pricePerGallon" control={control} render={({ field }) => <Input type="number" step="0.01" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />} /></div>
             </CardContent>
         </Card>
         
@@ -191,3 +191,5 @@ export default function PaintCalculator() {
     </form>
   );
 }
+
+    
