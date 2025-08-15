@@ -159,17 +159,16 @@ export default function SunAngleCalculator() {
   };
 
   return (
-    <div className="grid lg:grid-cols-2 gap-8">
-      <div className="space-y-4">
-        <form onSubmit={handleSubmit(calculateSunAngle)}>
+    <div className="space-y-8">
+      <form onSubmit={handleSubmit(calculateSunAngle)}>
           <Card>
             <CardHeader><CardTitle>Location & Time</CardTitle></CardHeader>
             <CardContent className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div><Label htmlFor="latitude">Latitude (-90 to 90)</Label><Controller name="latitude" control={control} render={({ field }) => <Input id="latitude" type="number" step="0.0001" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} /></div>
                   <div><Label htmlFor="longitude">Longitude (-180 to 180)</Label><Controller name="longitude" control={control} render={({ field }) => <Input id="longitude" type="number" step="0.0001" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value))} />} /></div>
               </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div><Label>Date</Label><Controller name="date" control={control} render={({ field }) => ( <Popover><PopoverTrigger asChild><Button variant={"outline"} className={cn("w-full justify-start text-left font-normal", !field.value && "text-muted-foreground")}><CalendarIcon className="mr-2 h-4 w-4" />{field.value ? format(field.value, "PPP") : <span>Pick a date</span>}</Button></PopoverTrigger><PopoverContent className="w-auto p-0"><Calendar mode="single" selected={field.value} onSelect={field.onChange} initialFocus /></PopoverContent></Popover> )}/></div>
                 <div><Label>Time (Local)</Label><Controller name="time" control={control} render={({ field }) => <Input type="time" {...field} />} /></div>
               </div>
@@ -183,37 +182,36 @@ export default function SunAngleCalculator() {
             </CardContent>
           </Card>
         </form>
-      </div>
 
-      <div className="space-y-4">
-        <h3 className="text-xl font-semibold">Solar Position Data</h3>
-        {results ? (
-            results.error ? (
-                <Card className="flex items-center justify-center h-60 bg-muted/50 border-dashed"><p className="text-destructive">{results.error}</p></Card>
-            ) : (
-              <div className="space-y-4">
-                <Card>
-                  <CardContent className="p-4 grid grid-cols-2 gap-4 text-center">
-                      <div><p className="text-sm text-muted-foreground">Elevation</p><p className="text-2xl font-bold">{results.elevation.toFixed(2)}°</p></div>
-                      <div><p className="text-sm text-muted-foreground">Azimuth</p><p className="text-2xl font-bold">{results.azimuth.toFixed(2)}°</p></div>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardContent className="p-4 grid grid-cols-3 gap-4 text-center">
-                    <div><p className="text-sm text-muted-foreground">Sunrise</p><p className="font-semibold">{results.sunrise}</p></div>
-                    <div><p className="text-sm text-muted-foreground">Solar Noon</p><p className="font-semibold">{results.solarNoon}</p></div>
-                    <div><p className="text-sm text-muted-foreground">Sunset</p><p className="font-semibold">{results.sunset}</p></div>
-                  </CardContent>
-                  <CardContent className="p-4 border-t text-center"><p className="text-sm text-muted-foreground">Daylight Duration</p><p className="font-semibold">{`${Math.floor(results.daylightHours)}h ${Math.round((results.daylightHours % 1) * 60)}m`}</p></CardContent>
-                </Card>
-              </div>
-            )
-        ) : (
-             <div className="flex items-center justify-center h-60 bg-muted/50 rounded-lg border border-dashed"><p className="text-sm text-muted-foreground">Enter location to see sun data</p></div>
-        )}
-      </div>
+        <div className="space-y-4">
+          <h3 className="text-xl font-semibold">Solar Position Data</h3>
+          {results ? (
+              results.error ? (
+                  <Card className="flex items-center justify-center h-60 bg-muted/50 border-dashed"><p className="text-destructive">{results.error}</p></Card>
+              ) : (
+                <div className="space-y-4">
+                  <Card>
+                    <CardContent className="p-4 grid grid-cols-2 gap-4 text-center">
+                        <div><p className="text-sm text-muted-foreground">Elevation</p><p className="text-2xl font-bold">{results.elevation.toFixed(2)}°</p></div>
+                        <div><p className="text-sm text-muted-foreground">Azimuth</p><p className="text-2xl font-bold">{results.azimuth.toFixed(2)}°</p></div>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardContent className="p-4 grid grid-cols-3 gap-4 text-center">
+                      <div><p className="text-sm text-muted-foreground">Sunrise</p><p className="font-semibold">{results.sunrise}</p></div>
+                      <div><p className="text-sm text-muted-foreground">Solar Noon</p><p className="font-semibold">{results.solarNoon}</p></div>
+                      <div><p className="text-sm text-muted-foreground">Sunset</p><p className="font-semibold">{results.sunset}</p></div>
+                    </CardContent>
+                    <CardContent className="p-4 border-t text-center"><p className="text-sm text-muted-foreground">Daylight Duration</p><p className="font-semibold">{`${Math.floor(results.daylightHours)}h ${Math.round((results.daylightHours % 1) * 60)}m`}</p></CardContent>
+                  </Card>
+                </div>
+              )
+          ) : (
+              <div className="flex items-center justify-center h-60 bg-muted/50 rounded-lg border-dashed"><p className="text-sm text-muted-foreground">Enter location to see sun data</p></div>
+          )}
+        </div>
        {results && !results.error && (
-        <div className="lg:col-span-2 space-y-4">
+        <div className="space-y-4">
            <Card>
               <CardHeader>
                 <CardTitle>Sun Elevation Throughout the Day</CardTitle>
