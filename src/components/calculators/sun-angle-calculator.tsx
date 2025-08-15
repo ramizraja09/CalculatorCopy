@@ -179,7 +179,7 @@ export default function SunAngleCalculator() {
               <Button type="submit" className="flex-1">Calculate Sun Position</Button>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild><Button variant="outline" disabled={!results}><Download className="mr-2 h-4 w-4" /> Export</Button></DropdownMenuTrigger>
-                <DropdownMenuContent><DropdownMenuItem onClick={() => handleExport('txt')}>Download as .txt</DropdownMenuItem><DropdownMenuItem onClick={() => handleExport('csv')}>Download as .csv</DropdownMenuItem></DropdownMenuContent>
+                <DropdownMenuContent><DropdownMenuItem onClick={() => handleExport('txt')}>Download .txt</DropdownMenuItem><DropdownMenuItem onClick={() => handleExport('csv')}>Download .csv</DropdownMenuItem></DropdownMenuContent>
               </DropdownMenu>
           </div>
         </form>
@@ -214,8 +214,10 @@ export default function SunAngleCalculator() {
       </div>
        {results && !results.error && (
         <div className="lg:col-span-2 space-y-4">
-          <h3 className="text-xl font-semibold">Sun Elevation Throughout the Day</h3>
            <Card>
+              <CardHeader>
+                <CardTitle>Sun Elevation Throughout the Day</CardTitle>
+              </CardHeader>
               <CardContent className="p-2 pt-6 h-96">
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart data={results.chartData} margin={{ top: 5, right: 20, left: -10, bottom: 20 }}>
