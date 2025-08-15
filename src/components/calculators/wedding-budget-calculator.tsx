@@ -9,14 +9,15 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import { Trash, Download } from 'lucide-react';
+import { Trash, Download, Info } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+} from "@/components/ui/dropdown-menu"
 import { Progress } from "@/components/ui/progress";
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 const itemSchema = z.object({
   name: z.string().nonempty('Item name is required'),
