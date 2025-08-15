@@ -17,7 +17,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+} from "@/components/ui/dropdown-menu"
 import Image from 'next/image';
 
 const unitFactors: { [key: string]: number } = {
@@ -71,15 +71,14 @@ const stairsSchema = z.object({
 
 type CalculatorTabProps = {
     title: string;
-    imageSrc: string;
-    imageHint: string;
+    image: React.ReactNode;
     schema: any;
     defaultValues: any;
     calculateFn: (data: any) => number;
     children: (props: { control: any, errors: any }) => React.ReactNode;
 };
 
-function CalculatorTab({ title, imageSrc, imageHint, schema, defaultValues, calculateFn, children }: CalculatorTabProps) {
+function CalculatorTab({ title, image, schema, defaultValues, calculateFn, children }: CalculatorTabProps) {
   const [results, setResults] = useState<{ volumeYards: number; volumeMeters: number } | null>(null);
   const { control, handleSubmit, formState: { errors }, reset } = useForm({
     resolver: zodResolver(schema),
@@ -110,8 +109,8 @@ function CalculatorTab({ title, imageSrc, imageHint, schema, defaultValues, calc
                  </div>
             </div>
             <div className="space-y-4">
-                 <div className="flex justify-center">
-                    <Image src={imageSrc} alt={title} width={200} height={150} className="rounded-lg border bg-muted p-2" data-ai-hint={imageHint} />
+                 <div className="flex justify-center p-4 border rounded-lg bg-muted">
+                    {image}
                 </div>
                 {results ? (
                     <Card>
@@ -169,8 +168,15 @@ export default function ConcreteCalculator() {
       <TabsContent value="slab" className="mt-6">
         <CalculatorTab
           title="Slabs, Square Footings, or Walls"
-          imageSrc="https://placehold.co/200x150.png"
-          imageHint="rectangular prism diagram"
+          image={<svg width="200" height="150" viewBox="0 0 200 150" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-auto">
+            <path d="M40 95L100 125L160 95L100 65L40 95Z" fill="hsl(var(--muted))" stroke="hsl(var(--foreground))" strokeWidth="2"/>
+            <path d="M40 55V95L100 125V85L40 55Z" fill="hsl(var(--muted))" stroke="hsl(var(--foreground))" strokeWidth="2"/>
+            <path d="M100 85L160 55V95L100 125V85Z" fill="hsl(var(--muted))" stroke="hsl(var(--foreground))" strokeWidth="2"/>
+            <path d="M40 55L100 25L160 55L100 85L40 55Z" fill="hsl(var(--card))" stroke="hsl(var(--foreground))" strokeWidth="2"/>
+            <text x="65" y="40" className="text-xs font-sans fill-muted-foreground">Width</text>
+            <text x="125" y="40" className="text-xs font-sans fill-muted-foreground">Length</text>
+            <text x="15" y="80" className="text-xs font-sans fill-muted-foreground" transform="rotate(-30 15 80)">Thickness</text>
+          </svg>}
           schema={slabSchema}
           defaultValues={{ length: 10, lengthUnit: 'feet', width: 10, widthUnit: 'feet', thickness: 6, thicknessUnit: 'inches', quantity: 1 }}
           calculateFn={(data) => {
@@ -195,8 +201,16 @@ export default function ConcreteCalculator() {
        <TabsContent value="column" className="mt-6">
         <CalculatorTab
           title="Hole, Column, or Round Footings"
-          imageSrc="https://placehold.co/200x150.png"
-          imageHint="cylinder diagram"
+          image={<svg width="200" height="150" viewBox="0 0 200 150" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-auto">
+              <ellipse cx="100" cy="40" rx="50" ry="15" fill="hsl(var(--card))" stroke="hsl(var(--foreground))" strokeWidth="2" />
+              <path d="M50 40 V 110" stroke="hsl(var(--foreground))" strokeWidth="2" />
+              <path d="M150 40 V 110" stroke="hsl(var(--foreground))" strokeWidth="2" />
+              <ellipse cx="100" cy="110" rx="50" ry="15" stroke="hsl(var(--foreground))" strokeWidth="2" fill="hsl(var(--muted))" />
+              <path d="M50 110 A 50 15 0 0 0 150 110" stroke="hsl(var(--foreground))" strokeWidth="2" fill="none" />
+              <path d="M50 110 A 50 15 0 0 1 150 110" stroke="hsl(var(--foreground))" strokeWidth="2" strokeDasharray="3 3" fill="none" />
+              <text x="10" y="80" className="text-xs font-sans fill-muted-foreground">Depth</text>
+              <text x="90" y="30" className="text-xs font-sans fill-muted-foreground">Diameter</text>
+          </svg>}
           schema={columnSchema}
           defaultValues={{ diameter: 2, diameterUnit: 'feet', depth: 4, depthUnit: 'feet', quantity: 1 }}
           calculateFn={(data) => {
@@ -218,8 +232,19 @@ export default function ConcreteCalculator() {
        <TabsContent value="circular" className="mt-6">
         <CalculatorTab
           title="Circular Slab or Tube"
-          imageSrc="https://placehold.co/200x150.png"
-          imageHint="hollow cylinder diagram"
+          image={<svg width="200" height="150" viewBox="0 0 200 150" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-auto">
+              <ellipse cx="100" cy="50" rx="70" ry="20" fill="hsl(var(--card))" stroke="hsl(var(--foreground))" strokeWidth="2"/>
+              <ellipse cx="100" cy="50" rx="35" ry="10" fill="hsl(var(--background))" stroke="hsl(var(--foreground))" strokeWidth="2"/>
+              <path d="M30 50 V 100" stroke="hsl(var(--foreground))" strokeWidth="2"/>
+              <path d="M170 50 V 100" stroke="hsl(var(--foreground))" strokeWidth="2"/>
+              <ellipse cx="100" cy="100" rx="70" ry="20" stroke="hsl(var(--foreground))" strokeWidth="2" fill="hsl(var(--muted))"/>
+              <path d="M30 100 A 70 20 0 0 0 170 100" stroke="hsl(var(--foreground))" strokeWidth="2" fill="none"/>
+              <path d="M30 100 A 70 20 0 0 1 170 100" stroke="hsl(var(--foreground))" strokeWidth="2" fill="none" stroke-dasharray="3 3"/>
+              <ellipse cx="100" cy="100" rx="35" ry="10" fill="hsl(var(--background))" stroke="hsl(var(--foreground))" strokeWidth="2"/>
+              <text x="5" y="80" className="text-xs font-sans fill-muted-foreground">Height</text>
+              <text x="135" y="45" className="text-xs font-sans fill-muted-foreground">d₁</text>
+              <text x="110" y="55" className="text-xs font-sans fill-muted-foreground">d₂</text>
+          </svg>}
           schema={circularSlabSchema}
           defaultValues={{ outerDiameter: 4, outerDiameterUnit: 'feet', innerDiameter: 2, innerDiameterUnit: 'feet', height: 6, heightUnit: 'inches', quantity: 1 }}
           calculateFn={(data) => {
@@ -245,8 +270,13 @@ export default function ConcreteCalculator() {
       <TabsContent value="curb" className="mt-6">
         <CalculatorTab
           title="Curb and Gutter Barrier"
-          imageSrc="https://placehold.co/200x150.png"
-          imageHint="curb gutter diagram"
+          image={<svg width="200" height="150" viewBox="0 0 200 150" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-auto">
+            <path d="M50 120 L150 120 L150 110 L80 110 L80 60 L50 60 L50 120Z" stroke="hsl(var(--foreground))" fill="hsl(var(--muted))" stroke-width="2"/>
+            <text x="85" y="130" className="text-xs font-sans fill-muted-foreground">Gutter Width</text>
+            <text x="20" y="95" className="text-xs font-sans fill-muted-foreground">Curb Height</text>
+            <text x="85" y="85" className="text-xs font-sans fill-muted-foreground" transform="rotate(90 85 85)">Curb Depth</text>
+            <text x="110" y="105" className="text-xs font-sans fill-muted-foreground">Flag Thickness</text>
+          </svg>}
           schema={curbSchema}
           defaultValues={{ curbDepth: 4, curbDepthUnit: 'inches', gutterWidth: 10, gutterWidthUnit: 'inches', curbHeight: 4, curbHeightUnit: 'inches', flagThickness: 5, flagThicknessUnit: 'inches', length: 10, lengthUnit: 'feet', quantity: 1 }}
           calculateFn={(data) => {
@@ -278,8 +308,12 @@ export default function ConcreteCalculator() {
       <TabsContent value="stairs" className="mt-6">
         <CalculatorTab
           title="Stairs"
-          imageSrc="https://placehold.co/200x150.png"
-          imageHint="stairs diagram"
+          image={<svg width="200" height="150" viewBox="0 0 200 150" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-auto">
+            <path d="M40 120 L40 100 L70 100 L70 80 L100 80 L100 60 L130 60 L130 40 L160 40 L160 120 L40 120Z" stroke="hsl(var(--foreground))" fill="hsl(var(--muted))" stroke-width="2"/>
+            <text x="135" y="85" className="text-xs font-sans fill-muted-foreground">Run</text>
+            <text x="165" y="60" className="text-xs font-sans fill-muted-foreground" transform="rotate(90 165 60)">Rise</text>
+            <text x="10" y="80" className="text-xs font-sans fill-muted-foreground">Width (not shown)</text>
+          </svg>}
           schema={stairsSchema}
           defaultValues={{ run: 12, runUnit: 'inches', rise: 6, riseUnit: 'inches', width: 50, widthUnit: 'inches', platformDepth: 5, platformDepthUnit: 'centimeters', numSteps: 5 }}
           calculateFn={(data) => {
@@ -310,4 +344,3 @@ export default function ConcreteCalculator() {
     </Tabs>
   );
 }
-
