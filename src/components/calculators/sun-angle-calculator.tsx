@@ -173,7 +173,7 @@ export default function SunAngleCalculator() {
                 <div><Label>Date</Label><Controller name="date" control={control} render={({ field }) => ( <Popover><PopoverTrigger asChild><Button variant={"outline"} className={cn("w-full justify-start text-left font-normal", !field.value && "text-muted-foreground")}><CalendarIcon className="mr-2 h-4 w-4" />{field.value ? format(field.value, "PPP") : <span>Pick a date</span>}</Button></PopoverTrigger><PopoverContent className="w-auto p-0"><Calendar mode="single" selected={field.value} onSelect={field.onChange} initialFocus /></PopoverContent></Popover> )}/></div>
                 <div><Label>Time (Local)</Label><Controller name="time" control={control} render={({ field }) => <Input type="time" {...field} />} /></div>
               </div>
-              <div className="flex gap-2 pt-4">
+               <div className="flex gap-2 pt-4">
                 <Button type="submit" className="flex-1">Calculate Sun Position</Button>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild><Button variant="outline" disabled={!results}><Download className="mr-2 h-4 w-4" /> Export</Button></DropdownMenuTrigger>
