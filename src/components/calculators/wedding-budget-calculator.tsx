@@ -9,7 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import { Trash, Download, Info } from 'lucide-react';
+import { Trash, Download, Info, Sparkles, Loader2 } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -18,6 +18,8 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Progress } from "@/components/ui/progress";
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend } from 'recharts';
+import { analyzeBudget, type WeddingBudgetInput, type WeddingBudgetOutput } from '@/ai/flows/wedding-budget-flow';
 
 const itemSchema = z.object({
   name: z.string().nonempty('Item name is required'),
@@ -40,9 +42,13 @@ const defaultExpenses = [
   { name: 'Music/Entertainment', cost: 1500 },
 ];
 
+const PIE_COLORS = ['hsl(var(--chart-1))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))', 'hsl(var(--chart-4))', 'hsl(var(--chart-5))', '#ffc658'];
+
 export default function WeddingBudgetCalculator() {
   const [results, setResults] = useState<any>(null);
   const [formData, setFormData] = useState<FormData | null>(null);
+  const [analysis, setAnalysis] = useState<WeddingBudgetOutput | null>(null);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
 
   const { control, handleSubmit } = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -64,14 +70,39 @@ export default function WeddingBudgetCalculator() {
     const remainingBudget = data.totalBudget - totalSpent;
     const percentageSpent = (totalSpent / data.totalBudget) * 100;
 
+    const pieData = data.expenses
+      .filter(e => e.cost > 0)
+      .map(e => ({ name: e.name, value: e.cost }));
+
     setResults({
       remainingBudget,
       percentageSpent,
       totalSpent,
+      pieData
     });
     setFormData(data);
+    setAnalysis(null); // Reset analysis when budget changes
   };
   
+  const handleAnalyzeBudget = async () => {
+      if (!formData) return;
+      setIsAnalyzing(true);
+      setAnalysis(null);
+      try {
+          const budgetInput: WeddingBudgetInput = {
+              totalBudget: formData.totalBudget,
+              expenses: formData.expenses.map(e => ({ item: e.name, cost: e.cost })),
+          };
+          const result = await analyzeBudget(budgetInput);
+          setAnalysis(result);
+      } catch (error) {
+          console.error("Error analyzing budget:", error);
+          setAnalysis({ analysis: "Could not analyze the budget at this time.", savings_tips: []});
+      } finally {
+          setIsAnalyzing(false);
+      }
+  };
+
   const handleExport = (format: 'txt' | 'csv') => {
     if (!results || !formData) return;
     
@@ -106,7 +137,7 @@ export default function WeddingBudgetCalculator() {
   };
 
   return (
-    <form onSubmit={handleSubmit(calculateBudget)} className="grid md:grid-cols-2 gap-8">
+    <form onSubmit={handleSubmit(calculateBudget)} className="grid lg:grid-cols-2 gap-8">
       <div className="space-y-4">
         <Card>
           <CardHeader><CardTitle>Wedding Budget & Expenses</CardTitle></CardHeader>
@@ -127,14 +158,9 @@ export default function WeddingBudgetCalculator() {
             <Button type="submit" className="flex-1">Calculate Budget</Button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" disabled={!results}>
-                  <Download className="mr-2 h-4 w-4" /> Export
-                </Button>
+                <Button variant="outline" disabled={!results}><Download className="mr-2 h-4 w-4" /> Export</Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent>
-                <DropdownMenuItem onClick={() => handleExport('txt')}>Download as .txt</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handleExport('csv')}>Download as .csv</DropdownMenuItem>
-              </DropdownMenuContent>
+              <DropdownMenuContent><DropdownMenuItem onClick={() => handleExport('txt')}>Download as .txt</DropdownMenuItem><DropdownMenuItem onClick={() => handleExport('csv')}>Download as .csv</DropdownMenuItem></DropdownMenuContent>
             </DropdownMenu>
         </div>
       </div>
@@ -155,6 +181,47 @@ export default function WeddingBudgetCalculator() {
                         <p className="text-right text-sm font-semibold">{results.percentageSpent.toFixed(1)}%</p>
                     </CardContent>
                 </Card>
+                 <Card>
+                    <CardHeader><CardTitle className="text-base text-center">Expense Breakdown</CardTitle></CardHeader>
+                    <CardContent className="h-64">
+                         <ResponsiveContainer width="100%" height="100%">
+                            <PieChart>
+                                <Pie data={results.pieData} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={50} outerRadius={80} paddingAngle={5}>
+                                    {results.pieData.map((_entry: any, index: number) => <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />)}
+                                </Pie>
+                                <Tooltip formatter={(value: number) => formatCurrency(value)} />
+                                <Legend iconType="circle" />
+                            </PieChart>
+                        </ResponsiveContainer>
+                    </CardContent>
+                </Card>
+                 <Card>
+                    <CardHeader>
+                        <div className="flex justify-between items-center">
+                            <CardTitle>AI Budget Advisor</CardTitle>
+                            <Button size="sm" onClick={handleAnalyzeBudget} disabled={isAnalyzing}>
+                                {isAnalyzing ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
+                                Analyze
+                            </Button>
+                        </div>
+                    </CardHeader>
+                    <CardContent>
+                        {isAnalyzing && <p className="text-sm text-muted-foreground text-center">Analyzing your budget...</p>}
+                        {analysis && (
+                            <div className="space-y-4 text-sm">
+                                <p>{analysis.analysis}</p>
+                                {analysis.savings_tips.length > 0 && (
+                                    <div>
+                                        <h4 className="font-semibold mb-2">Savings Tips:</h4>
+                                        <ul className="list-disc pl-5 space-y-1">
+                                            {analysis.savings_tips.map((tip, index) => <li key={index}>{tip}</li>)}
+                                        </ul>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+                    </CardContent>
+                 </Card>
             </div>
         ) : (
           <div className="flex items-center justify-center h-40 bg-muted/50 rounded-lg border border-dashed"><p>Enter your budget and expenses</p></div>
