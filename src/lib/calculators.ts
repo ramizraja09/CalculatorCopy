@@ -881,13 +881,6 @@ export const calculators: Calculator[] = [
     icon: Plane,
   },
   {
-    name: 'Distance Calculator',
-    slug: 'distance-calculator',
-    description: 'Calculate the distance between two points on a map.',
-    category: 'Everyday Utilities',
-    icon: Map,
-  },
-  {
     name: 'Paint Calculator',
     slug: 'paint-calculator',
     description: 'Estimate how much paint you need to cover a certain area.',
@@ -923,9 +916,9 @@ export const calculators: Calculator[] = [
     icon: CircuitBoard,
   },
   {
-    name: 'Cost of Living Calculator',
+    name: 'Home Affordability Calculator',
     slug: 'cost-of-living-calculator',
-    description: 'Compare the cost of living and required salary between two cities.',
+    description: 'Estimate the home price you can afford based on your income, debt, and down payment.',
     category: 'Everyday Utilities',
     icon: Building,
   },

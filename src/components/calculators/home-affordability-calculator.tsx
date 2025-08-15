@@ -30,6 +30,7 @@ const formSchema = z.object({
 });
 
 type FormData = z.infer<typeof formSchema>;
+const formatCurrency = (value: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value);
 
 export default function HomeAffordabilityCalculator() {
   const [results, setResults] = useState<any>(null);
@@ -61,15 +62,15 @@ export default function HomeAffordabilityCalculator() {
     
     const grossMonthlyIncome = annualIncome / 12;
     
+    // Using the 28/36 rule
     const maxHousingPayment28 = grossMonthlyIncome * 0.28;
     const maxTotalDebtPayment36 = grossMonthlyIncome * 0.36;
     const maxHousingPayment36 = maxTotalDebtPayment36 - monthlyDebts;
 
     const maxPITI = Math.min(maxHousingPayment28, maxHousingPayment36);
-    const monthlyInterestRate = interestRate / 100 / 12;
-    const numberOfPayments = loanTerm * 12;
     
     const monthlyRate = interestRate / 100 / 12;
+    const numberOfPayments = loanTerm * 12;
     const monthlyTaxesAndInsuranceFactor = (propertyTaxRate / 100 / 12) + (homeInsuranceRate / 100 / 12);
     
     const loanPaymentFactor = (monthlyRate * Math.pow(1 + monthlyRate, numberOfPayments)) / (Math.pow(1 + monthlyRate, numberOfPayments) - 1);
@@ -83,7 +84,7 @@ export default function HomeAffordabilityCalculator() {
     }
     
     const affordableHomePrice = maxLoanAmount + downPayment;
-    const estimatedMonthlyPayment = maxLoanAmount * loanPaymentFactor + (affordableHomePrice * monthlyTaxesAndInsuranceFactor);
+    const estimatedMonthlyPayment = maxPITI; // The monthly payment is capped by this rule
 
     setResults({
         affordableHomePrice,
@@ -95,8 +96,6 @@ export default function HomeAffordabilityCalculator() {
     });
     setFormData(data);
   };
-
-  const formatCurrency = (value: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value);
 
   const handleExport = (format: 'txt' | 'csv') => {
     if (!results || !formData) return;

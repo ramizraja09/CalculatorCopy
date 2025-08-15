@@ -28,6 +28,8 @@ const cityIndices: { [key: string]: { name: string; index: number } } = {
   'phoenix': { name: 'Phoenix, AZ', index: 68.1 },
   'seattle': { name: 'Seattle, WA', index: 84.7 },
   'denver': { name: 'Denver, CO', index: 76.5 },
+  'austin': { name: 'Austin, TX', index: 69.5 },
+  'miami': { name: 'Miami, FL', index: 78.9 },
 };
 
 const formSchema = z.object({
@@ -155,8 +157,8 @@ export default function CostOfLivingCalculator() {
                 <CardContent className="p-4">
                     <p className="text-sm text-muted-foreground">To maintain your standard of living in {results.newCityName}, you would need a salary of:</p>
                     <p className="text-3xl font-bold my-2">{formatCurrency(results.equivalentSalary)}</p>
-                    <p className={`text-sm font-semibold ${results.difference > 0 ? 'text-destructive' : 'text-green-600'}`}>
-                      That's a difference of {formatCurrency(Math.abs(results.difference))} {results.difference > 0 ? 'more' : 'less'} per year.
+                    <p className={`text-sm font-semibold ${results.difference >= 0 ? 'text-destructive' : 'text-green-600'}`}>
+                      That's a difference of {formatCurrency(Math.abs(results.difference))} {results.difference >= 0 ? 'more' : 'less'} per year.
                     </p>
                     <p className="text-xs text-muted-foreground mt-4">*Based on simplified cost of living index data. For estimation purposes only.</p>
                 </CardContent>
