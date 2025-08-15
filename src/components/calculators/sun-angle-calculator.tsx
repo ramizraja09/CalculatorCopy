@@ -220,7 +220,7 @@ export default function SunAngleCalculator() {
               </CardHeader>
               <CardContent className="p-2 pt-6 h-96">
                 <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={results.chartData} margin={{ top: 5, right: 20, left: -10, bottom: 20 }}>
+                  <LineChart data={results.chartData} margin={{ top: 5, right: 30, left: 20, bottom: 20 }}>
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="hour" label={{ value: "Hour of the Day", position: "insideBottom", offset: -10 }} />
                     <YAxis label={{ value: 'Elevation (°)', angle: -90, position: 'insideLeft' }}/>
