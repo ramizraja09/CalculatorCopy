@@ -61,10 +61,7 @@ function HumidityCalculator({ onCalculate }: { onCalculate: (results: any, formD
                 <div className="flex gap-2">
                     <Controller name="temperature" control={control} render={({ field }) => <Input type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />} />
                     <Controller name="unit" control={control} render={({ field }) => (
-                         <Select onValueChange={field.onChange} value={field.value}>
-                           <SelectTrigger className="w-[180px]"><SelectValue /></SelectTrigger>
-                           <SelectContent><SelectItem value="F">Fahrenheit °F</SelectItem><SelectItem value="C">Celsius °C</SelectItem></SelectContent>
-                         </Select>
+                         <Select onValueChange={field.onChange} value={field.value}><SelectTrigger className="w-[180px]"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="F">Fahrenheit °F</SelectItem><SelectItem value="C">Celsius °C</SelectItem></SelectContent></Select>
                     )} />
                 </div>
             </div>
