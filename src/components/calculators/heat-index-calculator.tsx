@@ -194,7 +194,7 @@ export default function HeatIndexCalculator() {
             </Tabs>
              <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" disabled={!results} className="w-full">
+                <Button variant="outline" disabled={!results || results.error} className="w-full">
                   <Download className="mr-2 h-4 w-4" /> Export Results
                 </Button>
               </DropdownMenuTrigger>
@@ -232,12 +232,11 @@ export default function HeatIndexCalculator() {
         <CardHeader><CardTitle>Heat Index Chart</CardTitle></CardHeader>
         <CardContent>
           <Image 
-            src="https://placehold.co/800x600.png"
+            src="https://www.weather.gov/images/safety/heat_index.png"
             alt="Heat Index Chart from the National Weather Service"
-            width={800}
-            height={600}
+            width={1600}
+            height={1200}
             className="w-full h-auto rounded-md"
-            data-ai-hint="heat index"
           />
            <p className="text-xs text-muted-foreground mt-2 text-center">Source: U.S. National Weather Service</p>
         </CardContent>
