@@ -160,7 +160,7 @@ export default function BatteryLifeCalculator() {
                         <ResponsiveContainer width="100%" height="100%">
                             <PieChart>
                                 <Pie data={results.pieData} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={40} outerRadius={60} paddingAngle={5}>
-                                    {results.pieData.map((_entry: any, index: number) => <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />)}
+                                    {results.pieData && results.pieData.map((_entry: any, index: number) => <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />)}
                                 </Pie>
                                 <Tooltip formatter={(value: number) => `${value.toFixed(0)} mAh`} />
                                 <Legend iconType="circle" />
