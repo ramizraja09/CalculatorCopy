@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -17,6 +17,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
+
 
 const formSchema = z.object({
   capacity: z.number().min(1, "Capacity must be positive"),
@@ -33,6 +35,8 @@ const efficiencyFactors = {
     'alkaline': 0.55,
 }
 
+const PIE_COLORS = ['hsl(var(--chart-2))', 'hsl(var(--chart-3))'];
+
 export default function BatteryLifeCalculator() {
   const [results, setResults] = useState<any | null>(null);
   const [formData, setFormData] = useState<FormData | null>(null);
@@ -46,11 +50,16 @@ export default function BatteryLifeCalculator() {
     const { capacity, consumption, usageHours, batteryType } = data;
     const efficiency = efficiencyFactors[batteryType];
     const effectiveCapacity = capacity * efficiency;
+    const inefficiencyLoss = capacity * (1 - efficiency);
     const totalHours = effectiveCapacity / consumption;
     const totalDays = totalHours / usageHours;
     setResults({
         totalHours: totalHours.toFixed(1),
-        totalDays: totalDays.toFixed(1)
+        totalDays: totalDays.toFixed(1),
+        pieData: [
+            { name: 'Effective Capacity', value: effectiveCapacity },
+            { name: 'Inefficiency Loss', value: inefficiencyLoss }
+        ]
     });
     setFormData(data);
   }
@@ -130,18 +139,36 @@ export default function BatteryLifeCalculator() {
       <div className="space-y-4">
         <h3 className="text-xl font-semibold">Estimated Battery Life</h3>
         {results ? (
-            <Card>
-                <CardContent className="p-6 grid grid-cols-2 gap-4 text-center">
-                    <div>
-                        <p className="text-sm text-muted-foreground">Total Hours</p>
-                        <p className="text-3xl font-bold">{results.totalHours}</p>
-                    </div>
-                     <div>
-                        <p className="text-sm text-muted-foreground">Total Days</p>
-                        <p className="text-3xl font-bold">{results.totalDays}</p>
-                    </div>
-                </CardContent>
-            </Card>
+            <div className="space-y-4">
+                <Card>
+                    <CardContent className="p-6 grid grid-cols-2 gap-4 text-center">
+                        <div>
+                            <p className="text-sm text-muted-foreground">Total Hours</p>
+                            <p className="text-3xl font-bold">{results.totalHours}</p>
+                        </div>
+                         <div>
+                            <p className="text-sm text-muted-foreground">Total Days</p>
+                            <p className="text-3xl font-bold">{results.totalDays}</p>
+                        </div>
+                    </CardContent>
+                </Card>
+                 <Card>
+                    <CardHeader>
+                        <CardTitle className="text-base text-center">Capacity Breakdown</CardTitle>
+                    </CardHeader>
+                    <CardContent className="h-48">
+                        <ResponsiveContainer width="100%" height="100%">
+                            <PieChart>
+                                <Pie data={results.pieData} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={40} outerRadius={60} paddingAngle={5}>
+                                    {results.pieData.map((_entry: any, index: number) => <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />)}
+                                </Pie>
+                                <Tooltip formatter={(value: number) => `${value.toFixed(0)} mAh`} />
+                                <Legend iconType="circle" />
+                            </PieChart>
+                        </ResponsiveContainer>
+                    </CardContent>
+                </Card>
+            </div>
         ) : (
           <div className="flex items-center justify-center h-40 bg-muted/50 rounded-lg border border-dashed"><p>Enter device and battery details</p></div>
         )}
