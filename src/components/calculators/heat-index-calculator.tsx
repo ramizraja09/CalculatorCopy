@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from 'react';
@@ -231,11 +232,12 @@ export default function HeatIndexCalculator() {
         <CardHeader><CardTitle>Heat Index Chart</CardTitle></CardHeader>
         <CardContent>
           <Image 
-            src="https://www.weather.gov/images/safety/heat_index.png"
+            src="https://placehold.co/1600x1200.png"
             alt="Heat Index Chart from the National Weather Service"
             width={1600}
             height={1200}
             className="w-full h-auto rounded-md"
+            data-ai-hint="heat index chart"
           />
            <p className="text-xs text-muted-foreground mt-2 text-center">Source: U.S. National Weather Service</p>
         </CardContent>
