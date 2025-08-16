@@ -229,7 +229,7 @@ export default function HeatIndexCalculator() {
         <CardHeader><CardTitle>Heat Index Chart</CardTitle></CardHeader>
         <CardContent>
           <Image 
-            src="https://www.weather.gov/images/safety/heat_index.png"
+            src="https://placehold.co/1600x1200.png"
             alt="Heat Index Chart from the National Weather Service"
             width={1600}
             height={1200}
